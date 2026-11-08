@@ -75,6 +75,8 @@ export function isoDay(dt) {
   return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}-${String(dt.getUTCDate()).padStart(2, "0")}`;
 }
 
+export const MIN_AGE = 14;
+
 export function ageFromBirthDate(iso) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || "")) return null;
   const [y, m, d] = iso.split("-").map(Number);
@@ -82,4 +84,12 @@ export function ageFromBirthDate(iso) {
   let age = now.getFullYear() - y;
   if (now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d)) age -= 1;
   return age;
+}
+
+export function birthDateProblem(iso) {
+  const age = ageFromBirthDate(iso);
+  if (age === null) return "Seleziona la tua data di nascita.";
+  if (age < MIN_AGE) return `Devi avere almeno ${MIN_AGE} anni.`;
+  if (age > 120) return "Controlla la data di nascita.";
+  return "";
 }
