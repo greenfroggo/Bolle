@@ -255,8 +255,9 @@ export function OverlayTools({ overlays: items, onChange, sel, setSel, disabled 
 
 /* ---------- Tag: massimo 3 username, con suggerimenti dei più frequentati ----------
    suggestions = [{ username, score }] già ordinati per frequenza (li calcola il compositore). */
-export function TagPicker({ tags, onChange, disabled = false, suggestions = [] }) {
+export function TagPicker({ tags, onChange, disabled = false, suggestions = [], onSearch = null }) {
   const [val, setVal] = useState("");
+  const [found, setFound] = useState([]); // risultati della ricerca per prefisso (server)
   const clean = (v) => String(v || "").trim().replace(/^@+/, "").toLowerCase();
   const add = (raw) => {
     const name = clean(raw);
@@ -265,7 +266,23 @@ export function TagPicker({ tags, onChange, disabled = false, suggestions = [] }
     onChange([...tags, name]);
   };
   const q = clean(val);
-  const shown = suggestions.filter((s) => !tags.includes(s.username) && (!q || s.username.includes(q))).slice(0, 8);
+  // Ricerca per prefisso mentre si digita (con piccola attesa per non fare una richiesta a ogni lettera).
+  useEffect(() => {
+    if (!onSearch || !q) { setFound([]); return undefined; }
+    let alive = true;
+    const t = setTimeout(async () => {
+      try { const rows = await onSearch(q); if (alive) setFound(Array.isArray(rows) ? rows : []); }
+      catch { if (alive) setFound([]); }
+    }, 180);
+    return () => { alive = false; clearTimeout(t); };
+  }, [q, onSearch]);
+  // Prima chi inizia con le lettere digitate (server), poi gli utenti con cui si interagisce di più che contengono le lettere.
+  const merged = [];
+  const seen = new Set();
+  const push = (u) => { const name = clean(u?.username); if (name && !seen.has(name) && !tags.includes(name)) { seen.add(name); merged.push({ username: name }); } };
+  if (q) found.filter((s) => clean(s.username).startsWith(q)).forEach(push);
+  suggestions.filter((s) => !q || clean(s.username).includes(q)).forEach(push);
+  const shown = merged.slice(0, 8);
   const full = tags.length >= MAX_TAGS;
   return (
     <div className="bl-ov-tags">

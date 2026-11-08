@@ -2,17 +2,14 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMe
 import { createPortal } from "react-dom";
 import { Archive, ArchiveRestore, Trash2, Users } from "lucide-react";
 import { supabase, avatarFor, errorText } from "../../lib/bolleCore.jsx";
-import AvatarImage, { AVATAR_BUCKET } from "../../components/AvatarImage.jsx";
+import AvatarImage from "../../components/AvatarImage.jsx";
 import { openUserProfile } from "../../components/UserLinkText.jsx";
 import SwipeRow from "./SwipeRow.jsx";
 import ChatMessage from "./ChatMessage.jsx";
 import { GroupManageModal, NewGroupModal } from "./GroupModals.jsx";
 import {
   CHAT_MAX_BODY,
-  MAX_STICKERS_LIBRARY,
-  STICKER_PATH_RE,
   POLL,
-  stickerUrl,
   makeQuoteMark,
   chatPreview,
   chatQuoteSnippet,
@@ -51,54 +48,6 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
   const loadThreadsRef = useRef(null);
   const activeRef = useRef(null);
   const [replyTo, setReplyTo] = useState(null); // { id, from, snippet }: messaggio che sto citando
-  const stickerStoreKey = `bolle-stickers-v1-${String(me?.id || me?.username || "me").toLowerCase()}`;
-  const [stickerOpen, setStickerOpen] = useState(false);
-  const [stickers, setStickers] = useState(() => { try { const r = JSON.parse(localStorage.getItem(stickerStoreKey) || "[]"); return Array.isArray(r) ? r.filter(p => STICKER_PATH_RE.test(p)) : []; } catch { return []; } });
-  const [stickerBusy, setStickerBusy] = useState(false);
-  const stickerFileRef = useRef(null);
-  useEffect(() => { try { localStorage.setItem(stickerStoreKey, JSON.stringify(stickers)); } catch { /* storage non disponibile */ } }, [stickers, stickerStoreKey]);
-  // Se il bucket permette l'elenco, recupera anche gli sticker caricati da altri dispositivi.
-  useEffect(() => {
-    let off = false;
-    (async () => {
-      try {
-        const { data: u } = await supabase.auth.getUser();
-        const uid = u?.user?.id;
-        if (!uid) return;
-        const { data: files, error: lErr } = await supabase.storage.from(AVATAR_BUCKET).list(uid, { limit: 200, search: "st-" });
-        if (lErr || !files || off) return;
-        const found = files.filter(f => /^st-/.test(f.name)).map(f => `${uid}/${f.name}`).filter(p => STICKER_PATH_RE.test(p));
-        if (found.length) setStickers(prev => [...new Set([...prev, ...found])].slice(0, MAX_STICKERS_LIBRARY));
-      } catch { /* elenco non disponibile: resta la libreria locale */ }
-    })();
-    return () => { off = true; };
-  }, []);
-  async function importStickers(fileList) {
-    const files = Array.from(fileList || []);
-    if (!files.length) return;
-    const { data: u } = await supabase.auth.getUser();
-    const uid = u?.user?.id;
-    if (!uid) { onNotify?.("Accedi per importare sticker."); return; }
-    setStickerBusy(true);
-    const added = [];
-    for (const file of files) {
-      if (stickers.length + added.length >= MAX_STICKERS_LIBRARY) { onNotify?.(`Libreria piena: massimo ${MAX_STICKERS_LIBRARY} sticker.`); break; }
-      if (!["image/webp", "image/png", "image/jpeg"].includes(file.type)) { onNotify?.("Gli sticker devono essere file WebP o PNG."); continue; }
-      if (file.size > 1024 * 1024) { onNotify?.("Uno sticker pesa troppo (massimo 1 MB)."); continue; }
-      const ext = { "image/webp": "webp", "image/png": "png", "image/jpeg": "jpg" }[file.type];
-      const path = `${uid}/st-${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from(AVATAR_BUCKET).upload(path, file, { contentType: file.type, upsert: false });
-      if (upErr) { onNotify?.("Sticker non importato. Riprova."); continue; }
-      added.push(path);
-    }
-    if (added.length) setStickers(prev => [...added, ...prev].slice(0, MAX_STICKERS_LIBRARY));
-    setStickerBusy(false);
-    if (stickerFileRef.current) stickerFileRef.current.value = "";
-  }
-  async function removeSticker(path) {
-    setStickers(prev => prev.filter(p => p !== path));
-    try { await supabase.storage.from(AVATAR_BUCKET).remove([path]); } catch { /* resta rimosso dalla libreria */ }
-  }
   const [highlightId, setHighlightId] = useState(null);
   const inputRef = useRef(null);
   const historyRef = useRef(null);
@@ -555,11 +504,6 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
     return () => window.removeEventListener("keydown", onKey);
   }, [menu]);
 
-  function sendSticker(path) {
-    if (!active || sending || !STICKER_PATH_RE.test(path)) return;
-    setStickerOpen(false);
-    return sendMessage(null, `[[sticker|${path}]]`);
-  }
   async function sendMessage(event, forcedBody) {
     event?.preventDefault();
     const text = forcedBody ? "" : draft.trim();
@@ -648,29 +592,6 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
             </div>
           )}
           <form className="bl-message-compose" onSubmit={sendMessage} style={{display:"flex",alignItems:"flex-end",gap:10,padding:"10px 12px",borderRadius:26,background:"var(--bl-panel, #20232d)",border:"1px solid var(--bl-line, #ffffff20)",position:"relative",width:"100%",boxSizing:"border-box"}}>
-            {stickerOpen && (
-              <div className="bl-sticker-tray" role="dialog" aria-label="I tuoi sticker">
-                <div className="bl-sticker-head">
-                  <b>I miei sticker</b>
-                  <span>
-                    <button type="button" className="bl-sticker-import" onClick={() => stickerFileRef.current?.click()} disabled={stickerBusy}>{stickerBusy ? "Importo…" : "＋ Importa"}</button>
-                    <button type="button" onClick={() => setStickerOpen(false)} aria-label="Chiudi sticker">✕</button>
-                  </span>
-                </div>
-                {stickers.length ? (
-                  <div className="bl-sticker-grid">
-                    {stickers.map(p => (
-                      <span key={p} className="bl-sticker-item">
-                        <button type="button" onClick={() => sendSticker(p)} disabled={sending} aria-label="Invia sticker"><img src={stickerUrl(p)} alt="" loading="lazy" draggable="false" /></button>
-                        <i role="button" tabIndex={0} aria-label="Elimina sticker" onClick={() => removeSticker(p)} onKeyDown={e => { if (e.key === "Enter") removeSticker(p); }}>×</i>
-                      </span>
-                    ))}
-                  </div>
-                ) : <p className="bl-sticker-empty">Nessuno sticker. Tocca «Importa» e scegli i file WebP/PNG dei tuoi sticker di WhatsApp.</p>}
-              </div>
-            )}
-            <input ref={stickerFileRef} type="file" accept="image/webp,image/png,image/jpeg" multiple hidden onChange={e => void importStickers(e.target.files)} />
-            <button type="button" className="bl-sticker-btn" onClick={() => setStickerOpen(v => !v)} aria-pressed={stickerOpen} aria-label="Sticker" title="Sticker" style={{flex:"0 0 42px",width:42,height:42,border:0,borderRadius:"50%",background:"transparent",color:"inherit",fontSize:22,cursor:"pointer"}}>🎟️</button>
             <div className="bl-message-input-wrap" style={{position:"relative",display:"flex",alignItems:"flex-end",gap:8,flex:1,minWidth:0}}>
               <textarea ref={inputRef} value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === "Escape" && replyTo) { setReplyTo(null); return; } if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (draft.trim() && !sending) e.currentTarget.form?.requestSubmit(); } }} maxLength={CHAT_MAX_BODY - (replyTo ? makeQuoteMark(replyTo).length : 0)} rows={1} placeholder={replyTo ? "Scrivi la tua risposta…" : active.isGroup ? "Scrivi nel gruppo…" : "Scrivi un messaggio…"} aria-label="Scrivi un messaggio" style={{flex:1,minWidth:0,resize:"none",border:0,outline:"none",background:"transparent",color:"inherit",font:"inherit",fontSize:16,lineHeight:1.4,padding:"8px 2px",maxHeight:120,overflowY:"auto"}} />
             </div>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import ChainOrbs, { useChainSummary } from "./ChainOrbs.jsx";
 
 /* =====================================================================
    SequentialFeed — la home "una bolla alla volta" di Bolle.
@@ -100,6 +101,7 @@ function BubbleFace({ item, kind, small }) {
         <>
           <span className="bl-seq-img" style={{ backgroundImage: `url("${item.preview}")` }} aria-hidden="true" />
           <span className="bl-seq-img bl-seq-img--b" style={{ backgroundImage: `url("${item.preview}")` }} aria-hidden="true" />
+          <span className="bl-seq-veil" aria-hidden="true"><i /></span>
         </>
       ) : (
         <span className="bl-seq-blobs" style={{ "--r": `${hashStr(String(item.id)) % 360}deg` }} aria-hidden="true"><i /><i /><i /></span>
@@ -166,6 +168,9 @@ export default function SequentialFeed({
   const queue = useMemo(() => ordered.filter((i) => !handled.has(String(i.id))), [ordered, handled]);
   const current = queue[0] || null;
   const next = queue[1] || null;
+
+  // Bolla a catena: una bolla per ogni partecipante, aggiornata mentre la bolla è sulla scena.
+  const chain = useChainSummary(current?.id, { enabled: Boolean(current && current.chainable && !current.sealed), initial: current?.chainCount || 0 });
 
   const currentKind = current ? getKind(current) : null;
   const nextKind = next ? getKind(next) : null;
@@ -385,8 +390,10 @@ export default function SequentialFeed({
       <p className="bl-seq-sr" aria-live="polite">{announce}</p>
       <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true" focusable="false">
         <filter id="bl-seq-warp" x="-10%" y="-10%" width="120%" height="120%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.014 0.02" numOctaves="2" seed="7" result="n" />
-          <feDisplacementMap in="SourceGraphic" in2="n" scale="46" xChannelSelector="R" yChannelSelector="G" />
+          {/* ondulazione lenta e morbida (poche onde larghe, spostamento piccolo): la superficie si piega, l'immagine non si «rompe» */}
+          <feTurbulence type="fractalNoise" baseFrequency="0.005 0.007" numOctaves="1" seed="11" result="n" />
+          <feGaussianBlur in="n" stdDeviation="2" result="ns" />
+          <feDisplacementMap in="SourceGraphic" in2="ns" scale="9" xChannelSelector="R" yChannelSelector="B" />
         </filter>
       </svg>
 
@@ -437,6 +444,11 @@ export default function SequentialFeed({
               {popping && <span className="bl-seq-burst-ring" aria-hidden="true" />}
             </div>
           </div>
+          {chain && !popping && (
+            <div className="bl-seq-chain" key={`chain-${current.id}`} style={{ "--h": currentKind.hue }}>
+              <ChainOrbs count={chain.count} hue={currentKind.hue} />
+            </div>
+          )}
         </div>
       )}
 
@@ -587,11 +599,35 @@ const CSS = `
 /* pressione: la bolla si schiaccia come gelatina e, al rilascio, torna con un rimbalzo */
 .bl-seq-bubble .bl-seq-face{transition:scale .55s var(--bl-spring,cubic-bezier(.34,1.56,.64,1))}
 .bl-seq-bubble.is-pressed .bl-seq-face{scale:.92 .89;transition:scale .14s ease-out}
-.bl-seq-img{position:absolute;inset:-4%;z-index:0;border-radius:50%;background-size:cover;background-position:center;
-  opacity:.96;filter:saturate(1.35) contrast(1.05);transform:scale(1.18) rotate(6deg)}
-@supports (filter:url(#a)){.bl-seq-img{filter:url(#bl-seq-warp) saturate(1.35) contrast(1.05)}}
-.bl-seq-img--b{opacity:.5;mix-blend-mode:soft-light;transform:scale(1.35) rotate(-24deg) scaleX(-1);filter:saturate(1.6)}
-@supports (filter:url(#a)){.bl-seq-img--b{filter:saturate(1.6)}}
+.bl-seq-img{position:absolute;inset:-6%;z-index:0;border-radius:50%;background-size:cover;background-position:center;
+  opacity:.94;filter:saturate(1.1) brightness(1.06);transform:scale(1.14) rotate(4deg);
+  animation:bl-seq-drift 16s ease-in-out infinite alternate}
+@supports (filter:url(#a)){.bl-seq-img{filter:url(#bl-seq-warp) saturate(1.1) brightness(1.06)}}
+.bl-seq-img--b{opacity:.32;mix-blend-mode:soft-light;transform:scale(1.3) rotate(-20deg) scaleX(-1);filter:saturate(1.3);animation-duration:22s;animation-direction:alternate-reverse}
+@supports (filter:url(#a)){.bl-seq-img--b{filter:saturate(1.3)}}
+@keyframes bl-seq-drift{from{transform:scale(1.14) rotate(4deg) translate(-1.5%,-1%)}to{transform:scale(1.2) rotate(-3deg) translate(1.5%,1.2%)}}
+/* Pellicola: una membrana lattiginosa e semitrasparente sopra il contenuto. Opacizza senza sfocare (niente backdrop-filter),
+   ha riflessi iridescenti che scorrono piano e un respiro elastico: il contenuto sta «sotto», non è rovinato. */
+.bl-seq-veil{position:absolute;inset:0;z-index:1;border-radius:50%;pointer-events:none;overflow:hidden;
+  background:
+    radial-gradient(110% 80% at 28% 18%,rgba(255,255,255,.62),rgba(255,255,255,0) 56%),
+    radial-gradient(90% 70% at 76% 86%,hsla(var(--h),90%,90%,.42),rgba(255,255,255,0) 62%),
+    rgba(255,255,255,.34);
+  box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6),inset 0 -20px 38px hsla(var(--h),90%,82%,.38),inset 0 16px 30px rgba(255,255,255,.42);
+  animation:bl-seq-veil-breath 7.5s ease-in-out infinite}
+.bl-seq-veil::before{content:"";position:absolute;inset:-25%;border-radius:50%;mix-blend-mode:soft-light;opacity:.8;
+  background:conic-gradient(from 0deg,hsla(var(--h),95%,84%,0),hsla(calc(var(--h) + 70),95%,84%,.5),hsla(calc(var(--h) + 150),95%,88%,0),hsla(calc(var(--h) + 230),95%,84%,.42),hsla(var(--h),95%,84%,0));
+  animation:bl-seq-veil-spin 20s linear infinite}
+.bl-seq-veil i{position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(112deg,rgba(255,255,255,0) 34%,rgba(255,255,255,.5) 50%,rgba(255,255,255,0) 66%);background-size:260% 100%;
+  animation:bl-seq-veil-sheen 6.5s ease-in-out infinite}
+@keyframes bl-seq-veil-breath{0%,100%{scale:1 1;border-radius:50%}33%{scale:1.012 .988;border-radius:49% 51% 52% 48% / 51% 48% 52% 49%}66%{scale:.99 1.01;border-radius:52% 48% 49% 51% / 48% 52% 49% 51%}}
+@keyframes bl-seq-veil-spin{to{rotate:360deg}}
+@keyframes bl-seq-veil-sheen{0%{background-position:130% 0}60%,100%{background-position:-30% 0}}
+/* al tocco la membrana si avvalla e poi rimbalza insieme alla bolla */
+.bl-seq-bubble .bl-seq-veil{transition:scale .5s var(--bl-spring,cubic-bezier(.34,1.56,.64,1))}
+.bl-seq-bubble.is-pressed .bl-seq-veil{animation:none;scale:1.05 .95;transition:scale .14s ease-out}
+.bl-seq-bubble.is-popping .bl-seq-veil{animation:none;opacity:0;scale:1.25;transition:scale .3s ease-out,opacity .28s ease-out}
 /* senza anteprima (testi, bolle vecchie): macchie di colore fluide, non un'icona */
 .bl-seq-blobs{position:absolute;inset:0;z-index:0;border-radius:50%;overflow:hidden;rotate:var(--r)}
 .bl-seq-blobs i{position:absolute;border-radius:50%;opacity:.85;animation:bl-seq-blob 9s ease-in-out infinite alternate}
@@ -664,7 +700,7 @@ const CSS = `
 .bl-seq-end button{max-width:100%}
 
 @media (prefers-reduced-motion:reduce){
-  .bl-seq-blobs i,.bl-seq-float,.bl-seq-ring,.bl-seq-bubble,.bl-seq-end-orb,.bl-seq-end,.bl-seq-slot--next{animation:none!important}
+  .bl-seq-blobs i,.bl-seq-img,.bl-seq-veil,.bl-seq-veil::before,.bl-seq-veil i,.bl-seq-float,.bl-seq-ring,.bl-seq-bubble,.bl-seq-end-orb,.bl-seq-end,.bl-seq-slot--next{animation:none!important}
   .bl-seq-bubble .bl-seq-face{transition:none}
 }
 `;
