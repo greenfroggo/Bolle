@@ -10,6 +10,13 @@ import SettingsView from "./features/settings/SettingsView.jsx";
 import LegalInfoView from "./features/settings/LegalInfoView.jsx";
 import PersonalDataView from "./features/settings/PersonalDataView.jsx";
 import MessagesView from "./features/chat/MessagesView.jsx";
+import Sheet from "./components/Sheet.jsx";
+import useEscape from "./hooks/useEscape.js";
+import WelcomeScreen from "./features/auth/WelcomeScreen.jsx";
+import TutorialSheet from "./features/auth/TutorialSheet.jsx";
+import InfoSheet from "./features/auth/InfoSheet.jsx";
+import LoginSheet from "./features/auth/LoginSheet.jsx";
+import RegistrationSheet from "./features/auth/RegistrationSheet.jsx";
 import {
   CHAT_MARK_SHARE,
   CHAT_MAX_BODY,
@@ -23,7 +30,7 @@ import {
 } from "./features/chat/chatUtils.js";
 import AvatarImage, { AVATAR_BUCKET } from "./components/AvatarImage.jsx";
 import UserLinkText, { openUserProfile } from "./components/UserLinkText.jsx";
-import { GoogleAccountBadge } from "./hooks/useGoogleAccount.js";
+import { GoogleAccountBadge } from "./hooks/useGoogleAccount.jsx";
 import { romeToday } from "./lib/geo.js";
 import { layoutConstellation } from "./lib/constellationLayout.js";
 import "./styles/bolle.css";
@@ -32,14 +39,13 @@ import { nearbyPairs } from "./lib/spatialPairs.js";
 import { applyMagneticAttraction } from "./lib/magneticForces.js";
 import { magneticPriority, applyDiscoveryDrift } from "./lib/discoveryMotion.js";
 import { neighborhoodMagnetism } from "./lib/localMagnetism.js";
-import { getCtx, warmAudio, soundOn, supabase, BUCKET, MAX_UPLOAD_MB, RADII, BOLLE_COUNTRIES, countryFlag, STARTER_COUNT, MINI_THRESHOLD, miniStyle, AVATARS, avatarFor, shareBubbleWhatsApp, bubbleShareUrl, REACTIONS, ReactionIcon, PALETTES, cleanCaption, captionPosition, SURPRISES, setSoundOn, playPop, playDust, ensureSession, setAuthSession, hash, bubbleLook, getPosition, positionErrorText, errorText, formatDistance, subscribeFrame, USER_CATEGORIES, categoryIcon, categoryLabel, getBubbleAgeStage, getBubbleRemainingHours, KLIPY_API_KEY, GIPHY_API_KEY } from "./lib/bolleCore.jsx";
+import { getCtx, warmAudio, soundOn, supabase, BUCKET, MAX_UPLOAD_MB, RADII, BOLLE_COUNTRIES, countryFlag, STARTER_COUNT, MINI_THRESHOLD, miniStyle, AVATARS, avatarFor, shareBubbleWhatsApp, bubbleShareUrl, REACTIONS, ReactionIcon, PALETTES, cleanCaption, captionPosition, SURPRISES, setSoundOn, playPop, playDust, ensureSession, setAuthSession, hash, bubbleLook, getPosition, positionErrorText, errorText, formatDistance, subscribeFrame, USER_CATEGORIES, categoryIcon, categoryLabel, getBubbleAgeStage, getBubbleRemainingHours, KLIPY_API_KEY, GIPHY_API_KEY, BOLLE_THEMES } from "./lib/bolleCore.jsx";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Trash2, CircleUserRound, Circle, ChartColumn, Gift, Trophy, Settings, Hand, Droplets, Plus, VenetianMask, Heart, Smile, Eye, Sparkles, Frown, CalendarDays, CalendarRange, LockKeyhole, Award, Rocket, HeartHandshake, Waves, Zap, Medal, TrendingUp, TrendingDown, Minus, Orbit, Sprout, Volume2, KeyRound, Users, UserPlus, Activity, Gauge, RefreshCw, ShieldCheck, Bell, Share2, Camera, MessageCircle, Send as SendIcon, X as CloseIcon, MoreHorizontal as MoreIcon, EyeOff, Archive, ArchiveRestore, Star as StarIcon, Link2 as LinkIcon, ChevronsUpDown as ScrollIcon } from "lucide-react";
 
 
 const BOLLE_THEME_DECOR = {"halloween": ["🦇", "🎃", "👻", "🕸️", "🧙\u200d♀️", "🕷️", "🌙", "💀"], "natale": ["🎄", "❄️", "🎁", "⭐", "🔔", "🦌", "🧣", "🍬"], "pasqua": ["🐣", "🥚", "🐰", "🌷", "🌼", "🦋", "🐇", "🌸"], "capodanno": ["🎆", "🎇", "✨", "🥂", "🎉", "⭐", "🎊", "🪩"], "estate": ["☀️", "🌴", "🍉", "🏖️", "🐚", "🌊", "🕶️", "🍍"], "primavera": ["🌸", "🌷", "🦋", "🌼", "🐝", "🌱", "🌺", "🍃"], "autunno": ["🍂", "🍁", "🌰", "🍄", "🦔", "🌾", "☕", "🍃"], "inverno": ["❄️", "☃️", "🌨️", "🧤", "⛸️", "🏔️", "🧣", "❄️"], "caldo": ["☀️", "🔥", "🌞", "🌵", "🍊", "🌅", "✨", "🌶️"], "freddo": ["🧊", "❄️", "💎", "🌬️", "🧣", "🌨️", "🧤", "🧊"], "orientale": ["🏮", "🌸", "🎋", "🪭", "⛩️", "🐉", "🍵", "🌙"], "universo": ["🪐", "🌟", "🌙", "☄️", "✨", "🚀", "🌌", "⭐"], "bolle": ["🫧", "🫧", "✨", "💧", "🫧", "💠", "🫧", "✨"], "natura": ["🌿", "🍀", "🌳", "🦋", "🌱", "🌻", "🍃", "🌼"]};
-const BOLLE_THEMES = [{"id": "halloween", "label": "🎃 Halloween"}, {"id": "natale", "label": "🎄 Natale"}, {"id": "pasqua", "label": "🐣 Pasqua"}, {"id": "capodanno", "label": "🎆 Capodanno"}, {"id": "estate", "label": "☀️ Estate"}, {"id": "primavera", "label": "🌷 Primavera"}, {"id": "autunno", "label": "🍂 Autunno"}, {"id": "inverno", "label": "❄️ Inverno"}, {"id": "caldo", "label": "🔥 Caldo"}, {"id": "freddo", "label": "🧊 Freddo"}, {"id": "orientale", "label": "🏮 Orientale"}, {"id": "universo", "label": "🌌 Universo"}, {"id": "bolle", "label": "🫧 Bolle"}, {"id": "natura", "label": "🌿 Natura"}];
 const NOTIFICATION_CATEGORIES = [
   { key: "reactions", label: "Mi piace e reazioni", kinds: ["reaction"] },
   { key: "messages", label: "Messaggi e inoltri", kinds: ["bubble_reply", "bubble_share", "group_added", "chat_message", "group_message"] },
@@ -2026,86 +2032,6 @@ function FpsProbe() {
   return <div className="bl-fps-probe" role="status">{s.fps} fps · min {s.min === Infinity ? "–" : s.min} · animate {s.live}</div>;
 }
 
-/* Benvenuto al primo accesso: il profilo esistente usa username anonimo e PIN. */
-function WelcomeScreen({ onExplore, onRegister, onLogin, onGoogle }) {
-  return <section className="bl-welcome" aria-label="Benvenuto in Bolle">
-    <div className="bl-welcome-glow" aria-hidden="true" />
-    <div className="bl-welcome-wordmark" aria-label="Bolle"><span>B</span><span className="bl-wordmark-bubble" aria-hidden="true" /><span>lle</span></div>
-    <div className="bl-welcome-copy"><span className="bl-welcome-eyebrow">UN UNIVERSO DI PICCOLE SORPRESE</span>
-      <p>Un piccolo pensiero può arrivare lontano.</p>
-      <small>Scopri storie, emozioni e sorprese lasciate da persone come te.</small></div>
-    <div className="bl-welcome-actions">
-      <button type="button" className="bl-welcome-primary" onClick={onExplore}>Esplora Bolle <span aria-hidden="true">→</span></button>
-      <button type="button" className="bl-welcome-secondary" onClick={onRegister}>Crea un account</button>
-      <button type="button" className="bl-google-button" onClick={onGoogle}>Continua con Google</button>
-      <button type="button" className="bl-welcome-link" onClick={onLogin}>Hai già un account? <strong>Accedi</strong></button>
-      <span className="bl-welcome-privacy">Puoi esplorare senza registrarti.</span>
-    </div>
-  </section>;
-}
-
-const TUTORIAL_STEPS = [
-  { icon: "🫧", title: "Benvenuto in Bolle", text: "Ogni bolla nasconde un momento, una storia o una sorpresa. Esplora liberamente e lasciati incuriosire." },
-  { icon: "👆", title: "Tocca e scopri", text: "Scegli una bolla per aprirla. Puoi trascinarla e chiuderla con un gesto. Hai un numero di scoppi disponibili ogni giorno." },
-  { icon: "✨", title: "Crea la tua bolla", text: "Con il pulsante + puoi condividere pensieri, immagini, GIF, domande e sondaggi. Pubblicare ti regala anche scoppi extra." },
-  { icon: "📍", title: "Segui il magnetismo", text: "Passa da Tutte a Vicino a me per scoprire bolle nei dintorni. Scegli la distanza: la tua posizione esatta non viene mostrata." },
-  { icon: "💬", title: "Partecipa alla conversazione", text: "Rispondi alle domande, vota nei sondaggi e lascia reazioni. Le notifiche ti aiutano a seguire le interazioni." },
-  { icon: "💜", title: "Trova la tua community", text: "Segui i tuoi autori preferiti e scopri le classifiche. Il tuo username resta anonimo. Puoi riaprire questa guida dalle Informazioni." },
-];
-function TutorialSheet({ onClose }) {
-  const [step, setStep] = useState(0);
-  const touchStart = useRef(null);
-  const current = TUTORIAL_STEPS[step];
-  function onTouchStart(e) { touchStart.current = { x: e.touches[0]?.clientX, y: e.touches[0]?.clientY }; }
-  function onTouchEnd(e) {
-    if (!touchStart.current) return;
-    const dx = (e.changedTouches[0]?.clientX ?? touchStart.current.x) - touchStart.current.x;
-    const dy = (e.changedTouches[0]?.clientY ?? touchStart.current.y) - touchStart.current.y;
-    touchStart.current = null;
-    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
-    setStep(n => Math.max(0, Math.min(TUTORIAL_STEPS.length - 1, n + (dx < 0 ? 1 : -1))));
-  }
-  useEscape(onClose);
-  return <Sheet label="Tutorial Bolle" title="Scopri Bolle" subtitle="Il tuo universo, in sei piccoli passi." onClose={onClose}>
-    <div className="bl-tutorial" aria-live="polite" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      <div className="bl-tutorial-art" aria-hidden="true"><span>{current.icon}</span><i /><i /><i /></div>
-      <span className="bl-tutorial-count">PASSO {step + 1} DI {TUTORIAL_STEPS.length}</span>
-      <h3>{current.title}</h3><p>{current.text}</p>
-      <div className="bl-tutorial-dots" role="group" aria-label="Passaggi del tutorial">{TUTORIAL_STEPS.map((_, i) => <button type="button" key={i} className={i === step ? "active" : ""} aria-label={`Vai al passo ${i + 1}`} aria-current={i === step ? "step" : undefined} onClick={() => setStep(i)} />)}</div>
-      <div className="bl-tutorial-actions">
-        {step > 0 ? <button type="button" className="bl-tutorial-back" onClick={() => setStep(s => s - 1)}>‹ Indietro</button> : <button type="button" className="bl-tutorial-back" onClick={onClose}>Salta</button>}
-        {step === TUTORIAL_STEPS.length - 1 ? <button type="button" className="bl-cta" onClick={onClose}>Inizia a esplorare 🫧</button> : <span className="bl-tutorial-swipe-hint">Scorri per continuare →</span>}
-      </div>
-    </div>
-  </Sheet>;
-}
-
-/* ====================== Finestra "Come funziona" ====================== */
-function InfoSheet({ me, onClose, onTutorial }) {
-  useEscape(onClose);
-  const daily = me?.daily_limit ?? "–", bonus = me?.bonus_per_post ?? 2;
-  const rows = [
-    [<Hand />, "Tocca per scoppiare", "Scegli una bolla e toccala per scoprire cosa nasconde. Puoi anche trascinarla."],
-    [<Orbit />, "Magnetismo delle Bolle", "Le bolle si muovono e si attraggono come piccoli corpi magnetici. Attiva «Vicino a me» per esplorare quelle pubblicate nei tuoi dintorni: più bolle ci sono nella zona, più incontri e sorprese puoi scoprire. La posizione esatta non viene mostrata agli altri."],
-    [<Circle />, `${daily} scoppi al giorno`, "Ogni giorno hai a disposizione un numero di bolle da aprire. Una bolla scoppiata non si riapre."],
-    [<Plus />, `Pubblica e ottieni +${bonus}`, `Quando finiscono, crea una tua bolla: ogni pubblicazione ti regala ${bonus} scoppi extra.`],
-    [<VenetianMask />, "Tutto anonimo", "Gli altri vedono solo il tuo username generato automaticamente, mai i tuoi dati."],
-    [<Trophy />, "Classifiche", "Più aperture ricevono le tue bolle, più sali in classifica. Le trovi nella home."],
-    [<span>💜</span>, "Reazioni Segrete", "Puoi reagire alle bolle con un'emozione. L'autore riceve una notifica senza conoscere l'identità di chi ha reagito."],
-    [<span>📍</span>, "Vicino a me", "Scegli una distanza per scoprire le bolle disponibili nei dintorni. La posizione non è mostrata agli altri."],
-    [<span>🌟</span>, "Bolle rare", "Circa una bolla su venti è rara: la riconosci dal bordo dorato e dall'etichetta RARA. La rarità è assegnata dal sistema in modo casuale, in base all'identificativo della bolla: non si può scegliere né comprare. Se la scoppi ricevi scoppi bonus extra (di norma 3), che si sommano a quelli del giorno."],
-    [<span>🎨</span>, "Il colore dice cosa c'è dentro", "Il bordo della bolla cambia colore in base al contenuto: azzurro foto e video, verde acqua GIF, ambra sondaggi, rosa domande, giallo meme, celeste pensieri, viola confessioni, turchese «2 verità e 1 bugia», arancio voti. Le capsule del tempo restano un mistero finché il timer non arriva a zero."],
-    [<span>🎭</span>, "Tanti tipi di bolla", "Oltre a foto e video puoi pubblicare GIF e meme, pensieri, confessioni, sondaggi (anche tra due foto), domande, «2 verità e 1 bugia» e bolle da votare. Con la capsula del tempo scegli quando si apre la tua bolla."],
-  ];
-  return (
-    <Sheet label="Come funziona BOLLE" onClose={onClose} title="Come funziona" subtitle="Piccoli momenti, grandi sorprese.">
-      <button type="button" className="bl-tutorial-entry" onClick={onTutorial}><span aria-hidden="true">📖</span><span><strong>Scopri Bolle · Tutorial</strong><small>Una guida interattiva per iniziare, passo dopo passo</small></span><span aria-hidden="true">›</span></button>
-      <ul className="bl-how">{rows.map(([i, t, d]) => <li key={t}><span aria-hidden="true">{i}</span><div><strong>{t}</strong><p>{d}</p></div></li>)}</ul>
-      <button className="bl-cta" onClick={onClose}>Ho capito</button>
-    </Sheet>
-  );
-}
-
 /* ====================== Profilo (hub) ====================== */
 const VIEW_TITLES = { bubbles: "Le mie bolle", stats: "Le mie statistiche", gift: "Regala una bolla", leaderboard: "Classifiche", settings: "Impostazioni", personal: "Dati personali", admirers: "Chi mi ha aggiunto ai preferiti", avatar: "Scegli il tuo avatar", notifications: "Notifiche", messages: "Messaggi", legal: "Privacy, termini e filosofia" };
 
@@ -2822,53 +2748,6 @@ function GiftView({ entries, onCreate, onNotify }) {
 
 /* ====================== Gestione Gruppi e Chat ====================== */
 const CHAT_GROUP_PREFIX = "[[bolla:group|";
-function LoginSheet({ onClose, onLogin, onGoogle }) {
-  const [name, setName] = useState(""); const [pin, setPin] = useState("");
-  const [busy, setBusy] = useState(false); const [error, setError] = useState("");
-  async function submit(e) {
-    e.preventDefault(); setError("");
-    const username = name.trim().toLowerCase();
-    if (!/^[a-z0-9_]{3,20}$/.test(username) || !/^\d{4}$/.test(pin)) { setError("Inserisci uno username valido e un PIN di quattro cifre."); return; }
-    setBusy(true);
-    try { await onLogin(username, pin); setPin(""); }
-    catch (err) { setError(err?.message || "Accesso non riuscito."); }
-    finally { setBusy(false); }
-  }
-  return <Sheet label="Accedi a BOLLE" onClose={onClose} title="Accedi a BOLLE" subtitle="Ritrova le tue bolle da qualsiasi dispositivo." z={10000}>
-    <form className="bl-account-form" onSubmit={submit}>
-      <label className="bl-field-label">Username<input type="text" autoComplete="username" minLength={3} maxLength={20} value={name} onChange={(e) => setName(e.target.value.toLowerCase())} placeholder="es. bubblefox27" required /></label>
-      <label className="bl-field-label">PIN di 4 cifre<input type="password" inputMode="numeric" autoComplete="current-password" pattern="[0-9]{4}" maxLength={4} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} required /></label>
-      {error && <p className="bl-error" role="alert">{error}</p>}
-      <button className="bl-cta" type="submit" disabled={busy}>{busy ? "Accesso in corso…" : "Accedi"}</button>
-      <p className="bl-muted">Hai dimenticato il PIN? Non è previsto un recupero automatico.</p>
-      <button type="button" className="bl-google-button" onClick={onGoogle}>Continua con Google</button>
-    </form>
-  </Sheet>;
-}
-
-/* ====================== Componenti base ====================== */
-function useEscape(fn) {
-  useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && fn();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [fn]);
-}
-
-function Sheet({ label, title, subtitle, onClose, onBack, wide, z, className = "", headerRight, children }) {
-  return <div className="bl-sheet-wrap" style={z ? { zIndex: z } : undefined} onClick={(e) => e.target === e.currentTarget && onClose()}>
-    <div className={`bl-sheet ${wide ? "bl-sheet-wide" : ""} ${className}`} role="dialog" aria-modal="true" aria-label={label}>
-      <div className="bl-sheet-heading">
-        {onBack && <button className="bl-sheet-x" onClick={onBack} aria-label="Indietro">‹</button>}
-        <div className="bl-sheet-heading-main">{typeof title === "string" ? <h2>{title}</h2> : title}{subtitle && <p>{subtitle}</p>}</div>
-        {headerRight}
-        <button className="bl-sheet-x" onClick={onClose} aria-label="Chiudi">×</button>
-      </div>
-      {children}
-    </div>
-  </div>;
-}
-
 // Sfondo fisico indipendente dalle bolle cliccabili e dal limite Admin.
 function ChaoticBubbleBackground() {
   const canvasRef = useRef(null);
@@ -5062,275 +4941,4 @@ function birthDateProblem(iso) {
   if (age < MIN_AGE) return `Devi avere almeno ${MIN_AGE} anni.`;
   if (age > 120) return "Controlla la data di nascita.";
   return "";
-}
-function usePickerDismiss(open, setOpen, ref) {
-  useEffect(() => {
-    if (!open) return undefined;
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    const esc = (e) => { if (e.key === "Escape") setOpen(false); };
-    document.addEventListener("pointerdown", close);
-    document.addEventListener("keydown", esc);
-    return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", esc); };
-  }, [open, setOpen, ref]);
-}
-/* Menù a tendina scorrevole con barra di ricerca. */
-function SearchableSelect({ label, value, onChange, options, placeholder = "Seleziona…", searchPlaceholder = "Cerca…", error }) {
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState("");
-  const rootRef = useRef(null);
-  usePickerDismiss(open, setOpen, rootRef);
-  const filtered = options.filter(o => normalizeSearch(o.label).includes(normalizeSearch(q)));
-  const known = options.some(o => o.value === value);
-  return <div className="bl-field-label bl-picker" ref={rootRef}>{label}
-    <button type="button" className="bl-picker-button" aria-haspopup="listbox" aria-expanded={open} onClick={() => { setOpen(o => !o); setQ(""); }}><span className={value ? "" : "placeholder"}>{value || placeholder}</span><i aria-hidden="true">▾</i></button>
-    {open && <div className="bl-picker-panel">
-      <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={searchPlaceholder} aria-label={searchPlaceholder} autoComplete="off" />
-      <ul role="listbox" aria-label={label}>
-        {value && !known && <li><button type="button" role="option" aria-selected="true" className="on" onClick={() => setOpen(false)}>{value} (attuale)</button></li>}
-        {filtered.map(o => <li key={o.value}><button type="button" role="option" aria-selected={o.value === value} className={o.value === value ? "on" : ""} onClick={() => { onChange(o.value); setOpen(false); }}>{o.label}</button></li>)}
-        {!filtered.length && <li className="bl-picker-empty">Nessun risultato</li>}
-      </ul>
-    </div>}
-    {error && <small className="bl-err" role="alert">{error}</small>}
-  </div>;
-}
-function NationalityPicker({ value, onChange, error }) {
-  const options = useMemo(() => countryList().map(c => ({ value: c.name, label: `${countryFlag(c.code) || ""} ${c.name}`.trim() })), []);
-  return <SearchableSelect label="Nazionalità" value={value} onChange={onChange} options={options.map(o => ({ ...o, label: o.label }))} placeholder="Seleziona la nazionalità" searchPlaceholder="Cerca un paese…" error={error} />;
-}
-/* Città: suggerimenti dal servizio di geocodifica Open-Meteo (gratuito, senza chiave), da scegliere dall'elenco. */
-function CityPicker({ value, onChange, error }) {
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState("");
-  const [results, setResults] = useState([]);
-  const [status, setStatus] = useState("idle"); // idle | loading | error
-  const rootRef = useRef(null);
-  usePickerDismiss(open, setOpen, rootRef);
-  useEffect(() => {
-    if (!open) return undefined;
-    const term = q.trim();
-    if (term.length < 2) { setResults([]); setStatus("idle"); return undefined; }
-    let alive = true;
-    const ctrl = new AbortController();
-    setStatus("loading");
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(term)}&count=20&language=it&format=json`, { signal: ctrl.signal });
-        if (!res.ok) throw new Error("http");
-        const json = await res.json();
-        if (!alive) return;
-        const seen = new Set();
-        const list = (json.results || []).filter(r => !r.feature_code || r.feature_code.startsWith("PPL")).map(r => ({ value: r.name, label: [r.name, r.admin1, r.country].filter(Boolean).join(", ") })).filter(o => { if (seen.has(o.label)) return false; seen.add(o.label); return true; });
-        setResults(list); setStatus("idle");
-      } catch (err) { if (alive && err?.name !== "AbortError") setStatus("error"); }
-    }, 300);
-    return () => { alive = false; clearTimeout(timer); ctrl.abort(); };
-  }, [q, open]);
-  return <div className="bl-field-label bl-picker" ref={rootRef}>Città di residenza
-    <button type="button" className="bl-picker-button" aria-haspopup="listbox" aria-expanded={open} onClick={() => { setOpen(o => !o); setQ(""); setResults([]); }}><span className={value ? "" : "placeholder"}>{value || "Cerca e seleziona la città"}</span><i aria-hidden="true">▾</i></button>
-    {open && <div className="bl-picker-panel">
-      <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Scrivi il nome della città…" aria-label="Cerca una città" autoComplete="off" />
-      <ul role="listbox" aria-label="Città">
-        {value && !q && <li><button type="button" role="option" aria-selected="true" className="on" onClick={() => setOpen(false)}>{value} (attuale)</button></li>}
-        {results.map(o => <li key={o.label}><button type="button" role="option" aria-selected={o.value === value} onClick={() => { onChange(o.value); setOpen(false); }}>{o.label}</button></li>)}
-        {status === "loading" && <li className="bl-picker-empty">Cerco…</li>}
-        {status === "idle" && q.trim().length >= 2 && !results.length && <li className="bl-picker-empty">Nessuna città trovata</li>}
-        {status === "idle" && q.trim().length < 2 && !value && <li className="bl-picker-empty">Scrivi almeno 2 lettere</li>}
-        {status === "error" && <><li className="bl-picker-empty">Ricerca non disponibile al momento.</li>{q.trim().length >= 2 && <li><button type="button" onClick={() => { onChange(q.trim()); setOpen(false); }}>Usa «{q.trim()}»</button></li>}</>}
-      </ul>
-    </div>}
-    {error && <small className="bl-err" role="alert">{error}</small>}
-  </div>;
-}
-/* Data di nascita: tre menù a scorrimento, formato gg/mm/aaaa. Il valore è ISO (aaaa-mm-gg). */
-function BirthDatePicker({ label = "Data di nascita (gg/mm/aaaa)", value, onChange, error }) {
-  const parse = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v || "") ? v.split("-").map(Number) : [0, 0, 0];
-  const [parts, setParts] = useState(() => { const [y, m, d] = parse(value); return { y, m, d }; });
-  useEffect(() => {
-    const [y, m, d] = parse(value);
-    if (y) setParts(prev => (prev.y === y && prev.m === m && prev.d === d ? prev : { y, m, d }));
-  }, [value]);
-  const thisYear = new Date().getFullYear();
-  const years = Array.from({ length: 111 - MIN_AGE }, (_, i) => thisYear - MIN_AGE - i);
-  const daysIn = (y, m) => (m ? new Date(y || 2000, m, 0).getDate() : 31);
-  function update(patch) {
-    const next = { ...parts, ...patch };
-    const max = daysIn(next.y, next.m);
-    if (next.d > max) next.d = max;
-    setParts(next);
-    onChange(next.y && next.m && next.d ? `${next.y}-${String(next.m).padStart(2, "0")}-${String(next.d).padStart(2, "0")}` : "");
-  }
-  return <div className="bl-field-label bl-birth-field">{label}
-    <div className="bl-birth" role="group" aria-label={label}>
-      <select aria-label="Giorno" value={parts.d || ""} onChange={e => update({ d: Number(e.target.value) })}><option value="">gg</option>{Array.from({ length: daysIn(parts.y, parts.m) }, (_, i) => <option key={i + 1} value={i + 1}>{String(i + 1).padStart(2, "0")}</option>)}</select>
-      <select aria-label="Mese" value={parts.m || ""} onChange={e => update({ m: Number(e.target.value) })}><option value="">mm</option>{MONTHS_IT.map((name, i) => <option key={name} value={i + 1}>{String(i + 1).padStart(2, "0")} · {name}</option>)}</select>
-      <select aria-label="Anno" value={parts.y || ""} onChange={e => update({ y: Number(e.target.value) })}><option value="">aaaa</option>{years.map(y => <option key={y} value={y}>{y}</option>)}</select>
-    </div>
-    {error && <small className="bl-err" role="alert">{error}</small>}
-  </div>;
-}
-
-const NAME_RE = /^[\p{L}][\p{L}\p{M}'’ .-]{1,59}$/u;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const PHONE_RE = /^\+?[0-9]{7,15}$/;
-const normalizePhone = (s) => String(s || "").replace(/[\s().-]/g, "");
-
-function validateProfile(f) {
-  const e = {};
-  if (!NAME_RE.test(f.firstName.trim())) e.firstName = "Inserisci il tuo nome (almeno 2 lettere).";
-  if (!NAME_RE.test(f.lastName.trim())) e.lastName = "Inserisci il tuo cognome (almeno 2 lettere).";
-  const email = f.email.trim();
-  if (email.length > 254 || !EMAIL_RE.test(email)) e.email = "Inserisci un indirizzo email valido.";
-  if (!PHONE_RE.test(normalizePhone(f.phone))) e.phone = "Inserisci un numero valido, es. +39 333 1234567.";
-  if (!SEX_OPTIONS.some(([k]) => k === f.sex)) e.sex = "Seleziona un’opzione.";
-  const birthProblem = birthDateProblem(f.birthDate);
-  if (birthProblem) e.birthDate = birthProblem;
-  if (!f.nationality?.trim() || f.nationality.trim().length > 100) e.nationality = "Seleziona la tua nazionalità.";
-  if (!f.city?.trim() || f.city.trim().length > 150) e.city = "Cerca e seleziona la tua città di residenza.";
-  if (!f.consent) e.consent = "Il consenso è necessario per registrarti.";
-  return e;
-}
-function pinProblem(pin, pin2) {
-  if (!/^\d{4}$/.test(pin)) return "Il PIN deve contenere esattamente 4 cifre.";
-  if (/^(\d)\1{3}$/.test(pin) || "0123456789".includes(pin) || "9876543210".includes(pin)) return "PIN troppo semplice: evita cifre ripetute o sequenze (es. 1111, 1234).";
-  if (pin !== pin2) return "I due PIN non coincidono.";
-  return "";
-}
-const ERROR_MAP = [
-  ["email_taken", "Questa email è già registrata. Prova ad accedere."],
-  ["invalid_email", "L’indirizzo email non è valido."],
-  ["invalid_phone", "Il numero di telefono non è valido."],
-  ["invalid_age", `Devi avere almeno ${MIN_AGE} anni per registrarti.`],
-  ["invalid_sex", "Seleziona un’opzione per il sesso."],
-  ["invalid_first_name", "Il nome non è valido."],
-  ["invalid_last_name", "Il cognome non è valido."],
-  ["consent_required", "Serve il consenso al trattamento dei dati."],
-  ["admin_locked", "Troppi tentativi. Riprova tra qualche minuto."],
-  ["forbidden", "Accesso non autorizzato."],
-];
-function friendlyError(err) {
-  const m = String(err?.message || err || "");
-  const hit = ERROR_MAP.find(([k]) => m.includes(k));
-  if (hit) return hit[1];
-  if (m.startsWith("Profilo creato")) return m;
-  return "Qualcosa non ha funzionato. Riprova.";
-}
-
-/* Copia fedele del componente Sheet di App.jsx (stesse classi CSS) */
-function ExSheet({ label, title, subtitle, onClose, onBack, children }) {
-  return <div className="bl-sheet-wrap" style={{ zIndex: 24 }} onClick={(e) => e.target === e.currentTarget && onClose()}>
-    <div className="bl-sheet" role="dialog" aria-modal="true" aria-label={label}>
-      <div className="bl-sheet-heading">
-        {onBack && <button className="bl-sheet-x" onClick={onBack} aria-label="Indietro">‹</button>}
-        <div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div>
-        <button className="bl-sheet-x" onClick={onClose} aria-label="Chiudi">×</button>
-      </div>
-      {children}
-    </div>
-  </div>;
-}
-
-/* ====================== Permessi ospite ====================== */
-function GuestPermissions() {
-  return <div className="bl-perms">
-    <div><strong>Da ospite puoi</strong><ul><li>Esplorare il campo di bolle</li><li>Scoppiare le bolle-sorpresa</li><li>Vedere le bolle degli altri (senza aprirle)</li></ul></div>
-    <div><strong>Con un account puoi</strong><ul><li>Scoppiare le bolle degli utenti</li><li>Pubblicare, reagire e segnalare</li><li>Regalare bolle, statistiche e classifiche</li></ul></div>
-  </div>;
-}
-
-/* ====================== Registrazione completa ====================== */
-function RegistrationSheet({ mode = "full", username, initialEmail = "", onClose, onSubmit, onOpenLogin }) {
-  const dataOnly = mode === "data" || mode === "google";
-  const [step, setStep] = useState(1);
-  const [f, setF] = useState({ firstName: "", lastName: "", email: initialEmail, phone: "", sex: "", birthDate: "", nationality: "", city: "", category: "utente", consent: false });
-  const [pin, setPin] = useState(""); const [pin2, setPin2] = useState("");
-  const [errors, setErrors] = useState({}); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
-  const set = (k, v) => { setF((o) => ({ ...o, [k]: v })); setErrors((o) => ({ ...o, [k]: undefined })); };
-  const payload = () => ({ firstName: f.firstName.trim(), lastName: f.lastName.trim(), email: f.email.trim().toLowerCase(), phone: normalizePhone(f.phone), sex: f.sex, age: ageFromBirthDate(f.birthDate), birthDate: f.birthDate, nationality: f.nationality.trim(), city: f.city.trim(), category: f.category || "utente", consent: f.consent });
-
-  async function submitData(e) {
-    e.preventDefault(); setError("");
-    const errs = validateProfile(f); setErrors(errs);
-    if (Object.keys(errs).length) return;
-    if (!dataOnly) { track("register_step", { step: 2 }); setStep(2); return; }
-    setBusy(true);
-    try { await onSubmit(payload(), null); } catch (err) { setError(friendlyError(err)); setBusy(false); }
-  }
-  async function submitPin(e) {
-    e.preventDefault(); setError("");
-    const p = pinProblem(pin, pin2); if (p) return setError(p);
-    setBusy(true);
-    try { await onSubmit(payload(), pin); } catch (err) { setError(friendlyError(err)); setBusy(false); }
-  }
-  const input = (k, label, props) => <label className="bl-field-label">{label}
-    <input value={f[k]} onChange={(e) => set(k, e.target.value)} aria-invalid={Boolean(errors[k])} {...props} />
-    {errors[k] && <small className="bl-err" role="alert">{errors[k]}</small>}
-  </label>;
-
-  const title = dataOnly ? "Completa il tuo profilo" : step === 1 ? "Crea il tuo account" : "Crea il tuo PIN";
-  const subtitle = mode === "google" ? "Accesso Google attivo · completa i dati e accetta l’informativa. Non serve un PIN." : dataOnly ? "Per continuare ci servono ancora alcuni dati." : step === 1 ? "Passo 1 di 2 · I tuoi dati" : "Passo 2 di 2 · Il PIN di 4 cifre ti serve per accedere.";
-  return <ExSheet label="Registrazione" title={title} subtitle={subtitle} onClose={() => !busy && onClose()} onBack={step === 2 && !busy ? () => setStep(1) : null}>
-    {!dataOnly && <div className="bl-steps" aria-hidden="true"><i className="on" /><i className={step === 2 ? "on" : ""} /></div>}
-    {step === 1 && <form className="bl-account-form" noValidate onSubmit={submitData}>
-      <div className="bl-two">
-        {input("firstName", "Nome", { type: "text", autoComplete: "given-name", maxLength: 60 })}
-        {input("lastName", "Cognome", { type: "text", autoComplete: "family-name", maxLength: 60 })}
-      </div>
-      {input("email", "Email", { type: "email", autoComplete: "email", inputMode: "email", maxLength: 254, placeholder: "nome@esempio.it" })}
-      {input("phone", "Numero di telefono", { type: "tel", autoComplete: "tel", inputMode: "tel", maxLength: 20, placeholder: "+39 333 1234567" })}
-      <div className="bl-field-label">Sesso
-        <div className="bl-chips" role="group" aria-label="Sesso">{SEX_OPTIONS.map(([k, l]) => <button type="button" key={k} className={f.sex === k ? "on" : ""} aria-pressed={f.sex === k} onClick={() => set("sex", k)}>{l}</button>)}</div>
-        {errors.sex && <small className="bl-err" role="alert">{errors.sex}</small>}
-      </div>
-      <BirthDatePicker value={f.birthDate} onChange={(v) => set("birthDate", v)} error={errors.birthDate} />
-      <NationalityPicker value={f.nationality} onChange={(v) => set("nationality", v)} error={errors.nationality} />
-      <CityPicker value={f.city} onChange={(v) => set("city", v)} error={errors.city} />
-      <div className="bl-field-label">Tipo di profilo / Categoria
-        <select 
-          value={f.category || "utente"} 
-          onChange={(e) => set("category", e.target.value)}
-          style={{ width: "100%", padding: "11px", borderRadius: 12, background: "#29243d", color: "#fff", border: "1px solid #8e80af", marginTop: 4, fontSize: 15 }}
-        >
-          {USER_CATEGORIES.map(c => (
-            <option key={c.id} value={c.id}>{c.icon} {c.label}</option>
-          ))}
-        </select>
-        <small className="bl-muted" style={{ display: "block", marginTop: 4 }}>Questa icona indicherà la tua categoria sulle bolle nel feed.</small>
-      </div>
-      <details className="bl-privacy"><summary>Come proteggiamo i tuoi dati</summary><ul>
-        <li><strong>Titolare:</strong> {PRIVACY_CONTROLLER} · {PRIVACY_EMAIL}</li>
-        <li><strong>Dati raccolti:</strong> nome, cognome, email, telefono, sesso, data di nascita, nazionalità e città di residenza. Se scegli l’accesso con PIN, viene conservato solo come hash cifrato, mai in chiaro.</li>
-        <li><strong>Finalità e base giuridica:</strong> creare e gestire il tuo account, sicurezza e statistiche aggregate (art. 6.1 a-b GDPR).</li>
-        <li><strong>Visibilità:</strong> gli altri utenti vedono solo il tuo username anonimo. I tuoi dati non sono venduti né pubblicati; vi accede solo l’amministratore del servizio, con accessi registrati.</li>
-        <li><strong>Conservazione:</strong> finché l’account è attivo; vengono eliminati con l’account.</li>
-        <li><strong>Diritti:</strong> accesso, rettifica, portabilità e cancellazione, direttamente da Profilo → Impostazioni o scrivendo al titolare.</li>
-      </ul></details>
-      <label className="bl-check"><input type="checkbox" checked={f.consent} onChange={(e) => set("consent", e.target.checked)} /><span><strong>Informativa e consenso</strong><small>Ho letto l’informativa, acconsento al trattamento dei miei dati personali e dichiaro di avere almeno {MIN_AGE} anni.</small></span></label>
-      {errors.consent && <small className="bl-err" role="alert">{errors.consent}</small>}
-      {error && <p className="bl-error" role="alert">{error}</p>}
-      <button type="submit" className="bl-cta" disabled={busy}>{dataOnly ? (busy ? "Salvataggio…" : "Completa la registrazione") : "Continua"}</button>
-      {!dataOnly && onOpenLogin && <button type="button" className="bl-link" onClick={onOpenLogin}>Hai già un account? Accedi</button>}
-    </form>}
-    {step === 2 && <form className="bl-account-form" onSubmit={submitPin}>
-      <div className="bl-account-ready" role="status"><strong>Il tuo username: @{username || "in preparazione"}</strong><p>Conserva questo username: ti servirà insieme al PIN di 4 cifre per accedere a Bolle in futuro, anche da un altro dispositivo.</p></div>
-      <label className="bl-field-label">PIN di 4 cifre<input type="password" inputMode="numeric" autoComplete="new-password" maxLength={4} value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="••••" /></label>
-      <label className="bl-field-label">Ripeti il PIN<input type="password" inputMode="numeric" autoComplete="new-password" maxLength={4} value={pin2} onChange={(e) => setPin2(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="••••" /></label>
-      {error && <p className="bl-error" role="alert">{error}</p>}
-      <button type="submit" className="bl-cta" disabled={busy}>{busy ? "Registrazione…" : "Completa la registrazione"}</button>
-      <p className="bl-muted">Con username e PIN ritrovi le tue bolle da qualsiasi dispositivo. Il PIN non si può recuperare: conservalo con cura.</p>
-    </form>}
-  </ExSheet>;
-}
-
-/* ====================== Privacy: esporta ed elimina i dati ====================== */
-function PrivacySection({ onExport, onDelete }) {
-  const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [confirm, setConfirm] = useState("");
-  async function run(fn) { setBusy(true); setError(""); try { await fn(); } catch (e) { setError(friendlyError(e)); } finally { setBusy(false); } }
-  return <section className="bl-insights-section"><div className="bl-insights-heading"><h3><ShieldCheck size={21} aria-hidden="true" /> Privacy e dati personali</h3></div>
-    <p className="bl-muted">Puoi scaricare una copia dei tuoi dati o eliminare definitivamente il tuo account e tutti i contenuti collegati.</p>
-    <div className="bl-row"><button className="bl-ghost" disabled={busy} onClick={() => run(onExport)}>Scarica i miei dati</button></div>
-    <label className="bl-field-label">Per eliminare l’account scrivi ELIMINA<input type="text" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" placeholder="ELIMINA" /></label>
-    <button className="bl-ghost bl-danger" disabled={busy || confirm.trim() !== "ELIMINA"} onClick={() => run(onDelete)}>Elimina il mio account</button>
-    {error && <p className="bl-error" role="alert">{error}</p>}
-  </section>;
 }

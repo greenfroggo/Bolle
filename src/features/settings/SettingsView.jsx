@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { VenetianMask, Bell, Volume2 } from "lucide-react";
 import { soundOn, setSoundOn, playPop, BOLLE_THEMES } from "../../lib/bolleCore.jsx";
-import { useGoogleAccount, GoogleAccountBadge } from "../../hooks/useGoogleAccount.js";
+import { useGoogleAccount, GoogleAccountBadge } from "../../hooks/useGoogleAccount.jsx";
 import { ecoForced, applyEco } from "../../lib/ecoMode.js";
 import { NOTIFICATION_CATEGORIES } from "../notifications/notificationTypes.js";
 import DeleteAccountSection from "./DeleteAccountSection.jsx";
