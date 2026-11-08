@@ -10,6 +10,7 @@ import useEscape from "../../hooks/useEscape.js";
 import AvatarImage from "../../components/AvatarImage.jsx";
 import { openUserProfile } from "../../components/UserLinkText.jsx";
 import { seqApi } from "../../lib/seqApi.js";
+import { reactionsFor } from "../../lib/bubbleTypes.js";
 import { formatCountdown, useCapsuleRemaining } from "../../lib/capsule.js";
 import { KlipyPicker } from "../../components/KlipyPicker.jsx";
 import { GifAnswer } from "../../components/GifAnswer.jsx";
@@ -24,11 +25,6 @@ function CapsuleCountdown({ opensAt, username }) {
     {ms > 0 ? <strong>{formatCountdown(ms)}</strong> : <strong className="open">Si è aperta!</strong>}
     <small>{ms > 0 ? "ore : minuti : secondi" : "Chiudi e scoppiala dal feed"}</small>
   </div>;
-}
-
-function reactionsFor(kind) {
-  const skin = REACTION_SKINS[kind];
-  return skin ? REACTIONS.map(r => ({ ...r, emoji: skin[r.key][0], label: skin[r.key][1] })) : REACTIONS;
 }
 
 function runSpring({ from, to = 0, v0 = 0, k = 170, c = 15, onFrame, onDone }) {
@@ -47,11 +43,6 @@ function runSpring({ from, to = 0, v0 = 0, k = 170, c = 15, onFrame, onDone }) {
   id = requestAnimationFrame(step);
   return () => { stopped = true; cancelAnimationFrame(id); };
 }
-
-const REACTION_SKINS = {
-  confession: { love: ["🤗", "Ti abbraccio"], laugh: ["😅", "Capita"], wow: ["😮", "Wow"], warm: ["🙋", "Anche io"], sad: ["🥺", "Coraggio"] },
-  meme: { love: ["😍", "Adoro"], laugh: ["🤣", "Ahah"], wow: ["💀", "Morto"], warm: ["🔥", "Top"], sad: ["🙄", "Cringe"] },
-};
 
 export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact, reactionBusy, isFavorite, onToggleFavorite, onShare, onDiscoveryInteraction, onBlockUser, onMessage, onContinueChain, onSendReply, onShareToUser, favoriteList, scrollMode = false, scrollDir = "up", onToggleScroll = null, onScrollNav = null }) {
   // Bolle pubblicate prima della migrazione: l'autore, riaprendole, completa l'anteprima sfocata (una sola volta).
