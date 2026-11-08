@@ -65,6 +65,16 @@ export function bolleCountryFromNationality(value) {
 
 export const MONTHS_IT = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
 
+export function romeToday() {
+  const s = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Rome", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+export function isoDay(dt) {
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}-${String(dt.getUTCDate()).padStart(2, "0")}`;
+}
+
 export function ageFromBirthDate(iso) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || "")) return null;
   const [y, m, d] = iso.split("-").map(Number);
