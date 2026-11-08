@@ -17,6 +17,7 @@ import TutorialSheet from "./features/auth/TutorialSheet.jsx";
 import InfoSheet from "./features/auth/InfoSheet.jsx";
 import LoginSheet from "./features/auth/LoginSheet.jsx";
 import RegistrationSheet from "./features/auth/RegistrationSheet.jsx";
+import GuestPermissions from "./features/auth/GuestPermissions.jsx";
 import {
   CHAT_MARK_SHARE,
   CHAT_MAX_BODY,
