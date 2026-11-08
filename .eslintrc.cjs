@@ -7,6 +7,7 @@ module.exports = {
   rules: {
     'no-undef': 'error',
     'no-unused-vars': 'off',
+    'no-empty': ['error', { allowEmptyCatch: true }],
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'off'
   }
