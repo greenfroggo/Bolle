@@ -1,0 +1,9 @@
+zip -r Bolle_Progetto_Completo.zip . \
+-x "node_modules/*" \
+   "dist/*" \
+   "build/*" \
+   ".git/*" \
+   ".env" \
+   ".env.*" \
+   "*.log" \
+   ".DS_Store"

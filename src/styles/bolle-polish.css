@@ -1,0 +1,1131 @@
+/* =====================================================================
+   bolle-polish.css — rifinitura di feed e profilo
+   Da importare DOPO bolle.css:  import "./styles/bolle-polish.css";
+
+   Principi
+   • Nessuna risorsa nuova: niente font, immagini o richieste di rete.
+   • Nessun backdrop-filter aggiunto (più leggero, coerente con la modalità eco).
+   • I colori derivano da currentColor e dalle variabili --cosmos-*:
+     seguono da soli scuro, chiaro, automatico e temi speciali.
+   • Feed: tocco sulla bolla = scoppia, scorrimento da qualsiasi punto = passa.
+   ===================================================================== */
+
+   .bl-root {
+    --pl-r-md: 18px;
+    --pl-r-lg: 24px;
+    --pl-fill: rgba(127, 110, 180, .10);
+    --pl-line: rgba(127, 110, 180, .26);
+  }
+  @supports (color: color-mix(in srgb, red 10%, blue)) {
+    .bl-root {
+      --pl-fill: color-mix(in srgb, currentColor 7%, transparent);
+      --pl-line: color-mix(in srgb, currentColor 16%, transparent);
+    }
+  }
+  
+  /* ---------------------------------------------------------------------
+     1. Barra superiore: logo · scoppi rimasti · azioni · profilo
+     Le tre azioni (classifiche, notifiche, messaggi) diventano una sola
+     capsula: da cinque pesi uguali a quattro elementi con ruoli chiari.
+     --------------------------------------------------------------------- */
+  .bl-root .bl-top { gap: 6px; }
+  .bl-root .bl-top .bl-brand-home {
+    width: 40px; height: 40px;
+    background: transparent; border-color: transparent; box-shadow: none;
+  }
+  .bl-root .bl-counter {
+    flex: 1 1 auto; min-width: 104px; max-width: 200px;
+    background: var(--cosmos-glass); border-color: var(--cosmos-line);
+  }
+  .bl-root .bl-home-actions {
+    gap: 0; padding: 3px; flex: none;
+    border-radius: 999px;
+    background: var(--cosmos-glass);
+    border: 1px solid var(--cosmos-line);
+    box-shadow: 0 8px 22px rgba(5, 1, 13, .28);
+  }
+  .bl-root .bl-home-actions .bl-round {
+    position: relative; width: 40px; height: 40px;
+    border: 0; background: transparent; box-shadow: none;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    color: var(--cosmos-text, inherit);
+  }
+  .bl-root .bl-home-actions .bl-round.bl-on { background: var(--pl-fill); }
+  .bl-root .bl-top .bl-profile-btn { flex: none; }
+  .bl-root .bl-top .bl-profile-btn.bl-on { background: var(--pl-fill); }
+  
+  /* ---------------------------------------------------------------------
+     2. Feed: al posto dei pulsanti c'è una frase discreta (in SequentialFeed).
+     In basso resta solo il «+». Il banner ospite sta sopra, senza toccarlo.
+     --------------------------------------------------------------------- */
+  .bl-root .bl-bottom-actions { z-index: 20; }
+  .bl-root .bl-guest-banner { bottom: calc(92px + env(safe-area-inset-bottom)); }
+  
+  /* ---------------------------------------------------------------------
+     3. Profilo
+     Ordine: identità › numeri › strumenti › traguardi.
+     Titoli di gruppo in minuscolo (niente maiuscoletto tracciato),
+     blocchi con un solo tipo di superficie.
+     --------------------------------------------------------------------- */
+  .bl-root.bl-root .bl-profile-hub { gap: 20px; }
+  
+  /* identità */
+  .bl-root.bl-root .bl-profile-hub .bl-profile-identity {
+    padding: 16px; gap: 14px; box-shadow: none;
+    border-radius: var(--pl-r-lg);
+    background: var(--pl-fill); border: 1px solid var(--pl-line);
+  }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-identity-copy h3 {
+    margin: 0; font: 800 24px/1.1 Outfit, sans-serif; letter-spacing: -.02em; color: inherit;
+  }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-identity-copy p {
+    margin: 2px 0 0; font-size: 13px; color: inherit; opacity: .7;
+  }
+  .bl-profile-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-edit-link {
+    margin: 0; padding: 7px 12px; min-height: 32px;
+    border: 1px solid var(--pl-line); border-radius: 999px;
+    background: transparent; color: inherit; font: 700 12px/1 inherit;
+  }
+  
+  /* titoli di gruppo */
+  .bl-root.bl-root .bl-profile-hub .bl-profile-section-heading { padding: 0 2px; }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-section-heading > span {
+    font-size: 14px; font-weight: 700; letter-spacing: 0; text-transform: none;
+    color: inherit; opacity: .78;
+  }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-section-heading button {
+    min-height: 32px; font-size: 12px; color: inherit; opacity: .7;
+  }
+  
+  /* numeri: tre tessere pari, senza icone */
+  .bl-root.bl-root .bl-profile-hub .bl-profile-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;
+  }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-metrics > div {
+    min-height: 0; padding: 12px 12px 11px; gap: 6px;
+    border-radius: var(--pl-r-md); box-shadow: none;
+    background: var(--pl-fill); border: 1px solid var(--pl-line);
+  }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-metrics strong {
+    font: 800 26px/1 Outfit, sans-serif; font-variant-numeric: tabular-nums; color: inherit;
+  }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-metrics span:last-child {
+    font-size: 11px; line-height: 1.3; color: inherit; opacity: .7;
+  }
+  
+  /* strumenti: elenco raggruppato, righe separate da una linea sottile */
+  .bl-root.bl-root .bl-profile-hub .bl-profile-menu { gap: 8px; }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-menu .bl-menu-group {
+    display: grid; gap: 0; overflow: hidden;
+    border: 1px solid var(--pl-line); border-radius: var(--pl-r-md);
+    background: var(--pl-fill);
+  }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-menu .bl-menu-group + .bl-profile-section-heading { margin-top: 10px; }
+  .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button {
+    min-height: 62px; padding: 11px 14px;
+    border: 0; border-radius: 0; box-shadow: none; transform: none;
+    background: transparent; color: inherit;
+  }
+  .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button + button {
+    border-top: 1px solid var(--pl-line);
+  }
+  .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button:active { background: var(--pl-fill); }
+  @media (hover: hover) and (pointer: fine) {
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button:hover { background: var(--pl-fill); }
+  }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-menu .bl-menu-group > button small { font-size: 11px; }
+  
+  /* traguardi: una riga con barra di avanzamento; toccandola si apre la griglia (5 colonne, mai scorrimento laterale) */
+  .bl-root.bl-root .bl-profile-hub .bl-profile-badges {
+    margin: 0; padding: 0; overflow: hidden; border-radius: var(--pl-r-md);
+    background: var(--pl-fill); border: 1px solid var(--pl-line);
+  }
+  .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-badges .bl-profile-badges-toggle {
+    display: flex; align-items: center; gap: 12px; width: 100%; margin: 0; min-height: 46px; padding: 8px 14px;
+    border: 0; border-radius: 0; box-shadow: none; background: transparent; color: inherit; text-align: left;
+  }
+  .bl-profile-badges-title { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; }
+  .bl-profile-badges-name { font: 700 15px/1.2 inherit; white-space: nowrap; }
+  .bl-profile-badges-bar { flex: 1; height: 5px; border-radius: 5px; background: var(--pl-line); overflow: hidden; }
+  .bl-profile-badges-bar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #8d7af0, #d8a3fa); }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-badges-toggle > strong {
+    display: block; min-width: 0; height: auto; background: none; box-shadow: none; color: inherit;
+    font: 800 15px/1 Outfit, sans-serif; font-variant-numeric: tabular-nums;
+  }
+  .bl-profile-badges-toggle > strong small { opacity: .6; font-size: 12px; }
+  .bl-profile-badges-chev { font-style: normal; font-size: 16px; line-height: 1; opacity: .6; }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-badges-grid {
+    display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px;
+    overflow: visible; margin: 0; padding: 4px 10px 12px;
+  }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-badge {
+    flex: none; width: auto; min-width: 0; padding: 8px 2px 7px;
+    background: var(--pl-fill); border-color: var(--pl-line);
+  }
+  .bl-root.bl-root .bl-profile-hub .bl-profile-badge.earned { order: -1; }
+  
+  /* niente scorrimento laterale nel profilo */
+  .bl-root .bl-sheet:has(.bl-profile-hub) { overflow-x: hidden; }
+  .bl-root .bl-profile-hub, .bl-root .bl-profile-hub > * { min-width: 0; max-width: 100%; }
+  
+  /* ---------------------------------------------------------------------
+     4. Profilo su telefono: tutto nello schermo, senza scorrere
+     Altezza di riferimento ~560px: intestazione 40 · identità 66 · numeri 52 ·
+     statistiche 22 · menu 5×44 · traguardi 46 · spazi ~80.
+     --------------------------------------------------------------------- */
+  @media (max-width: 640px) {
+    .bl-root .bl-sheet:has(.bl-profile-hub) { gap: 10px; padding: 12px 12px calc(12px + env(safe-area-inset-bottom)); max-height: 94dvh; }
+    .bl-root .bl-sheet:has(.bl-profile-hub) .bl-sheet-heading h2 { font-size: 20px; margin: 0; }
+    .bl-root .bl-sheet:has(.bl-profile-hub) .bl-sheet-x { width: 32px; height: 32px; }
+    .bl-root.bl-root .bl-profile-hub { gap: 8px; padding-bottom: 0; }
+  
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity { padding: 9px 12px; gap: 12px; border-radius: 16px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity .bl-profile-avatar,
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity .bl-profile-avatar-button > .bl-avatar-photo {
+      width: 46px; min-width: 46px; max-width: 46px; height: 46px; min-height: 46px; max-height: 46px;
+      flex: 0 0 46px; font-size: 23px;
+    }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity-copy h3 { font-size: 18px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity-copy p { display: none; }
+    .bl-profile-links { margin-top: 5px; gap: 5px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-edit-link { padding: 5px 10px; min-height: 28px; font-size: 11px; }
+  
+    .bl-root.bl-root .bl-profile-hub .bl-profile-activity { gap: 4px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-activity .bl-profile-section-heading > span { font-size: 12px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-activity .bl-profile-section-heading button { min-height: 22px; font-size: 11px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-metrics { gap: 6px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-metrics > div { padding: 7px 10px; gap: 2px; border-radius: 12px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-metrics strong { font-size: 20px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-metrics span:last-child { font-size: 10px; }
+  
+    /* i titoli dei due gruppi del menu sono evidenti dalle voci stesse: su telefono si nascondono */
+    .bl-root.bl-root .bl-profile-hub .bl-profile-menu { gap: 8px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-menu .bl-profile-section-heading { display: none; }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button { min-height: 44px; padding: 5px 12px; gap: 10px; }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button small { display: none; }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button > span {
+      width: 28px; height: 28px; flex-basis: 28px; border-radius: 9px;
+    }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button > span svg { width: 18px; height: 18px; }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button strong { font-size: 14px; }
+  }
+  /* telefoni bassi (SE, schermi con barre grandi): ancora più compatto */
+  @media (max-width: 640px) and (max-height: 640px) {
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity .bl-profile-avatar,
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity .bl-profile-avatar-button > .bl-avatar-photo {
+      width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; max-height: 40px; flex-basis: 40px; font-size: 20px;
+    }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button { min-height: 40px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-metrics strong { font-size: 18px; }
+  }
+  
+  /* ---------------------------------------------------------------------
+     5. Profilo su telefono: testi più grandi, scheda che si riempie da sola
+     Le misure seguono l'altezza dello schermo (dvh): su un telefono alto
+     testi e righe crescono, su uno basso restano compatti. Gli spazi
+     avanzati vengono divisi tra le voci del menu invece di restare vuoti.
+     --------------------------------------------------------------------- */
+  @media (max-width: 640px) {
+    .bl-root .bl-sheet:has(.bl-profile-hub) {
+      height: 92dvh; max-height: 92dvh;
+      gap: clamp(8px, 1.5dvh, 14px); padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+    }
+    .bl-root .bl-sheet:has(.bl-profile-hub) .bl-sheet-heading h2 { font-size: clamp(22px, 3.1dvh, 27px); }
+    .bl-root .bl-sheet:has(.bl-profile-hub) .bl-sheet-x { width: 36px; height: 36px; }
+  
+    .bl-root.bl-root .bl-profile-hub {
+      display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0;
+      gap: clamp(8px, 1.6dvh, 16px);
+    }
+    .bl-root.bl-root .bl-profile-hub > * { flex: 0 0 auto; }
+    .bl-root.bl-root .bl-profile-hub > .bl-profile-menu { flex: 1 0 auto; display: flex; flex-direction: column; gap: clamp(8px, 1.4dvh, 14px); }
+  
+    /* identità */
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity { padding: clamp(10px, 1.6dvh, 16px) 14px; gap: 14px; border-radius: 20px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity .bl-profile-avatar,
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity .bl-profile-avatar-button > .bl-avatar-photo {
+      width: clamp(52px, 8dvh, 72px); min-width: clamp(52px, 8dvh, 72px); max-width: clamp(52px, 8dvh, 72px);
+      height: clamp(52px, 8dvh, 72px); min-height: clamp(52px, 8dvh, 72px); max-height: clamp(52px, 8dvh, 72px);
+      flex: 0 0 clamp(52px, 8dvh, 72px); font-size: clamp(26px, 4dvh, 36px);
+    }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-identity-copy h3 { font-size: clamp(22px, 3.2dvh, 27px); }
+    .bl-profile-links { margin-top: 8px; gap: 6px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-edit-link { padding: 7px 12px; min-height: 34px; font-size: 13px; }
+  
+    /* andamento e numeri */
+    .bl-root.bl-root .bl-profile-hub .bl-profile-activity { gap: 8px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-activity .bl-profile-section-heading > span { font-size: 15px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-activity .bl-profile-section-heading button { min-height: 28px; font-size: 13px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-metrics { gap: 8px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-metrics > div { padding: clamp(9px, 1.5dvh, 14px) 12px; gap: 4px; border-radius: 16px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-metrics strong { font-size: clamp(25px, 3.7dvh, 32px); }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-metrics span:last-child { font-size: 12px; }
+  
+    /* menu: le righe si dividono lo spazio libero */
+    .bl-root.bl-root .bl-profile-hub .bl-profile-menu .bl-menu-group { flex: 2 0 auto; grid-auto-rows: 1fr; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-menu .bl-menu-group:has(> button:nth-child(3)) { flex-grow: 3; }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button {
+      min-height: clamp(48px, 6.6dvh, 66px); padding: 6px 14px; gap: 14px;
+    }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button strong { font-size: clamp(16px, 2.2dvh, 18px); }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button > span {
+      width: 38px; height: 38px; flex-basis: 38px; border-radius: 12px;
+    }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button > span svg { width: 22px; height: 22px; }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button > i { font-size: 26px; }
+  
+    /* traguardi */
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-badges .bl-profile-badges-toggle { min-height: clamp(52px, 7dvh, 66px); padding: 8px 16px; }
+    .bl-profile-badges-name { font-size: 17px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-badges-toggle > strong { font-size: 17px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-badge strong { font-size: 11px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-badge small { font-size: 10px; }
+  }
+  
+  /* abbastanza alto: tornano i titoli dei due gruppi del menu */
+  @media (max-width: 640px) and (min-height: 720px) {
+    .bl-root.bl-root .bl-profile-hub .bl-profile-menu .bl-profile-section-heading { display: flex; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-menu .bl-profile-section-heading > span { font-size: 15px; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-menu .bl-menu-group + .bl-profile-section-heading { margin-top: 0; }
+    .bl-root.bl-root .bl-profile-hub .bl-profile-menu { gap: 8px; }
+  }
+  
+  /* telefoni bassi: si torna alla taglia compatta */
+  @media (max-width: 640px) and (max-height: 620px) {
+    .bl-root.bl-root .bl-profile-hub .bl-profile-metrics strong { font-size: 20px; }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button { min-height: 42px; }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button strong { font-size: 15px; }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-menu .bl-menu-group > button > span { width: 30px; height: 30px; flex-basis: 30px; }
+    .bl-root.bl-root .bl-sheet .bl-profile-hub .bl-profile-badges .bl-profile-badges-toggle { min-height: 46px; }
+  }
+/* ===== Revisione UI: 7 modifiche ===== */
+/* 2. Nomi utente cliccabili, senza sottolineatura */
+.bl-root .bl-user-link, .bl-root .bl-user-link:hover, .bl-root .bl-user-link:focus { text-decoration: none !important; background: none; border: 0; padding: 0; box-shadow: none; font: inherit; color: inherit; cursor: pointer; }
+
+/* 4. Header fisso e filtri leggermente più in basso */
+.bl-root .bl-top { position: fixed !important; top: 0; left: 0; right: 0; z-index: 30 !important; padding-top: calc(8px + env(safe-area-inset-top)); padding-bottom: 8px; background: color-mix(in srgb, var(--bl-bg, #0b0d12) 82%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.bl-root .bl-filter, .bl-root > .bl-filter { top: calc(96px + env(safe-area-inset-top)) !important; }
+.bl-root .bl-seq-wrap { padding-top: calc(146px + env(safe-area-inset-top)) !important; }
+
+/* 5. Pulsante Nuova Bolla */
+.bl-root .bl-fab.bl-fab--bubble, .bl-root .bl-bottom-actions .bl-fab.bl-fab--bubble { width: 74px !important; height: 74px !important; border-radius: 50% !important; border: 1px solid rgba(255,255,255,.28) !important; background: linear-gradient(160deg, rgba(255,255,255,.26), rgba(255,255,255,.08)) !important; -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: 0 10px 28px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.4) !important; animation: none !important; display: grid; place-items: center; color: #fff; }
+.bl-root .bl-fab.bl-fab--bubble .bl-fab-plus { display: grid; place-items: center; font-size: 0; }
+.bl-root .bl-fab.bl-fab--bubble:active { transform: scale(.94); }
+
+/* 6. Schermata pubblicazione semplice e neutra */
+.bl-root .bl-cmp-home { display: grid; gap: 10px; }
+.bl-root .bl-cmp-tile, .bl-root .bl-cmp-tile--photo, .bl-root .bl-cmp-tile--thought, .bl-root .bl-cmp-tile--choice { background: rgba(127,127,127,.10) !important; background-image: none !important; border: 1px solid rgba(127,127,127,.22) !important; box-shadow: none !important; color: inherit !important; border-radius: 16px !important; min-height: 64px; display: flex; align-items: center; gap: 14px; padding: 14px 16px; text-align: left; }
+.bl-root .bl-cmp-tile-icon { filter: grayscale(1); font-size: 22px; }
+.bl-root .bl-cmp-more-wrap summary { cursor: pointer; opacity: .7; padding: 8px 4px; font-size: 14px; }
+.bl-root .bl-cmp-more { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.bl-root .bl-cmp-more > * { background: rgba(127,127,127,.08) !important; background-image: none !important; box-shadow: none !important; border: 1px solid rgba(127,127,127,.2) !important; }
+
+/* 1. Stabilità in pubblicazione: dimensioni fisse, nessuna animazione */
+.bl-root .bl-sheet.bl-sheet-composer { animation: none !important; height: min(92dvh, 720px); max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; }
+.bl-root .bl-sheet-composer .bl-cmp-frame img, .bl-root .bl-sheet-composer .bl-cmp-frame video { max-height: 50dvh; object-fit: contain; }
+/* ===== Top bar in continuità con il feed (niente fascia scura) ===== */
+.bl-root .bl-top { background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; border: 0 !important; }
+
+/* ===== Contatore scoppi: icona circolare con anello che si riduce ===== */
+.bl-root .bl-top .bl-counter.bl-counter-ring {
+  --ring: var(--cosmos-line, rgba(255,255,255,.55));
+  position: relative; flex: none; width: 44px; height: 44px; min-width: 44px; max-width: 44px; padding: 0; margin-right: auto;
+  display: grid; place-items: center; border-radius: 50%; border: 0; cursor: pointer;
+  background: var(--cosmos-glass); color: inherit; -webkit-tap-highlight-color: transparent;
+}
+.bl-counter-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.bl-counter-ring circle { fill: none; stroke-width: 3; }
+.bl-counter-ring .bl-ring-bg { stroke: var(--pl-line, rgba(127,127,127,.25)); }
+.bl-counter-ring .bl-ring-fg { stroke: var(--ring); stroke-linecap: round; transition: stroke-dasharray .35s ease, stroke .25s ease; }
+.bl-root .bl-top .bl-counter.bl-counter-ring.is-orange { --ring: #ff9f1a; }
+.bl-root .bl-top .bl-counter.bl-counter-ring.is-red { --ring: #ff3b30; }
+.bl-root .bl-top .bl-counter.bl-counter-ring.is-orange .bl-ring-bg { stroke: rgba(255, 159, 26, .28); }
+.bl-root .bl-top .bl-counter.bl-counter-ring.is-red .bl-ring-bg { stroke: rgba(255, 59, 48, .28); }
+.bl-root .bl-top .bl-counter.bl-counter-ring.is-orange .bl-counter-num { color: #ff9f1a; }
+.bl-root .bl-top .bl-counter.bl-counter-ring.is-red .bl-counter-num { color: #ff3b30; }
+.bl-counter-ring .bl-counter-num { position: relative; font: 800 16px/1 Outfit, sans-serif; font-variant-numeric: tabular-nums; }
+.bl-counter-ring:active { transform: scale(.94); }
+
+/* ===== Fumetto del contatore ===== */
+.bl-root .bl-top .bl-counter-wrap { position: relative; flex: none; margin-right: auto; }
+.bl-root .bl-top .bl-counter-wrap .bl-counter.bl-counter-ring { margin-right: 0; }
+.bl-counter-pop {
+  position: absolute; top: calc(100% + 10px); left: 0; z-index: 40; white-space: nowrap;
+  padding: 9px 14px; border-radius: 14px; font: 700 13px/1.2 inherit;
+  background: rgba(20, 14, 38, .92); color: #fff; border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 10px 26px rgba(0,0,0,.32); animation: bl-pop-in .18s ease-out;
+}
+.bl-counter-pop::before {
+  content: ""; position: absolute; top: -6px; left: 17px; width: 11px; height: 11px;
+  background: inherit; border-left: 1px solid rgba(255,255,255,.18); border-top: 1px solid rgba(255,255,255,.18);
+  transform: rotate(45deg);
+}
+@keyframes bl-pop-in { from { opacity: 0; transform: translateY(-4px) scale(.96); } to { opacity: 1; transform: none; } }
+
+/* ===== Pulsante «Nuova bolla»: bolla di sapone realistica ===== */
+.bl-root .bl-fab.bl-fab--bubble, .bl-root .bl-bottom-actions .bl-fab.bl-fab--bubble {
+  position: relative; overflow: visible; color: rgba(255,255,255,.95) !important;
+  border: 1px solid rgba(255,255,255,.35) !important;
+  background:
+    radial-gradient(ellipse 26% 16% at 30% 20%, rgba(255,255,255,.95), rgba(255,255,255,0) 100%),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 58%, rgba(255,255,255,.22) 72%, rgba(255,255,255,.5) 84%, rgba(255,255,255,.12) 100%),
+    conic-gradient(from 210deg at 50% 50%, rgba(255,90,200,.30), rgba(120,170,255,.34), rgba(90,255,220,.28), rgba(255,235,120,.26), rgba(255,90,200,.30)),
+    radial-gradient(circle at 50% 55%, rgba(255,255,255,.04), rgba(190,170,255,.14)) !important;
+  -webkit-backdrop-filter: blur(3px) saturate(1.5); backdrop-filter: blur(3px) saturate(1.5);
+  box-shadow:
+    inset 0 0 14px rgba(255,255,255,.35),
+    inset -9px -12px 20px rgba(120,160,255,.28),
+    inset 8px 10px 18px rgba(255,150,230,.22),
+    0 12px 26px rgba(40,10,90,.30) !important;
+  animation: bl-fab-float 5s ease-in-out infinite !important;
+}
+.bl-root .bl-fab.bl-fab--bubble::before {
+  content: ""; position: absolute; width: 18%; height: 10%; right: 17%; bottom: 14%;
+  border-radius: 50%; background: radial-gradient(ellipse, rgba(255,255,255,.7), rgba(255,255,255,0) 100%); transform: rotate(-35deg); pointer-events: none;
+}
+.bl-root .bl-fab.bl-fab--bubble .bl-fab-plus { filter: drop-shadow(0 1px 3px rgba(60,20,120,.5)); }
+.bl-root .bl-fab.bl-fab--bubble:active { transform: scale(.94); }
+@keyframes bl-fab-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .bl-root .bl-fab.bl-fab--bubble { animation: none !important; } }
+
+/* ===== «Cosa vuoi pubblicare?»: campo di bolle colorate ===== */
+.bl-root .bl-cmp-field { display: block; padding-bottom: 8px; }
+.bl-root .bl-cmp-lead { margin: 0 0 6px; text-align: center; font-size: 14px; opacity: .75; }
+.bl-root .bl-cmp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 4px; justify-items: center; padding: 6px 0 4px; }
+.bl-root .bl-cmpb {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  width: 100%; padding: 6px 4px 4px; border: 0; background: none !important; box-shadow: none !important;
+  color: inherit; cursor: pointer; font: inherit; text-align: center; -webkit-tap-highlight-color: transparent;
+}
+.bl-root .bl-cmpb:nth-child(even) { margin-top: 26px; }
+.bl-root .bl-cmpb input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.bl-root .bl-cmpb-orb {
+  position: relative; display: grid; place-items: center; width: var(--sz); height: var(--sz); border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.55);
+  background:
+    radial-gradient(ellipse 28% 17% at 30% 19%, rgba(255,255,255,.95), rgba(255,255,255,0) 100%),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 54%, rgba(255,255,255,.28) 74%, rgba(255,255,255,.62) 88%, rgba(255,255,255,.14) 100%),
+    radial-gradient(circle at 36% 30%, color-mix(in srgb, var(--c1) 70%, white) 0%, var(--c1) 38%, var(--c2) 100%);
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.45),
+    inset -10px -14px 24px color-mix(in srgb, var(--c2) 70%, transparent),
+    inset 8px 10px 20px color-mix(in srgb, var(--c1) 55%, white 10%),
+    0 14px 28px color-mix(in srgb, var(--c2) 45%, transparent);
+  animation: bl-cmpb-float var(--dur, 5s) ease-in-out var(--dl, 0s) infinite;
+  transition: transform .18s ease, filter .18s ease;
+}
+.bl-root .bl-cmpb-orb::after {
+  content: ""; position: absolute; width: 17%; height: 9%; right: 16%; bottom: 13%; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255,255,255,.75), rgba(255,255,255,0) 100%); transform: rotate(-35deg);
+}
+.bl-root .bl-cmpb-icon { font-size: calc(var(--sz) * .38); line-height: 1; filter: drop-shadow(0 3px 5px rgba(30,10,70,.35)); }
+.bl-root .bl-cmpb-label { display: grid; gap: 1px; }
+.bl-root .bl-cmpb-label strong { font: 800 14px/1.15 Outfit, sans-serif; }
+.bl-root .bl-cmpb-label small { font-size: 11px; opacity: .65; }
+.bl-root .bl-cmpb:active .bl-cmpb-orb { transform: scale(.93); filter: brightness(1.08); }
+@media (hover: hover) and (pointer: fine) { .bl-root .bl-cmpb:hover .bl-cmpb-orb { transform: scale(1.06); } }
+@keyframes bl-cmpb-float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-7px) rotate(1.5deg); } }
+@media (prefers-reduced-motion: reduce) { .bl-root .bl-cmpb-orb { animation: none; } }
+@media (max-height: 640px) { .bl-root .bl-cmpb:nth-child(even) { margin-top: 12px; } .bl-root .bl-cmpb-orb { transform-origin: center; } }
+
+/* tinta del colore scelto nella schermata di preparazione */
+.bl-root .bl-cmp-edit { background: radial-gradient(ellipse 80% 160px at 50% -20px, color-mix(in srgb, var(--c1, transparent) 26%, transparent), transparent 100%); border-radius: 18px; }
+.bl-root .bl-cmp-edit .bl-cmp-publish { background: linear-gradient(135deg, var(--c1, #8a7bff), var(--c2, #5a4bd6)) !important; color: #fff !important; border: 0 !important; box-shadow: 0 10px 24px color-mix(in srgb, var(--c2, #5a4bd6) 40%, transparent) !important; }
+
+/* ===== Ventaglio di bolle sul «+» (pressione prolungata) ===== */
+.bl-root .bl-fab.bl-fab--bubble { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; transition: transform .45s cubic-bezier(.34, 1.9, .5, 1); }
+.bl-root .bl-fab.bl-fab--bubble.is-pressing, .bl-root .bl-fab.bl-fab--bubble.is-fan-open { animation: none !important; }
+.bl-root .bl-fab.bl-fab--bubble.is-pressing { transform: scale(.86); }
+.bl-root .bl-fab.bl-fab--bubble.is-fan-open { transform: scale(.94); }
+.bl-root .bl-fab.bl-fab--bubble .bl-fab-plus { transition: transform .5s cubic-bezier(.34, 1.7, .5, 1); }
+.bl-root .bl-fab.bl-fab--bubble.is-fan-open .bl-fab-plus { transform: rotate(135deg) scale(.9); }
+
+.bl-fan { position: fixed; inset: 0; z-index: 90; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.bl-fan-backdrop {
+  position: absolute; inset: 0; will-change: opacity;
+  background: radial-gradient(ellipse 90% 70% at var(--fx, 50%) 100%, rgba(120, 80, 220, .34), rgba(10, 5, 28, .52) 70%);
+  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+}
+.bl-fan-origin { position: absolute; width: 0; height: 0; }
+.bl-fan-petal {
+  position: absolute; left: 0; top: 0; width: 62px; height: 62px; margin: -31px 0 0 -31px; padding: 0; border: 0;
+  background: none; cursor: pointer; will-change: transform, opacity; -webkit-tap-highlight-color: transparent;
+}
+.bl-fan-orb {
+  position: relative; display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.6); will-change: transform;
+  background:
+    radial-gradient(ellipse 28% 17% at 30% 19%, rgba(255,255,255,.95), rgba(255,255,255,0) 100%),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 54%, rgba(255,255,255,.3) 74%, rgba(255,255,255,.65) 88%, rgba(255,255,255,.14) 100%),
+    radial-gradient(circle at 36% 30%, color-mix(in srgb, var(--c1) 70%, white) 0%, var(--c1) 38%, var(--c2) 100%);
+  box-shadow: inset 0 0 12px rgba(255,255,255,.5), inset -6px -8px 14px color-mix(in srgb, var(--c2) 70%, transparent), 0 8px 18px color-mix(in srgb, var(--c2) 50%, transparent);
+  transition: box-shadow .2s ease, filter .2s ease;
+}
+.bl-fan-orb::after { content: ""; position: absolute; width: 17%; height: 9%; right: 16%; bottom: 13%; border-radius: 50%; background: radial-gradient(ellipse, rgba(255,255,255,.8), rgba(255,255,255,0) 100%); transform: rotate(-35deg); }
+.bl-fan-icon { font-size: 26px; line-height: 1; filter: drop-shadow(0 2px 4px rgba(30,10,70,.4)); }
+.bl-fan-petal.on .bl-fan-orb { filter: brightness(1.12) saturate(1.25); box-shadow: inset 0 0 14px rgba(255,255,255,.6), 0 0 0 3px rgba(255,255,255,.55), 0 0 28px 6px color-mix(in srgb, var(--c1) 70%, transparent), 0 12px 24px color-mix(in srgb, var(--c2) 55%, transparent); }
+.bl-fan-caption {
+  position: absolute; z-index: 5; transform: translate(-50%, -50%); display: grid; gap: 1px; justify-items: center; text-align: center;
+  padding: 8px 16px; border-radius: 999px; white-space: nowrap; pointer-events: none; color: #fff;
+  background: rgba(24, 14, 52, .72); border: 1px solid rgba(255,255,255,.22); box-shadow: 0 8px 22px rgba(0,0,0,.3);
+  animation: bl-fan-cap .32s cubic-bezier(.34, 1.8, .5, 1);
+}
+.bl-fan-caption strong { font: 800 14px/1.15 Outfit, sans-serif; }
+.bl-fan-caption small { font-size: 11px; opacity: .7; }
+@keyframes bl-fan-cap { from { opacity: 0; transform: translate(-50%, -30%) scale(.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .bl-fan-caption { animation: none; } }
+
+
+/* =====================================================================
+   Fisica delle bolle — linguaggio comune a tutta l'app
+   Stessa molla del ventaglio: sottosmorzata, con un leggero rimbalzo.
+   I pulsanti (pressione/rilascio) sono gestiti da installBollePhysics() in App.jsx.
+   ===================================================================== */
+:root {
+  --bl-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --bl-spring-soft: cubic-bezier(.3, 1.25, .6, 1);
+}
+@supports (transition-timing-function: linear(0, 1)) {
+  :root {
+    --bl-spring: linear(0, 0.029, 0.104, 0.213, 0.34, 0.476, 0.61, 0.737, 0.849, 0.946, 1.023, 1.083, 1.124, 1.15, 1.162, 1.162, 1.153, 1.138, 1.118, 1.097, 1.075, 1.053, 1.034, 1.017, 1.002, 0.991, 0.983, 0.977, 0.974, 0.973, 0.974, 0.976, 0.979, 0.982, 0.986, 0.99, 0.993, 0.996, 0.999, 1.001, 1);
+    --bl-spring-soft: linear(0, 0.028, 0.098, 0.195, 0.306, 0.42, 0.531, 0.634, 0.726, 0.805, 0.871, 0.924, 0.965, 0.996, 1.018, 1.033, 1.042, 1.045, 1.046, 1.044, 1.04, 1.035, 1.03, 1.025, 1.02, 1.015, 1.011, 1.008, 1.005, 1.003, 1.001, 1, 0.999, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 0.998, 1);
+  }
+}
+
+/* pannelli: salgono dal basso e si assestano con un rimbalzo (il composer resta fermo, per stabilità) */
+.bl-sheet-wrap { animation: bl-phys-fade .24s ease-out; }
+.bl-sheet-wrap > .bl-sheet:not(.bl-sheet-composer) { animation: bl-phys-sheet .65s var(--bl-spring-soft) backwards; transform-origin: 50% 100%; }
+@keyframes bl-phys-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bl-phys-sheet { from { translate: 0 46px; scale: .95; opacity: 0; } 30% { opacity: 1; } to { translate: 0 0; scale: 1; opacity: 1; } }
+
+/* avvisi e fumetti: spuntano come bolle che si gonfiano */
+.bl-toast:not(:empty), .bl-live-notification { animation: bl-phys-pop .6s var(--bl-spring) backwards; }
+.bl-counter-pop { animation: bl-phys-pop .5s var(--bl-spring) backwards; transform-origin: 20px -6px; }
+@keyframes bl-phys-pop { from { translate: 0 14px; scale: .78; opacity: 0; } 25% { opacity: 1; } to { translate: 0 0; scale: 1; opacity: 1; } }
+
+/* numeri e badge: un piccolo «gonfio» quando cambiano o compaiono */
+.bl-root .bl-counter-num { animation: bl-phys-bump .55s var(--bl-spring) backwards; }
+.bl-root .bl-notification-dot { animation: bl-phys-dot .6s var(--bl-spring) backwards; }
+@keyframes bl-phys-bump { from { scale: 1.55; } to { scale: 1; } }
+@keyframes bl-phys-dot { from { scale: 0; } to { scale: 1; } }
+
+/* le schermate (profilo, classifiche, messaggi…) entrano con la stessa molla */
+.bl-root .bl-profile-hub, .bl-root .bl-insights { animation: bl-phys-rise .6s var(--bl-spring-soft) backwards; }
+@keyframes bl-phys-rise { from { translate: 0 22px; opacity: 0; } 35% { opacity: 1; } to { translate: 0 0; opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bl-sheet-wrap, .bl-sheet-wrap > .bl-sheet, .bl-toast:not(:empty), .bl-live-notification, .bl-counter-pop,
+  .bl-root .bl-counter-num, .bl-root .bl-notification-dot, .bl-root .bl-profile-hub, .bl-root .bl-insights { animation: none !important; }
+}
+
+/* ===== Nomi utente senza riquadro: sfondo trasparente, uguale a ciò che sta dietro ===== */
+.bl-root .bl-viewer-author,
+.bl-root .bl-bubble .bl-bubble-username,
+.bl-root .bl-bubble-username,
+.bl-root .bl-viewer-author .bl-user-link {
+  background: none !important; background-color: transparent !important; background-image: none !important;
+  border: 0 !important; box-shadow: none !important; outline: 0;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  border-radius: 0 !important;
+}
+.bl-root .bl-viewer-author { padding-left: 0; padding-right: 0; }
+.bl-root .bl-bubble-username { padding: 0; }
+
+/* =====================================================================
+   Chat Header & Gestione Gruppi (Header personalizzato, Icona gruppo, Amministratore)
+   ===================================================================== */
+.bl-sheet-heading { align-items: center !important; }
+.bl-sheet-heading-main { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; }
+
+/* Header chat 1-on-1: foto profilo + username interlocutore */
+.bl-chat-header-user { display: flex; align-items: center; min-width: 0; max-width: 100%; }
+.bl-chat-header-user-btn { display: inline-flex; align-items: center; gap: 10px; background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; min-width: 0; text-align: left; }
+.bl-chat-header-avatar-wrap { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--pl-fill, rgba(127,110,180,.15)); border: 1px solid var(--pl-line, rgba(127,110,180,.26)); }
+.bl-chat-header-avatar { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.bl-chat-header-username { font: 800 18px/1.2 Outfit, system-ui, sans-serif; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: inherit; }
+
+/* Header chat di gruppo */
+.bl-chat-header-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bl-chat-header-group-avatar { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #7c5cdb, #ba7ed8); color: #fff; }
+.bl-chat-header-group-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.bl-chat-header-group-name { font: 800 17px/1.2 Outfit, system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: inherit; }
+.bl-chat-header-group-members { font-size: 11px; opacity: .7; color: inherit; }
+
+/* Icona gruppo in alto a destra nell'header della chat */
+.bl-chat-group-header-btn { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--pl-line, rgba(127,110,180,.26)); background: var(--pl-fill, rgba(127,110,180,.12)); color: inherit; display: grid; place-items: center; cursor: pointer; transition: transform .15s ease, background .15s ease; }
+.bl-chat-group-header-btn:active { transform: scale(.92); background: var(--pl-line, rgba(127,110,180,.26)); }
+
+/* Elenco conversazioni & pulsante nuovo gruppo */
+.bl-threads-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.bl-new-group-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--pl-line, rgba(127,110,180,.26)); background: var(--pl-fill, rgba(127,110,180,.12)); color: inherit; font: 700 12px/1 inherit; cursor: pointer; transition: transform .15s ease, background .15s ease; }
+.bl-new-group-btn:hover { background: var(--pl-line, rgba(127,110,180,.26)); }
+.bl-thread-group-avatar { background: linear-gradient(135deg, #7c5cdb, #ba7ed8) !important; color: #fff !important; }
+.bl-thread-group-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; background: var(--pl-fill, rgba(127,110,180,.15)); border: 1px solid var(--pl-line, rgba(127,110,180,.26)); margin-left: 6px; opacity: .85; vertical-align: middle; }
+
+/* Nome mittente nel fumetto di gruppo */
+.bl-msg-sender-name { display: block; font-size: 11px; font-weight: 800; color: var(--bl-accent, #20b8a5); margin-bottom: 2px; }
+
+/* Modal gestione gruppo & nuovo gruppo */
+.bl-group-modal-wrap { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(5, 2, 16, .65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); animation: bl-phys-fade .2s ease-out; }
+.bl-group-modal { width: 100%; max-width: 440px; max-height: 88dvh; overflow-y: auto; border-radius: 24px; padding: 20px 20px 18px; display: flex; flex-direction: column; gap: 14px; background: linear-gradient(145deg, #241b3c, #16122a); border: 1px solid rgba(255,255,255,.2); color: #f5edff; box-shadow: 0 16px 48px rgba(0,0,0,.5); }
+.bl-group-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bl-group-modal-head-title { display: flex; align-items: center; gap: 12px; }
+.bl-group-modal-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, #7c5cdb, #ba7ed8); color: #fff; flex: none; }
+.bl-group-modal-head-title h3 { margin: 0; font: 800 18px/1.2 Outfit, system-ui, sans-serif; }
+.bl-group-modal-head-title p { margin: 2px 0 0; font-size: 12px; opacity: .7; }
+
+.bl-group-admin-box { padding: 10px 14px; border-radius: 14px; background: rgba(127,110,180,.12); border: 1px solid rgba(127,110,180,.25); font-size: 12px; line-height: 1.4; }
+.bl-group-admin-box.is-admin { background: rgba(255, 180, 0, .09); border-color: rgba(255, 180, 0, .3); }
+.bl-group-admin-info p { margin: 4px 0 0; opacity: .85; }
+.bl-group-admin-badge { display: inline-block; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 999px; background: rgba(255, 180, 0, .18); color: #ffca3a; border: 1px solid rgba(255, 180, 0, .35); }
+
+.bl-group-section { display: flex; flex-direction: column; gap: 10px; }
+.bl-group-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 700; }
+.bl-group-add-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--bl-accent, #20b8a5); background: color-mix(in srgb, var(--bl-accent, #20b8a5) 18%, transparent); color: #fff; font: 700 12px/1 inherit; cursor: pointer; transition: background .15s ease; }
+.bl-group-add-btn:hover { background: color-mix(in srgb, var(--bl-accent, #20b8a5) 30%, transparent); }
+.bl-group-add-btn.locked { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.06); opacity: .7; }
+
+.bl-group-add-form { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 14px; background: rgba(0,0,0,.2); border: 1px solid rgba(255,255,255,.12); }
+.bl-group-add-input-row { display: flex; align-items: center; gap: 6px; }
+.bl-group-add-input-row input { flex: 1; min-width: 0; padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.25); color: #fff; font: inherit; font-size: 13px; }
+
+.bl-cta-small { padding: 8px 14px; border-radius: 10px; border: 0; background: var(--bl-accent, #20b8a5); color: #fff; font: 700 12px/1 inherit; cursor: pointer; flex: none; }
+.bl-ghost-small { padding: 8px 10px; border-radius: 10px; border: 0; background: transparent; color: inherit; font: 600 12px/1 inherit; cursor: pointer; flex: none; opacity: .7; }
+
+.bl-group-members-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; padding-right: 4px; }
+.bl-group-member-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); }
+.bl-group-member-info { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.bl-group-member-avatar { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-size: 14px; background: rgba(255,255,255,.1); }
+.bl-group-member-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.bl-group-member-name { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+.bl-group-admin-tag { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 999px; background: rgba(255, 180, 0, .2); color: #ffca3a; border: 1px solid rgba(255, 180, 0, .35); flex: none; }
+.bl-group-me-tag { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,.12); opacity: .7; flex: none; }
+.bl-group-remove-btn { flex: none; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255, 59, 48, .3); background: rgba(255, 59, 48, .12); color: #ff453a; font: 700 11px/1 inherit; cursor: pointer; transition: background .15s ease; }
+.bl-group-remove-btn:hover { background: rgba(255, 59, 48, .25); }
+
+.bl-group-modal-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+.bl-group-leave-btn { color: #ff453a !important; margin-right: auto; font-size: 12px; }
+
+.bl-new-group-form { display: flex; flex-direction: column; gap: 12px; }
+.bl-group-input-chips { display: flex; align-items: center; gap: 6px; }
+.bl-group-input-chips input { flex: 1; }
+.bl-selected-members-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.bl-member-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); font-size: 12px; font-weight: 700; }
+.bl-member-chip-avatar { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; }
+.bl-member-chip-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.bl-member-chip button { background: none; border: 0; padding: 0 2px; color: inherit; font-size: 14px; cursor: pointer; opacity: .7; }
+
+/* ───────── Sondaggio «Questo o quello»: nessuna scritta sopra l'immagine ─────────
+   Una sola frase in basso; le vecchie etichette A/B e la filigrana restano nascoste. */
+.bl-poll-swipe-cues,
+.bl-poll-cue,
+.bl-poll-swipe-watermark { display: none !important; }
+
+.bl-poll-swipe-hint {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
+  margin: 0;
+  padding: 0 24px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* Mentre si trascina, la scelta in corso va in basso (al posto della frase), mai sopra la foto. */
+.bl-poll-swipe-choice {
+  top: auto !important;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px) !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  max-width: calc(100% - 48px);
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(10, 18, 32, 0.78);
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  z-index: 7;
+}
+.bl-poll-swipe-stage.bl-poll-swiping .bl-poll-swipe-hint { opacity: 0; }
+
+/* ───────── Lista chat: avatar sempre tondo, mai allungato ───────── */
+.bl-thread-row .bl-thread-avatar {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.bl-thread-row .bl-thread-avatar .bl-avatar-photo {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+.bl-thread-row .bl-thread-copy { min-width: 0; flex: 1 1 auto; }
+
+/* Messaggi di sistema nei gruppi (creazione, aggiunte, uscite) */
+.bl-msg-system {
+  align-self: center;
+  max-width: 86%;
+  margin: 6px auto;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  text-align: center;
+  opacity: .72;
+  background: var(--pl-fill, rgba(127,110,180,.14));
+}
+
+/* ───────── Elimina chat dall'elenco ───────── */
+.bl-thread-item { position: relative; display: flex; align-items: stretch; flex-wrap: wrap; gap: 6px; }
+.bl-thread-item > .bl-thread-row { flex: 1 1 0; min-width: 0; }
+.bl-thread-delete {
+  flex: 0 0 auto; align-self: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: inline-grid; place-items: center;
+  border: 1px solid var(--pl-line, rgba(127,110,180,.26));
+  background: var(--pl-fill, rgba(127,110,180,.12));
+  color: inherit; opacity: .7; cursor: pointer;
+}
+.bl-thread-delete:hover, .bl-thread-delete:focus-visible { opacity: 1; color: #e5484d; border-color: #e5484d; }
+.bl-thread-confirm {
+  flex: 1 0 100%; display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
+  padding: 6px 10px; border-radius: 12px; font-size: 13px;
+  background: var(--pl-fill, rgba(127,110,180,.12));
+}
+.bl-thread-confirm > span { margin-right: auto; font-weight: 600; }
+.bl-thread-confirm button { min-height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--pl-line, rgba(127,110,180,.3)); background: transparent; color: inherit; font-weight: 600; cursor: pointer; }
+.bl-thread-confirm .bl-thread-confirm-yes { background: #e5484d; border-color: #e5484d; color: #fff; }
+.bl-thread-confirm button:disabled { opacity: .6; cursor: default; }
+
+/* ───────── Messaggi: un colore per ogni utente + avatar accanto al fumetto ───────── */
+.bl-msg-row.bl-msg-colored { display: flex; align-items: flex-end; gap: 6px; }
+.bl-msg-row.bl-msg-colored.mine { justify-content: flex-end; }
+.bl-msg-row.bl-msg-colored .bl-message-bubble { min-width: 0; }
+
+.bl-msg-avatar {
+  flex: 0 0 28px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-grid; place-items: center;
+  font-size: 16px; line-height: 1;
+  background: hsl(var(--bl-msg-h, 200) 60% 50% / .22);
+  border: 1.5px solid hsl(var(--bl-msg-h, 200) 65% 55%);
+  user-select: none;
+}
+.bl-msg-avatar .bl-avatar-photo { width: 100%; height: 100%; max-width: none; object-fit: cover; display: block; border-radius: 50%; }
+
+/* Messaggi degli altri: tinta leggera dell'utente (leggibile in tema chiaro e scuro) */
+.bl-msg-row.bl-msg-colored .bl-message-bubble:not(.mine) {
+  background: hsl(var(--bl-msg-h, 200) 55% 50% / .20);
+  border: 1px solid hsl(var(--bl-msg-h, 200) 60% 55% / .55);
+  color: inherit;
+}
+/* I miei messaggi: il mio colore, pieno, testo bianco */
+.bl-msg-row.bl-msg-colored .bl-message-bubble.mine {
+  background: hsl(var(--bl-msg-h, 200) 55% 40%);
+  border: 1px solid hsl(var(--bl-msg-h, 200) 60% 55% / .6);
+  color: #fff;
+}
+.bl-msg-row.bl-msg-colored .bl-message-bubble.mine small { color: rgba(255,255,255,.78); }
+.bl-msg-row.bl-msg-colored .bl-msg-sender-name { color: hsl(var(--bl-msg-h, 200) 70% 55%); }
+
+/* ───────── Allineamento: miei messaggi a destra, degli altri a sinistra ───────── */
+.bl-msg-row.bl-msg-colored {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-end;
+  align-self: stretch !important;
+  width: 100% !important;
+  box-sizing: border-box;
+  gap: 6px;
+  justify-content: flex-start !important;
+}
+.bl-msg-row.bl-msg-colored.mine { justify-content: flex-end !important; }
+.bl-msg-row.bl-msg-colored .bl-message-bubble { max-width: min(78%, 520px); margin: 0 !important; }
+.bl-msg-row.bl-msg-colored.mine .bl-msg-reply-btn { order: -1; }
+.bl-msg-row.bl-msg-colored:not(.mine) .bl-message-bubble { order: 0; }
+.bl-msg-system { align-self: center; }
+/* ───────── Chat: scorri verso sinistra per Nascondi / Elimina ───────── */
+.bl-thread-item > .bl-swipe { flex: 1 1 100%; min-width: 0; }
+.bl-swipe { position: relative; overflow: hidden; border-radius: 18px; }
+.bl-swipe-track {
+  position: relative; display: flex; width: 100%;
+  touch-action: pan-y; -webkit-user-select: none; user-select: none;
+  transition: transform .22s cubic-bezier(.2, .8, .2, 1);
+  will-change: transform;
+}
+.bl-swipe.is-dragging .bl-swipe-track { transition: none; }
+.bl-swipe-front { flex: 0 0 100%; min-width: 0; }
+.bl-swipe-front > .bl-thread-row { width: 100%; box-sizing: border-box; }
+.bl-swipe-actions {
+  position: absolute; top: 0; bottom: 0; left: 100%; width: 176px;
+  display: flex; gap: 6px; padding-left: 6px; box-sizing: border-box;
+  visibility: hidden; transition: visibility 0s linear .22s;
+}
+.bl-swipe.is-open .bl-swipe-actions,
+.bl-swipe.is-dragging .bl-swipe-actions { visibility: visible; transition-delay: 0s; }
+.bl-swipe-btn {
+  flex: 1 1 0; min-width: 0; border: 0; border-radius: 16px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  font: 700 12px/1.1 inherit; color: #fff;
+}
+.bl-swipe-btn.is-hide { background: #6b7a99; }
+.bl-swipe-btn.is-delete { background: #e5484d; }
+.bl-swipe-btn:active { filter: brightness(.9); }
+.bl-swipe-btn:disabled { opacity: .6; cursor: default; }
+.bl-thread-item.is-hidden-chat .bl-thread-row { opacity: .6; }
+.bl-hidden-toggle {
+  align-self: center; margin: 8px auto 4px; padding: 6px 14px; border-radius: 999px;
+  border: 1px solid var(--pl-line, rgba(127,110,180,.26)); background: var(--pl-fill, rgba(127,110,180,.12));
+  color: inherit; font: 700 12px/1 inherit; cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) { .bl-swipe-track { transition: none; } }
+
+/* Pulsante profilo in alto a destra: avatar o foto scelta al posto dell'icona */
+.bl-profile-btn .bl-profile-btn-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1; }
+.bl-profile-btn .bl-profile-btn-avatar .bl-avatar-photo { width: 100%; height: 100%; max-width: none; object-fit: cover; display: block; border-radius: 50%; }
+
+/* ───────── Chat: pressione prolungata, archivio, risucchio ───────── */
+.bl-swipe-track { -webkit-touch-callout: none; }
+.bl-swipe-front { transition: transform .5s cubic-bezier(.34, 1.56, .64, 1); transform-origin: 50% 50%; }
+.bl-swipe.is-pressing .bl-swipe-front { transform: scale(.955, .93); transition: transform .45s cubic-bezier(.2, .9, .3, 1); }
+
+/* Riga in volo verso l'archivio o il buco nero: niente ritaglio, sopra tutto il resto */
+.bl-thread-item.is-sucking { z-index: 20; }
+.bl-thread-item.is-sucking .bl-thread-confirm { display: none; }
+.bl-swipe.is-flying { overflow: visible; pointer-events: none; will-change: transform, border-radius; }
+.bl-swipe.is-flying .bl-swipe-track { transform: none !important; transition: none; }
+.bl-swipe.is-flying .bl-swipe-actions { visibility: hidden !important; }
+.bl-swipe.is-flying .bl-swipe-front { transform: none !important; }
+
+/* Buco nero */
+.bl-blackhole {
+  position: absolute; z-index: 30; width: 78px; height: 78px; border-radius: 50%; pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+  background: radial-gradient(circle at 50% 50%, #000 0 36%, #06030d 44%, rgba(58, 20, 118, .92) 57%, rgba(150, 92, 255, .55) 69%, transparent 73%);
+  box-shadow: 0 0 22px 6px rgba(120, 70, 255, .45), inset 0 0 14px #000;
+}
+.bl-blackhole::before {
+  content: ""; position: absolute; inset: -8px; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0, rgba(190, 130, 255, .85) 14%, transparent 34%, rgba(90, 205, 255, .65) 58%, transparent 80%);
+  -webkit-mask: radial-gradient(circle, transparent 44%, #000 52%, #000 70%, transparent 76%);
+  mask: radial-gradient(circle, transparent 44%, #000 52%, #000 70%, transparent 76%);
+  filter: blur(1.5px);
+}
+
+/* Icona archivio nell'intestazione dell'elenco chat */
+.bl-threads-tools { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
+.bl-archive-btn {
+  position: relative; flex: none; width: 36px; height: 36px; border-radius: 50%; display: inline-grid; place-items: center;
+  border: 1px solid var(--pl-line, rgba(127,110,180,.26)); background: var(--pl-fill, rgba(127,110,180,.12)); color: inherit; cursor: pointer;
+  transition: background .2s ease;
+}
+.bl-archive-btn.on { background: var(--pl-line, rgba(127,110,180,.3)); }
+.bl-archive-btn > i {
+  position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; padding: 0 4px; box-sizing: border-box;
+  border-radius: 999px; background: #7c5cdb; color: #fff; font: 700 10px/17px inherit; font-style: normal; text-align: center;
+}
+.bl-archive-back {
+  border: 1px solid var(--pl-line, rgba(127,110,180,.26)); background: var(--pl-fill, rgba(127,110,180,.12)); color: inherit;
+  border-radius: 999px; padding: 6px 12px; font: 700 12px/1 inherit; cursor: pointer;
+}
+
+/* Menu rapido: morbido, elastico */
+.bl-ctx-layer {
+  position: fixed; inset: 0; z-index: 99999; background: rgba(8, 10, 22, .42);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  animation: bl-ctx-fade .22s ease both;
+}
+.bl-ctx-layer.is-closing { animation: bl-ctx-fade-out .17s ease both; }
+.bl-ctx-menu {
+  position: absolute; padding: 8px; box-sizing: border-box; border-radius: 22px; color: #fff;
+  background: rgba(26, 28, 42, .94); border: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .45);
+  animation: bl-jelly-in .6s cubic-bezier(.3, 1.2, .5, 1) both;
+}
+.bl-ctx-layer.is-closing .bl-ctx-menu { animation: bl-jelly-out .17s ease-in both; }
+.bl-ctx-title { padding: 6px 10px 8px; font: 700 12px/1.2 inherit; opacity: .6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bl-ctx-item {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 12px; border: 0; border-radius: 16px;
+  background: transparent; color: inherit; font: 600 15px/1 inherit; text-align: left; cursor: pointer;
+  animation: bl-item-in .5s cubic-bezier(.34, 1.56, .64, 1) both; animation-delay: calc(var(--i, 0) * 60ms + 120ms);
+  transition: background .15s ease, transform .25s cubic-bezier(.34, 1.56, .64, 1);
+}
+.bl-ctx-item:hover, .bl-ctx-item:focus-visible { background: rgba(255, 255, 255, .1); }
+.bl-ctx-item:active { transform: scale(.95, .9); }
+.bl-ctx-item.is-delete { color: #ff7a7f; }
+@keyframes bl-ctx-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bl-ctx-fade-out { to { opacity: 0; } }
+@keyframes bl-jelly-in {
+  0% { transform: scale(.4, .25); opacity: 0; }
+  38% { transform: scale(1.08, 1.14); opacity: 1; }
+  58% { transform: scale(.96, .93); }
+  78% { transform: scale(1.02, 1.03); }
+  100% { transform: scale(1, 1); opacity: 1; }
+}
+@keyframes bl-jelly-out { to { transform: scale(.6, .4); opacity: 0; } }
+@keyframes bl-item-in {
+  0% { transform: translateY(10px) scale(.9); opacity: 0; }
+  60% { transform: translateY(-2px) scale(1.04); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bl-ctx-menu, .bl-ctx-item { animation: none; }
+  .bl-swipe-front, .bl-swipe.is-pressing .bl-swipe-front { transition: none; }
+}
+/* ───────── «Questo o quello»: gesto dello swipe in trasparenza ───────── */
+.bl-poll-gesture {
+  position: absolute; left: 50%; top: 50%; z-index: 6; width: 220px; height: 64px;
+  transform: translate(-50%, -50%); pointer-events: none; opacity: .55;
+}
+.bl-pg-arrow {
+  position: absolute; top: 50%; translate: 0 -54%; font: 800 44px/1 system-ui, sans-serif; font-style: normal;
+  color: #fff; text-shadow: 0 2px 10px rgba(0, 0, 0, .45); animation: bl-pg-pulse 2.4s ease-in-out infinite;
+}
+.bl-pg-arrow.l { left: 0; } .bl-pg-arrow.r { right: 0; animation-delay: 1.2s; }
+.bl-pg-finger {
+  position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.95), rgba(255,255,255,.35) 70%);
+  border: 2px solid rgba(255,255,255,.8); box-shadow: 0 4px 18px rgba(0,0,0,.35);
+  animation: bl-pg-swipe 2.4s cubic-bezier(.45, 0, .25, 1) infinite;
+}
+@keyframes bl-pg-swipe {
+  0%, 8% { transform: translateX(0) scale(1); opacity: 0; }
+  16% { transform: translateX(0) scale(.9); opacity: 1; }
+  36% { transform: translateX(-78px) scale(1); opacity: 1; }
+  46% { transform: translateX(-78px) scale(1); opacity: 0; }
+  50% { transform: translateX(0) scale(1); opacity: 0; }
+  58% { transform: translateX(0) scale(.9); opacity: 1; }
+  80% { transform: translateX(78px) scale(1); opacity: 1; }
+  92%, 100% { transform: translateX(78px) scale(1); opacity: 0; }
+}
+@keyframes bl-pg-pulse { 0%, 100% { opacity: .35; } 20%, 36% { opacity: 1; } 60% { opacity: .35; } }
+.bl-poll-swipe-stage.bl-poll-swiping .bl-poll-gesture { display: none; }
+@media (prefers-reduced-motion: reduce) { .bl-pg-finger, .bl-pg-arrow { animation: none; } .bl-pg-finger { opacity: .8; } }
+
+/* Titolo dell'editor su una sola riga */
+.bl-root .bl-sheet-composer .bl-sheet-heading-main h2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.bl-root .bl-cmp-pickphoto { position: relative; display: block; margin: 18px auto; padding: 22px 16px; text-align: center; font-weight: 800; border-radius: 20px; cursor: pointer; }
+.bl-root .bl-cmp-pickphoto input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+/* =====================================================================
+   Scoppio, chiusura e scorrimento tra bolle: tutto «molle»
+   Stessa molla del ventaglio (--bl-spring / --bl-spring-soft).
+   Si muove sempre la SCHEDA (o lo stage), mai lo sfondo a schermo intero:
+   lo sfondo fa solo dissolvenza. Si usano le proprietà singole `scale` e
+   `translate`, che si sommano al `transform` già usato per il trascinamento.
+   ===================================================================== */
+
+/* durante il rimbalzo del rilascio il movimento lo calcola il JS: niente transizioni CSS sopra */
+.bl-story.is-springing .bl-story-card,
+.bl-viewer.is-springing .bl-viewer-stage { transition: none !important; }
+.bl-viewer.is-springing .bl-implosion-ring { transition: opacity .3s !important; }
+/* dopo l'ingresso l'animazione di apertura non riparte quando finisce un trascinamento */
+.bl-viewer.is-settled:not(.swipe-closing):not(.dissolving):not(.is-nav-out-up):not(.is-nav-out-down) .bl-viewer-stage { animation: none !important; }
+
+@media (prefers-reduced-motion: no-preference) {
+
+  /* Apertura: la bolla è scoppiata e il contenuto si gonfia fino a posto, con un rimbalzo */
+  .bl-story:not(.dissolving):not(.swipe-closing) .bl-story-card { animation: bl-soft-open .72s var(--bl-spring-soft) backwards; }
+  .bl-viewer:not(.swipe-closing):not(.dissolving) .bl-viewer-stage { animation: bl-soft-open .72s var(--bl-spring-soft) both; }
+  @keyframes bl-soft-open {
+    from { scale: .86 .8; translate: 0 34px; opacity: 0; }
+    26%  { opacity: 1; }
+    to   { scale: 1 1; translate: 0 0; opacity: 1; }
+  }
+
+  /* Cambio bolla (modalità scorrimento): ogni bolla nasce piccola e si espande fino a riempire la scheda
+     (il bordo è un cerchio che si allarga), poi si assesta con un rimbalzo; l'uscente si gonfia un attimo e si contrae. */
+  .bl-story:not(.dissolving):not(.swipe-closing) .bl-story-card.bl-story-card--nav-up,
+  .bl-viewer:not(.swipe-closing):not(.dissolving) .bl-viewer-stage.bl-viewer-stage--nav-up { animation: bl-bubble-in-up .88s var(--bl-spring-soft) backwards; }
+  .bl-story:not(.dissolving):not(.swipe-closing) .bl-story-card.bl-story-card--nav-down,
+  .bl-viewer:not(.swipe-closing):not(.dissolving) .bl-viewer-stage.bl-viewer-stage--nav-down { animation: bl-bubble-in-down .88s var(--bl-spring-soft) backwards; }
+  @keyframes bl-bubble-in-up {
+    from { scale: .16 .12; translate: 0 18vh; clip-path: circle(0% at 50% 46%); opacity: 0; }
+    16%  { opacity: 1; }
+    to   { scale: 1 1; translate: 0 0; clip-path: circle(80% at 50% 46%); opacity: 1; }
+  }
+  @keyframes bl-bubble-in-down {
+    from { scale: .16 .12; translate: 0 -18vh; clip-path: circle(0% at 50% 46%); opacity: 0; }
+    16%  { opacity: 1; }
+    to   { scale: 1 1; translate: 0 0; clip-path: circle(80% at 50% 46%); opacity: 1; }
+  }
+  .bl-story.is-nav-out-up:not(.dissolving):not(.swipe-closing) .bl-story-card,
+  .bl-viewer.is-nav-out-up:not(.swipe-closing):not(.dissolving) .bl-viewer-stage { animation: bl-bubble-out-up .34s cubic-bezier(.45, 0, .7, .4) forwards; }
+  .bl-story.is-nav-out-down:not(.dissolving):not(.swipe-closing) .bl-story-card,
+  .bl-viewer.is-nav-out-down:not(.swipe-closing):not(.dissolving) .bl-viewer-stage { animation: bl-bubble-out-down .34s cubic-bezier(.45, 0, .7, .4) forwards; }
+  @keyframes bl-bubble-out-up {
+    0%   { scale: 1 1; translate: 0 0; clip-path: circle(80% at 50% 46%); opacity: 1; }
+    28%  { scale: 1.05 1.07; translate: 0 -8px; clip-path: circle(80% at 50% 46%); opacity: 1; }
+    100% { scale: .16 .12; translate: 0 -14vh; clip-path: circle(0% at 50% 46%); opacity: 0; }
+  }
+  @keyframes bl-bubble-out-down {
+    0%   { scale: 1 1; translate: 0 0; clip-path: circle(80% at 50% 46%); opacity: 1; }
+    28%  { scale: 1.05 1.07; translate: 0 8px; clip-path: circle(80% at 50% 46%); opacity: 1; }
+    100% { scale: .16 .12; translate: 0 14vh; clip-path: circle(0% at 50% 46%); opacity: 0; }
+  }
+  /* pellicola di sapone: un anello che si apre (nascita) o si richiude (scoppio) intorno alla bolla */
+  .bl-nav-film {
+    position: absolute; z-index: 5; left: 50%; top: 46%; width: min(92vw, 420px); aspect-ratio: 1; translate: -50% -50%;
+    border-radius: 50%; pointer-events: none; opacity: 0;
+    border: 2px solid rgba(238, 228, 255, .9);
+    background: radial-gradient(circle at 30% 24%, rgba(255, 255, 255, .26), transparent 40%);
+    box-shadow: 0 0 24px rgba(190, 160, 255, .6), inset 0 0 28px rgba(150, 215, 255, .22), inset 0 0 0 6px rgba(255, 150, 220, .08);
+    animation: bl-film-in .66s cubic-bezier(.2, .7, .2, 1) both;
+  }
+  .bl-nav-film--out { animation: bl-film-out .34s cubic-bezier(.45, 0, .7, .4) both; }
+  @keyframes bl-film-in  { from { scale: .2; opacity: .95; } to { scale: 1.5; opacity: 0; } }
+  @keyframes bl-film-out { from { scale: 1.3; opacity: 0; } 35% { opacity: .9; } to { scale: .1; opacity: 0; } }
+
+  /* Chiusura (tasto ✕ o tocco): un piccolo respiro in fuori, poi la scheda si ritira come gelatina.
+     La vecchia «polverizzazione» del contenuto (sfocatura + salita) è sostituita da questo movimento. */
+  .bl-story.dissolving:not(.swipe-closing) .bl-story-card,
+  .bl-viewer.dissolving:not(.swipe-closing) .bl-viewer-stage {
+    animation: bl-soft-close .6s cubic-bezier(.4, 0, .25, 1) forwards;
+    transform-origin: 50% 50%;
+  }
+  .bl-story.dissolving .bl-story-media > :not(.bl-dust),
+  .bl-viewer.dissolving .bl-viewer-stage > :not(.bl-dust) { animation: none; }
+  @keyframes bl-soft-close {
+    0%   { scale: 1 1; translate: 0 0; opacity: 1; }
+    24%  { scale: 1.045 1.07; translate: 0 -6px; opacity: 1; }
+    100% { scale: .5 .42; translate: 0 40px; opacity: 0; }
+  }
+  /* lo sfondo scuro finisce di dissolversi prima che la bolla venga rimossa (650 ms) */
+  .bl-story.dissolving, .bl-viewer.dissolving { animation-duration: .46s; animation-delay: .12s; }
+
+  /* Chiusura trascinando verso il basso: parte dalla posizione del dito, con un leggero richiamo prima di risucchiarsi */
+  .bl-story.swipe-closing .bl-story-card { animation: bl-soft-implode .62s cubic-bezier(.4, -.35, .7, .45) forwards; }
+  .bl-viewer.swipe-closing .bl-viewer-stage { animation: bl-soft-implode .62s cubic-bezier(.4, -.35, .7, .45) forwards !important; }
+  @keyframes bl-soft-implode {
+    0%   { transform: translateY(var(--bl-drag-y, 0px)) scale(var(--bl-drag-scale, 1)); border-radius: 22px; opacity: 1; }
+    100% { transform: translateY(30vh) scale(.04, .08); border-radius: 50%; opacity: 0; }
+  }
+
+  /* Bolle sparse nel campo: si schiacciano, si gonfiano e scoppiano con elasticità */
+  .bl-root .bl-slot.bursting .bl-bubble { animation: bl-soft-burst .42s cubic-bezier(.3, 0, .3, 1) forwards !important; pointer-events: none; }
+  @keyframes bl-soft-burst {
+    0%   { scale: 1 1; opacity: 1; }
+    30%  { scale: 1.16 .9; opacity: 1; }
+    62%  { scale: .96 1.14; opacity: .85; }
+    100% { scale: 1.5 1.5; opacity: 0; }
+  }
+}
+
+
+/* ===== «Vicino a me»: distanza accanto all'etichetta e banner a ventaglio ===== */
+.bl-root .bl-near-btn { -webkit-tap-highlight-color: transparent; }
+.bl-root .bl-near-radius { margin-left: 6px; padding: 1px 6px; border-radius: 999px; font-size: 10px; font-weight: 700; background: rgba(127, 127, 127, .22); }
+.bl-root .bl-near-btn.on .bl-near-radius { background: rgba(255, 255, 255, .26); }
+.bl-root .bl-radius-fan { margin-top: 6px; will-change: transform, opacity; }
+.bl-root .bl-radius-fan button { will-change: transform, opacity; touch-action: none; }
+.bl-root .bl-radius-fan button.is-act { background: rgba(255, 255, 255, .3); box-shadow: 0 0 0 2px rgba(255, 255, 255, .7), 0 0 14px rgba(190, 160, 255, .6); color: inherit; }
+
+/* =====================================================================
+   Editor foto/video (MediaEditor.jsx): filtri, regolazioni, ritaglio, sticker, taglio
+   ===================================================================== */
+.bl-story-frame { isolation: isolate; }
+.bl-me { display: flex; flex-direction: column; gap: 10px; }
+.bl-root .bl-sheet-composer .bl-cmp-frame canvas.bl-me-canvas { display: block; max-width: 100%; max-height: 50dvh; width: auto; height: auto; margin: 0 auto; background: #05040c; }
+.bl-me-loading { margin: 40px 24px; text-align: center; }
+.bl-me-tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
+.bl-me-tabs::-webkit-scrollbar { display: none; }
+.bl-root .bl-sheet .bl-me-tabs button { flex: none; min-height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(106,95,176,.35); background: transparent; color: inherit; font: 700 14px system-ui; cursor: pointer; }
+.bl-root .bl-sheet .bl-me-tabs button.on { background: #6a5fb0; border-color: #6a5fb0; color: #fff; }
+.bl-me-panel { display: flex; flex-direction: column; gap: 10px; padding: 10px; border-radius: 16px; background: rgba(106,95,176,.1); border: 1px solid rgba(106,95,176,.28); }
+.bl-me-filters { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 2px 4px; -webkit-overflow-scrolling: touch; }
+.bl-me-filters::-webkit-scrollbar { display: none; }
+.bl-root .bl-sheet .bl-me-thumb { flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 72px; padding: 0; border: 0; background: transparent; color: inherit; font: 700 11px system-ui; cursor: pointer; }
+.bl-me-thumb canvas { display: block; width: 72px; height: 72px; border-radius: 12px; background: rgba(0,0,0,.25); border: 2px solid transparent; box-sizing: border-box; }
+.bl-me-thumb.on canvas { border-color: #6a5fb0; }
+.bl-me-thumb.on span { color: #6a5fb0; }
+.bl-me-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.bl-root .bl-sheet .bl-me-chips button, .bl-root .bl-sheet .bl-me-chip-toggle { min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(106,95,176,.35); background: transparent; color: inherit; font: 700 13px system-ui; cursor: pointer; }
+.bl-root .bl-sheet .bl-me-chips button.on, .bl-root .bl-sheet .bl-me-chip-toggle.on { background: #6a5fb0; border-color: #6a5fb0; color: #fff; }
+.bl-me-chips button.dirty:not(.on) { border-color: #ff6fa5; }
+.bl-me-range { display: flex; flex-direction: column; gap: 4px; font: 700 13px system-ui; }
+.bl-me-range span { display: flex; justify-content: space-between; }
+.bl-me-range input[type=range] { width: 100%; accent-color: #6a5fb0; min-height: 28px; }
+.bl-root .bl-sheet .bl-me-link { align-self: flex-start; padding: 4px 0; border: 0; background: transparent; color: #6a5fb0; font: 700 13px system-ui; text-decoration: underline; cursor: pointer; }
+.bl-root .bl-sheet .bl-me-link:disabled { opacity: .4; cursor: default; text-decoration: none; }
+.bl-me-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 168px; overflow-y: auto; }
+.bl-root .bl-sheet .bl-me-grid button { min-height: 44px; padding: 0; border: 0; border-radius: 12px; background: rgba(255,255,255,.06); font-size: 26px; line-height: 1; cursor: pointer; }
+.bl-root .bl-sheet .bl-me-grid button:disabled { opacity: .35; cursor: default; }
+.bl-root .bl-sheet .bl-me-grid button.bl-me-label { grid-column: span 3; font: 800 14px system-ui; color: inherit; border: 1px solid rgba(106,95,176,.35); background: transparent; }
+.bl-me-cropgrid { border: 1px solid rgba(255,255,255,.7); }
+.bl-me-cropgrid i { position: absolute; background: rgba(255,255,255,.45); pointer-events: none; }
+.bl-me-cropgrid i:nth-child(1) { left: 33.33%; top: 0; bottom: 0; width: 1px; }
+.bl-me-cropgrid i:nth-child(2) { left: 66.66%; top: 0; bottom: 0; width: 1px; }
+.bl-me-cropgrid i:nth-child(3) { top: 33.33%; left: 0; right: 0; height: 1px; }
+.bl-me-cropgrid i:nth-child(4) { top: 66.66%; left: 0; right: 0; height: 1px; }
+.bl-me-bin { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: rgba(15,12,34,.6); border: 1px solid rgba(255,255,255,.6); font-size: 22px; pointer-events: none; transition: transform .15s, background .15s; }
+.bl-me-bin.on { transform: translateX(-50%) scale(1.3); background: rgba(220,50,70,.85); }
+@media (prefers-reduced-motion: reduce) { .bl-me-bin { transition: none; } }
+
+/* ---------- Editor a schermo intero: foto grande, pulsanti a destra, pannelli che si aprono dal basso ---------- */
+.bl-root .bl-sheet-composer .bl-me-full { position: fixed; inset: 0; z-index: 80; display: block; background: #000; color: #f5edff; overflow: hidden; }
+.bl-me-stage { position: absolute; inset: 0; display: grid; place-items: center; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); box-sizing: border-box; }
+.bl-root .bl-sheet-composer .bl-me-full .bl-cmp-frame { display: block; position: relative; max-width: none; overflow: hidden; background: #05040c; }
+.bl-root .bl-sheet-composer .bl-me-full .bl-cmp-frame > img,
+.bl-root .bl-sheet-composer .bl-me-full .bl-cmp-frame > video,
+.bl-root .bl-sheet-composer .bl-me-full .bl-cmp-frame > canvas.bl-me-canvas { display: block; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; object-fit: contain; }
+.bl-me-top { position: absolute; left: 0; right: 0; top: 0; z-index: 9; display: flex; align-items: center; gap: 8px; padding: calc(10px + env(safe-area-inset-top)) 12px 10px; pointer-events: none; }
+.bl-me-top > * { pointer-events: auto; }
+.bl-me-top-fill { flex: 1; pointer-events: none !important; }
+.bl-root .bl-sheet .bl-me-top-btn { position: relative; overflow: hidden; display: inline-grid; place-items: center; min-width: 40px; height: 40px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.4); background: rgba(15,12,34,.45); color: #fff; font: 700 24px/1 system-ui; cursor: pointer; }
+.bl-root .bl-sheet .bl-me-top-pill { font: 700 13px system-ui; }
+.bl-me-top-btn input[type=file] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.bl-root .bl-sheet-composer .bl-me-full .bl-ov-rail { top: calc(64px + env(safe-area-inset-top)); right: 8px; transform: none; z-index: 10; gap: 6px; }
+.bl-root .bl-sheet .bl-me-full .bl-ov-rail .bl-ov-rail-btn { width: 42px; height: 42px; gap: 1px; align-content: center; opacity: .85; }
+.bl-root .bl-sheet .bl-me-full .bl-ov-rail .bl-ov-rail-btn small { font: 700 8px/1 system-ui; margin: 0; }
+.bl-root .bl-sheet .bl-me-full .bl-ov-rail .bl-ov-rail-btn[aria-pressed=true] { background: rgba(106,95,176,.8) !important; }
+.bl-me-drawer { position: absolute; left: 0; right: 0; bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 8; max-height: 46dvh; overflow-y: auto; overscroll-behavior: contain; padding: 8px 14px 14px; box-sizing: border-box; border-radius: 20px 20px 0 0; background: rgba(18,14,36,.92); color: #f5edff; animation: bl-me-up .18s ease-out; }
+@keyframes bl-me-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.bl-me-drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font: 800 14px system-ui; }
+.bl-root .bl-sheet .bl-me-drawer-head button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(255,255,255,.1); color: inherit; font-size: 18px; cursor: pointer; }
+.bl-me-drawer .bl-me-panel { background: none; border: 0; padding: 0; }
+.bl-me-drawer .bl-muted { color: rgba(245,237,255,.72); }
+.bl-root .bl-sheet .bl-me-drawer .bl-me-link, .bl-me-drawer .bl-me-thumb.on span { color: #cdbfff; }
+.bl-me-footer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; display: flex; flex-direction: column; gap: 8px; padding: 24px 16px calc(12px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgba(0,0,0,.72)); pointer-events: none; }
+.bl-me-footer > * { pointer-events: auto; }
+.bl-me-footer .bl-error { margin: 0; }
+.bl-me-footer .bl-cmp-publish { width: 100%; }
+@media (prefers-reduced-motion: reduce) { .bl-me-drawer { animation: none; } }
+/* ===== Sticker in chat ===== */
+.bl-message-bubble.is-sticker { background: transparent !important; box-shadow: none !important; border: 0 !important; padding: 2px 4px; }
+.bl-chat-sticker { display: block; width: 160px; max-width: 60vw; height: auto; aspect-ratio: 1 / 1; object-fit: contain; background: transparent; user-select: none; -webkit-user-drag: none; }
+.bl-sticker-tray { position: absolute; left: 0; right: 0; bottom: calc(100% + 8px); max-height: 260px; display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 18px; background: var(--bl-panel, #20232d); border: 1px solid var(--bl-line, #ffffff20); box-shadow: 0 10px 30px #0006; z-index: 30; box-sizing: border-box; }
+.bl-sticker-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+.bl-sticker-head span { display: inline-flex; gap: 6px; align-items: center; }
+.bl-sticker-head button { border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; padding: 4px 8px; border-radius: 10px; }
+.bl-sticker-head .bl-sticker-import { background: var(--bl-accent, #20b8a5); color: #fff; }
+.bl-sticker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; overflow-y: auto; padding: 2px; }
+.bl-sticker-item { position: relative; display: block; }
+.bl-sticker-item > button { width: 100%; aspect-ratio: 1; border: 0; padding: 4px; border-radius: 12px; background: #ffffff0d; cursor: pointer; }
+.bl-sticker-item > button:hover { background: #ffffff1c; }
+.bl-sticker-item img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.bl-sticker-item i { position: absolute; top: -4px; right: -4px; width: 20px; height: 20px; border-radius: 50%; background: #000b; color: #fff; font-style: normal; font-size: 14px; line-height: 20px; text-align: center; cursor: pointer; }
+.bl-sticker-empty { margin: 0; font-size: 13px; opacity: .7; }
