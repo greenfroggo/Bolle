@@ -1,0 +1,235 @@
+=== STRUTTURA (profondità 4) ===
+.
+./.DS_Store
+./.env.example
+./.env.local
+./.eslintrc.cjs
+./.gitignore
+./.vercel
+./.vercel/project.json
+./.vercel/README.txt
+./capacitor.config.json
+./dist_backup
+./dist_backup/apple-touch-icon 2.png
+./dist_backup/apple-touch-icon.png
+./dist_backup/assets
+./dist_backup/assets/index-BlImNhsk.js
+./dist_backup/assets/index-DDOwoVA3.css
+./dist_backup/assets/web-Djmllwgx.js
+./dist_backup/bolle-logo 2.png
+./dist_backup/bolle-logo.png
+./dist_backup/bolle-logo.webp
+./dist_backup/bolle-presets
+./dist_backup/bolle-presets/reaction-1.gif
+./dist_backup/bolle-presets/reaction-2.gif
+./dist_backup/bolle-presets/reaction-3.gif
+./dist_backup/bolle-presets/reaction-4.gif
+./dist_backup/bolle-presets/reaction-5.gif
+./dist_backup/bolle-presets/reaction-6.gif
+./dist_backup/icon-192 2.png
+./dist_backup/icon-192.png
+./dist_backup/icon-512 2.png
+./dist_backup/icon-512.png
+./dist_backup/index.html
+./dist_backup/manifest 2.webmanifest
+./dist_backup/manifest.webmanifest
+./index.html
+./ios
+./ios/.gitignore
+./ios/.gitignore 2
+./ios/App
+./ios/App/App
+./ios/App/App.xcodeproj
+./ios/App/App.xcodeproj/project.pbxproj
+./ios/App/App.xcodeproj/project.xcworkspace
+./ios/App/App/AppDelegate.swift
+./ios/App/App/Assets.xcassets
+./ios/App/App/Base.lproj
+./ios/App/App/capacitor.config.json
+./ios/App/App/config 2.xml
+./ios/App/App/config.xml
+./ios/App/App/Info.plist
+./ios/App/App/public
+./ios/App/App/SceneDelegate.swift
+./ios/App/CapApp-SPM
+./ios/App/CapApp-SPM/.gitignore
+./ios/App/CapApp-SPM/.swiftpm
+./ios/App/CapApp-SPM/Package.swift
+./ios/App/CapApp-SPM/README.md
+./ios/App/CapApp-SPM/Sources
+./ios/capacitor-cordova-ios-plugins
+./ios/capacitor-cordova-ios-plugins/CordovaPluginsResources 2.podspec
+./ios/capacitor-cordova-ios-plugins/CordovaPluginsResources.podspec
+./ios/capacitor-cordova-ios-plugins/resources
+./ios/capacitor-cordova-ios-plugins/resources/.gitkeep
+./ios/capacitor-cordova-ios-plugins/sources
+./ios/capacitor-cordova-ios-plugins/sources/.gitkeep
+./ios/debug 2.xcconfig
+./ios/debug.xcconfig
+./package-lock.json
+./package.json
+./package.json.backup
+./project-report.txt
+./public
+./public/apple-touch-icon 2.png
+./public/apple-touch-icon.png
+./public/bolle-logo 2.png
+./public/bolle-logo.png
+./public/bolle-logo.webp
+./public/bolle-presets
+./public/bolle-presets/reaction-1.gif
+./public/bolle-presets/reaction-2.gif
+./public/bolle-presets/reaction-3.gif
+./public/bolle-presets/reaction-4.gif
+./public/bolle-presets/reaction-5.gif
+./public/bolle-presets/reaction-6.gif
+./public/icon-192 2.png
+./public/icon-192.png
+./public/icon-512 2.png
+./public/icon-512.png
+./public/manifest 2.webmanifest
+./public/manifest.webmanifest
+./README.md
+./src
+./src/.DS_Store
+./src/App.jsx
+./src/components
+./src/components/.DS_Store
+./src/components/AvatarImage.jsx
+./src/components/GifAnswer.jsx
+./src/components/KlipyPicker.jsx
+./src/components/pickers
+./src/components/pickers/FormPickers.jsx
+./src/components/Sheet.jsx
+./src/components/UserLinkText.jsx
+./src/features
+./src/features/.DS_Store
+./src/features/admin
+./src/features/admin/AdminPortal.jsx
+./src/features/auth
+./src/features/auth/authValidation.js
+./src/features/auth/GuestPermissions.jsx
+./src/features/auth/InfoSheet.jsx
+./src/features/auth/LoginSheet.jsx
+./src/features/auth/PrivacySection.jsx
+./src/features/auth/RegistrationSheet.jsx
+./src/features/auth/TutorialSheet.jsx
+./src/features/auth/WelcomeScreen.jsx
+./src/features/chat
+./src/features/chat/ChatMessage.jsx
+./src/features/chat/chatUtils.js
+./src/features/chat/GroupModals.jsx
+./src/features/chat/MessagesView.jsx
+./src/features/chat/SwipeRow.jsx
+./src/features/chat/UserSuggest.jsx
+./src/features/leaderboard
+./src/features/leaderboard/LeaderboardView.jsx
+./src/features/notifications
+./src/features/notifications/notificationTypes.js
+./src/features/settings
+./src/features/settings/DeleteAccountSection.jsx
+./src/features/settings/LegalInfoView.jsx
+./src/features/settings/PersonalDataView.jsx
+./src/features/settings/SettingsView.jsx
+./src/features/viewer
+./src/features/viewer/Viewer.jsx
+./src/hooks
+./src/hooks/useEscape.js
+./src/hooks/useGoogleAccount.jsx
+./src/index.css
+./src/lib
+./src/lib/.DS_Store
+./src/lib/bolleCore.jsx
+./src/lib/bolleDiscovery.js
+./src/lib/bubbleTypes.js
+./src/lib/capsule.js
+./src/lib/ChainOrbs.jsx
+./src/lib/constellationLayout.js
+./src/lib/discoveryMotion.js
+./src/lib/ecoMode.js
+./src/lib/geo.js
+./src/lib/localMagnetism.js
+./src/lib/magneticForces.js
+./src/lib/MediaEditor.jsx
+./src/lib/NearbyMap.jsx
+./src/lib/OverlayEditor.jsx
+./src/lib/PublicProfile.jsx
+./src/lib/seqApi.js
+./src/lib/SequentialFeed.jsx
+./src/lib/spatialPairs.js
+./src/lib/storage.js
+./src/lib/systemBubbles.js
+./src/lib/TagAutocomplete.jsx
+./src/lib/tracking.js
+./src/main.jsx
+./src/styles
+./src/styles/.DS_Store
+./src/styles/bolle-glass.css
+./src/styles/bolle-polish.css
+./src/styles/bolle.css
+./src/unlocks.jsx
+./supabase
+./supabase/.temp
+./supabase/.temp/cli-latest
+./supabase/.temp/gotrue-version
+./supabase/.temp/linked-project.json
+./supabase/.temp/pooler-url
+./supabase/.temp/postgres-version
+./supabase/.temp/project-ref
+./supabase/.temp/rest-version
+./supabase/.temp/storage-migration
+./supabase/.temp/storage-version
+./supabase/bolle.sql
+./supabase/functions
+./supabase/functions/bolle-auth
+./supabase/functions/bolle-auth/index.ts
+./supabase/schema.sql
+./tests
+./tests/.DS_Store
+./tests/bolleDiscovery.test.js
+./tests/constellationLayout.test.js
+./tests/discoveryMotion.test.js
+./tests/localMagnetism.test.js
+./tests/magneticForces.test.js
+./tests/spatialPairs.test.js
+./vercel.json
+./vite.config.js
+
+=== package.json ===
+{
+  "name": "bolle",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:physics": "node --test tests/*.test.js",
+    "lint": "eslint src --ext .js,.jsx",
+    "check": "npm run lint && npm run test:physics && npm run build"
+  },
+  "dependencies": {
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/geolocation": "^8.2.4",
+    "@capacitor/ios": "^8.6.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "@tanstack/react-query": "^5.106.1",
+    "@vercel/analytics": "^2.0.1",
+    "lucide-react": "^1.63.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "vite": "^8.3.5"
+  },
+  "overrides": {}
+}
+
+=== CONFIG ===
+zsh: no matches found: app.config.*

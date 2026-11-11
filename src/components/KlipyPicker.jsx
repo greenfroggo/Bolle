@@ -46,7 +46,7 @@ function klipyCustomerId() {
   } catch { return "bolle-anon"; }
 }
 
-async function fetchFromKlipy(q, type, signal) {
+export async function fetchFromKlipy(q, type, signal) {
   if (!KLIPY_API_KEY) return [];
   const rawQ = (q || "").trim();
   const cid = `&customer_id=${encodeURIComponent(klipyCustomerId())}`;
@@ -87,7 +87,7 @@ async function fetchFromKlipy(q, type, signal) {
   return [];
 }
 
-async function fetchFromGiphy(q, type, signal) {
+export async function fetchFromGiphy(q, type, signal) {
   const rawQ = (q || "").trim();
   const searchQ = type === "meme" ? (rawQ ? `${rawQ} meme` : "meme") : rawQ;
   const isSearch = Boolean(searchQ);

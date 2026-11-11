@@ -7,6 +7,7 @@ import { openUserProfile } from "../../components/UserLinkText.jsx";
 import SwipeRow from "./SwipeRow.jsx";
 import ChatMessage from "./ChatMessage.jsx";
 import { GroupManageModal, NewGroupModal } from "./GroupModals.jsx";
+import { useUnlocks, showLocked } from "../../unlocks.jsx";
 import {
   CHAT_MAX_BODY,
   POLL,
@@ -23,6 +24,8 @@ import {
 } from "./chatUtils.js";
 
 function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOwnBubble, onExit, avatarMap = {}, activeChat, onActiveChatChange, groupModalOpen, onGroupModalOpenChange }) {
+  const unlocks = useUnlocks();
+  const groupsOk = unlocks.isUnlocked("groups");
   const openedDirect = useRef(Boolean(initialChat?.username)); // chat aperta da fuori: la freccia torna alla schermata di provenienza
   const [threads, setThreads] = useState([]);
   const [active, setActiveInternal] = useState(activeChat || null);
@@ -309,6 +312,7 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
 
   async function handleCreateNewGroup(groupName, membersList) {
     if (!me?.registered) { onNotify?.("Accedi per creare un gruppo."); return; }
+    if (!groupsOk) { showLocked("groups"); return; } // vale anche per il passaggio da chat 1:1 a gruppo
     const { data, error: gErr } = await supabase.rpc("bolle_group_create", { p_name: String(groupName || "").trim(), p_members: membersList });
     if (gErr) { onNotify?.(groupErrorText(gErr)); return; }
     if (data?.skipped?.length) onNotify?.(`Non aggiunti: ${data.skipped.map(u => "@" + u).join(", ")} (non esistono o non accettano messaggi).`);
@@ -614,8 +618,8 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
                 {threads.filter(isThreadHidden).length > 0 && <i>{threads.filter(isThreadHidden).length}</i>}
               </button>
               {!archiveOpen && (
-                <button type="button" className="bl-new-group-btn" onClick={() => setNewGroupOpen(true)} title="Crea un nuovo gruppo">
-                  <Users size={15} /> Nuovo gruppo
+                <button type="button" className={`bl-new-group-btn ${groupsOk ? "" : "is-locked"}`} aria-disabled={groupsOk ? undefined : "true"} onClick={() => { if (!groupsOk) { showLocked("groups"); return; } setNewGroupOpen(true); }} title={groupsOk ? "Crea un nuovo gruppo" : unlocks.message("groups")}>
+                  {groupsOk ? <Users size={15} /> : <span aria-hidden="true">🔒</span>} Nuovo gruppo
                 </button>
               )}
             </span>

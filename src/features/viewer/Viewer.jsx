@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Heart, MessageCircle, Share2, Star as StarIcon, ChevronsUpDown as ScrollIcon, Send as SendIcon, X as CloseIcon, MoreHorizontal as MoreIcon, Link2 as LinkIcon } from "lucide-react";
-import { supabase, errorText, ReactionIcon, REACTIONS, playDust, bubbleShareUrl } from "../../lib/bolleCore.jsx";
+import { supabase, errorText, ReactionIcon, playDust, bubbleShareUrl } from "../../lib/bolleCore.jsx";
 import { SYSTEM_CATEGORIES } from "../../lib/systemBubbles.js";
 import { EditedVideo, sanitizeVideoEdit } from "../../lib/MediaEditor.jsx";
 import { makeBlurPreview } from "../../lib/SequentialFeed.jsx";
@@ -48,9 +48,23 @@ function runSpring({ from, to = 0, v0 = 0, k = 170, c = 15, onFrame, onDone }) {
    La luminosità di ciascuna metà segue il dito: 0 a riposo, 1 quando lo swipe raggiunge la soglia di conferma. */
 const POLL_SWIPE_MAX = 260;
 const POLL_SWIPE_COMMIT = 95;
-function PollHalves({ x, confirmed }) {
-  const left = Math.max(0, Math.min(1, -x / POLL_SWIPE_COMMIT));  // verso sinistra = opzione A
-  const right = Math.max(0, Math.min(1, x / POLL_SWIPE_COMMIT));  // verso destra = opzione B
+const POLL_IDLE_PERIOD = 3200; // ms: stesso periodo dell'oscillazione CSS .bl-poll-idle
+function PollHalves({ x, confirmed, idle = false }) {
+  // A riposo la bolla "respira": le due metà si accendono a turno, come per dire "scegli da che parte".
+  const [phase, setPhase] = useState(0);
+  useEffect(() => {
+    if (!idle) { setPhase(0); return undefined; }
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
+    const t0 = performance.now();
+    let id = requestAnimationFrame(function tick(now) {
+      setPhase(Math.sin(((now - t0) / POLL_IDLE_PERIOD) * Math.PI * 2));
+      id = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [idle]);
+  const idleGlow = idle ? 0.6 : 0;
+  const left = idle ? Math.max(0, -phase) * idleGlow : Math.max(0, Math.min(1, -x / POLL_SWIPE_COMMIT));  // verso sinistra = opzione A
+  const right = idle ? Math.max(0, phase) * idleGlow : Math.max(0, Math.min(1, x / POLL_SWIPE_COMMIT));  // verso destra = opzione B
   const chosen = confirmed ? (x < 0 ? "a" : "b") : "";
   return (
     <div className={`bl-poll-halves ${confirmed ? "is-confirmed" : ""} ${chosen ? `chose-${chosen}` : ""}`} style={{ "--ga": left.toFixed(3), "--gb": right.toFixed(3) }} aria-hidden="true">
@@ -58,6 +72,97 @@ function PollHalves({ x, confirmed }) {
       <span className="bl-poll-halfwrap bl-poll-halfwrap--b"><i className="bl-poll-half" /></span>
     </div>
   );
+}
+
+/* Gesto suggerito: animazione trasparente in sovraimpressione (un "dito" che scivola a sinistra e a destra).
+   Non cattura i tocchi (pointer-events: none) e sparisce non appena l'utente inizia lo swipe o ha votato. */
+function PollSwipeGesture() {
+  return (
+    <div className="bl-poll-gesture" aria-hidden="true">
+      <style>{`
+        .bl-poll-gesture{position:absolute;inset:0;z-index:6;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden}
+        .bl-poll-gesture__stage{position:relative;width:260px;height:80px;display:flex;align-items:center;justify-content:center}
+        .bl-poll-gesture__chev{position:absolute;top:50%;margin-top:-16px;font-size:30px;line-height:32px;font-weight:300;color:rgba(255,255,255,.55);text-shadow:0 0 10px rgba(0,0,0,.35);animation:blPgChev 4.4s ease-in-out infinite}
+        .bl-poll-gesture__chev--l{left:0}
+        .bl-poll-gesture__chev--r{right:0;animation-delay:2.2s}
+        .bl-poll-gesture__trail{position:absolute;top:50%;height:26px;margin-top:-13px;width:96px;border-radius:13px;opacity:0;transform:scaleX(0)}
+        .bl-poll-gesture__trail--l{right:50%;transform-origin:right center;background:linear-gradient(to left,rgba(255,255,255,.32),rgba(255,255,255,0));animation:blPgTrailL 4.4s ease-in-out infinite}
+        .bl-poll-gesture__trail--r{left:50%;transform-origin:left center;background:linear-gradient(to right,rgba(255,255,255,.32),rgba(255,255,255,0));animation:blPgTrailR 4.4s ease-in-out infinite}
+        .bl-poll-gesture__dot{position:absolute;top:50%;left:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;opacity:0;
+          background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55) 0%,rgba(255,255,255,.28) 55%,rgba(255,255,255,.1) 100%);
+          border:1.5px solid rgba(255,255,255,.55);box-shadow:0 0 18px rgba(255,255,255,.25);animation:blPgDot 4.4s ease-in-out infinite}
+        @keyframes blPgDot{
+          0%{opacity:0;transform:translateX(0) scale(1.25)}
+          6%{opacity:1;transform:translateX(0) scale(.9)}
+          10%{opacity:1;transform:translateX(0) scale(.9)}
+          30%{opacity:1;transform:translateX(-96px) scale(.9)}
+          38%{opacity:0;transform:translateX(-96px) scale(1.15)}
+          50%{opacity:0;transform:translateX(0) scale(1.25)}
+          56%{opacity:1;transform:translateX(0) scale(.9)}
+          60%{opacity:1;transform:translateX(0) scale(.9)}
+          80%{opacity:1;transform:translateX(96px) scale(.9)}
+          88%{opacity:0;transform:translateX(96px) scale(1.15)}
+          100%{opacity:0;transform:translateX(0) scale(1.25)}
+        }
+        @keyframes blPgTrailL{0%,10%{opacity:0;transform:scaleX(0)}14%{opacity:1}30%{opacity:1;transform:scaleX(1)}38%,100%{opacity:0;transform:scaleX(1)}}
+        @keyframes blPgTrailR{0%,60%{opacity:0;transform:scaleX(0)}64%{opacity:1}80%{opacity:1;transform:scaleX(1)}88%,100%{opacity:0;transform:scaleX(1)}}
+        @keyframes blPgChev{0%,100%{opacity:.15}20%{opacity:.7}45%{opacity:.15}}
+        @media (prefers-reduced-motion: reduce){
+          .bl-poll-gesture__dot,.bl-poll-gesture__trail{animation:none;opacity:0}
+          .bl-poll-gesture__chev{animation:none;opacity:.5}
+        }
+      `}</style>
+      <div className="bl-poll-gesture__stage">
+        <span className="bl-poll-gesture__chev bl-poll-gesture__chev--l">‹</span>
+        <span className="bl-poll-gesture__trail bl-poll-gesture__trail--l" />
+        <span className="bl-poll-gesture__trail bl-poll-gesture__trail--r" />
+        <span className="bl-poll-gesture__dot" />
+        <span className="bl-poll-gesture__chev bl-poll-gesture__chev--r">›</span>
+      </div>
+    </div>
+  );
+}
+
+/* Frase guida sotto la bolla: sparisce appena si inizia lo swipe. */
+function PollSwipeNote() {
+  return (
+    <p className="bl-poll-swipe-note" aria-live="polite">
+      <style>{`
+        .bl-poll-swipe-note{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);margin:0;max-width:92%;z-index:6;pointer-events:none;
+          padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600;line-height:1.25;text-align:center;white-space:nowrap;
+          color:rgba(255,255,255,.92);background:rgba(0,0,0,.28);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-shadow:0 1px 6px rgba(0,0,0,.35)}
+        @media (max-width:360px){.bl-poll-swipe-note{white-space:normal;font-size:12px}}
+      `}</style>
+      Fai swipe a destra o sinistra per decidere!
+    </p>
+  );
+}
+
+/* Bolla "questo o quello" aperta: più grande, centrata nello spazio disponibile, con barra messaggio sopra la bottom bar.
+   Gli stili vivono qui perché sono legati solo a questa schermata. */
+function PollStoryStyles() {
+  return <style>{`
+    .bl-story--poll{--bl-poll-size:min(96vw,calc(100dvh - 290px),640px)}
+    .bl-story--poll .bl-story-card{display:flex;flex-direction:column}
+    .bl-story--poll .bl-story-media{position:relative;flex:1 1 auto;min-height:calc(var(--bl-poll-size) + 44px);display:flex;align-items:center;justify-content:center;
+      overflow:visible!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+    .bl-story--poll .bl-story-frame{position:relative;flex:0 0 auto;
+      width:var(--bl-poll-size)!important;height:var(--bl-poll-size)!important;max-width:none!important;max-height:none!important;
+      margin:0 auto!important;padding:0!important;display:flex;align-items:center;justify-content:center;
+      overflow:visible!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important}
+    .bl-story--poll .bl-story-frame>img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;
+      border-radius:0!important;box-shadow:none!important;background:transparent!important;clip-path:none!important;-webkit-mask:none!important;mask:none!important}
+    .bl-story--poll .bl-story-bar{margin-top:auto;padding-bottom:calc(var(--bl-foot-gap,0px) + env(safe-area-inset-bottom,0px) + 8px)!important}
+    .bl-poll-idle{animation:blPollSway 3.2s ease-in-out infinite;will-change:transform}
+    @keyframes blPollSway{
+      0%{transform:translateX(0) rotate(0deg) scale(1)}
+      25%{transform:translateX(16px) rotate(2.2deg) scale(1.015)}
+      50%{transform:translateX(0) rotate(0deg) scale(1)}
+      75%{transform:translateX(-16px) rotate(-2.2deg) scale(1.015)}
+      100%{transform:translateX(0) rotate(0deg) scale(1)}
+    }
+    @media (prefers-reduced-motion: reduce){.bl-poll-idle{animation:none}}
+  `}</style>;
 }
 
 export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact, reactionBusy, isFavorite, onToggleFavorite, onShare, onDiscoveryInteraction, onBlockUser, onMessage, onContinueChain, onSendReply, onShareToUser, favoriteList, scrollMode = false, scrollDir = "up", onToggleScroll = null, onScrollNav = null }) {
@@ -126,7 +231,25 @@ export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact,
   const [pollError, setPollError] = useState("");
   const pollSwipeStart = useRef(null);
   const [pollSwipeX, setPollSwipeX] = useState(0);
+  const pollStage = Boolean(poll && !poll.my_vote && !viewer.isAuthor); // bolla "questo o quello" ancora da votare
+  const [footGap, setFootGap] = useState(0);
+  // La barra del messaggio resta in basso ma sopra la bottom bar: se questa è visibile sopra la schermata, ne misuro l'ingombro.
+  useEffect(() => {
+    if (!pollStage) { setFootGap(0); return undefined; }
+    const measure = () => {
+      const nav = document.querySelector(".bl-footbar");
+      if (!nav) { setFootGap(0); return; }
+      const r = nav.getBoundingClientRect();
+      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      setFootGap(top && nav.contains(top) ? Math.max(0, Math.round(window.innerHeight - r.top)) : 0);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    const t = setTimeout(measure, 350); // dopo l'animazione di apertura
+    return () => { window.removeEventListener("resize", measure); clearTimeout(t); };
+  }, [pollStage, viewer.id]);
   const [pollSwipeFlying, setPollSwipeFlying] = useState(false);
+  const pollIdle = pollStage && !pollSwipeFlying && Math.abs(pollSwipeX) <= 24;
   const [pollGlassVisible, setPollGlassVisible] = useState(false);
   // Schermata "storia": messaggio all'autore, cuore, inoltro e menu.
   const [msg, setMsg] = useState("");
@@ -193,7 +316,7 @@ export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact,
     Promise.all([supabase.rpc("bolle_poll_result",{p_bubble_id:viewer.id}),supabase.rpc("bolle_question_public_v4",{p_bubble_id:viewer.id}),supabase.rpc("bolle_reaction_counts_v4",{p_bubble_id:viewer.id}),supabase.rpc("bolle_truth_public",{p_bubble_id:viewer.id}),supabase.rpc("bolle_rating_public",{p_bubble_id:viewer.id})])
       .then(([p,q,r,t,g])=>{if(!alive)return;if(!t.error)setTruth(t.data||null);if(!g.error)setRating(g.data||null);if(!p.error){setPoll(p.data);if(p.data?.my_vote || viewer.isAuthor)setPollGlassVisible(true);}else setPollError(p.error.message);if(!q.error)setQuestion(q.data);else setQuestionLoadError(q.error.message);if(!r.error)setReactionCounts(r.data || {});else console.warn("Bolle: conteggi reazioni non disponibili",r.error.message);setInteractionLoading(false);})
       .catch(()=>{if(alive)setInteractionLoading(false)});
-    return()=>{alive=false};},[viewer.id,viewer.gift,viewer.type]);
+    return()=>{alive=false};},[viewer.id,viewer.gift,viewer.type,viewer.isAuthor]);
   async function sendAnswer(){if(viewer.isAuthor||answerBusy||!(answer.trim()||answerGif)||question?.my_answer)return;setAnswerBusy(true);setAnswerError("");const pAnswer = answerGif ? (answerGif.provider === "klipy" ? `[GIF:KLIPY:${answerGif.url}]` : `${GIF_TAG}${answerGif.id}]`) : answer.trim();const {data,error}=await supabase.rpc("bolle_answer_question",{p_bubble_id:viewer.id,p_answer:pAnswer});setAnswerBusy(false);if(error)setAnswerError(errorText(error));else {const updated=await supabase.rpc("bolle_question_public_v4",{p_bubble_id:viewer.id});setQuestion(updated.error?data:updated.data);onDiscoveryInteraction?.("answer");}}
 
   async function vote(choice){if(viewer.isAuthor || voting || poll?.my_vote)return;setVoting(true);setPollError("");const {data,error}=await supabase.rpc("bolle_vote_poll",{p_bubble_id:viewer.id,p_choice:choice});setVoting(false);if(error)setPollError(errorText(error));else {setPoll(data);setPollGlassVisible(true);onDiscoveryInteraction?.("vote");}}
@@ -406,9 +529,10 @@ export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact,
   }
   if (storyMode) {
     const swipeable = poll && !poll.my_vote && !viewer.isAuthor;
-    return <div className={`bl-story ${interactive ? "is-interactive" : ""} ${dissolving ? "dissolving" : ""} ${swipeClosing ? "swipe-closing" : ""} ${isDragging ? "is-dragging" : ""} ${springing ? "is-springing" : ""} ${settled ? "is-settled" : ""} ${navOut ? (navOut > 0 ? "is-nav-out-up" : "is-nav-out-down") : ""}`} style={{ "--bl-drag-y": `${dragY}px`, "--bl-drag-scale": String(dragScale) }} role="dialog" aria-modal="true" aria-label="Contenuto della bolla" onPointerDown={onHandlePointerDown} onPointerMove={onHandlePointerMove} onPointerUp={onHandlePointerEnd} onPointerCancel={onHandlePointerCancel} onClick={onBackdropClick}>
-      {scrollMode && <span className={`bl-nav-film ${navOut ? "bl-nav-film--out" : ""}`} key={navOut ? "out" : viewer.id} aria-hidden="true" />}
-      <div className={`bl-story-card ${scrollMode ? `bl-story-card--nav-${scrollDir}` : ""}`} key={viewer.id}>
+    return <div className={`bl-story ${swipeable ? "bl-story--poll" : ""} ${interactive ? "is-interactive" : ""} ${dissolving ? "dissolving" : ""} ${swipeClosing ? "swipe-closing" : ""} ${isDragging ? "is-dragging" : ""} ${springing ? "is-springing" : ""} ${settled ? "is-settled" : ""} ${navOut ? (navOut > 0 ? "is-nav-out-up" : "is-nav-out-down") : ""}`} style={{ "--bl-drag-y": `${dragY}px`, "--bl-drag-scale": String(dragScale), "--bl-foot-gap": `${footGap}px` }} role="dialog" aria-modal="true" aria-label="Contenuto della bolla" onPointerDown={onHandlePointerDown} onPointerMove={onHandlePointerMove} onPointerUp={onHandlePointerEnd} onPointerCancel={onHandlePointerCancel} onClick={onBackdropClick}>
+      {swipeable && <PollStoryStyles />}
+      {scrollMode && <span className={`bl-nav-film ${navOut ? "bl-nav-film--out" : ""}`} key={navOut ? "film-out" : `film-${viewer.id}`} aria-hidden="true" />}
+      <div className={`bl-story-card ${scrollMode ? `bl-story-card--nav-${scrollDir}` : ""}`} key={`card-${viewer.id}`}>
         {timerOn && <div className={`bl-story-timer ${storyPaused ? "paused" : ""}`} aria-hidden="true"><i key={`${viewer.id}-${storyPaused ? "p" : "r"}`} /></div>}
         <header className="bl-story-head">
           {(() => {
@@ -435,14 +559,15 @@ export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact,
         <div className={`bl-story-media ${swipeable ? "bl-poll-swipe-stage" : ""} ${pollSwipeFlying ? "bl-poll-swipe-flying" : ""}`} style={swipeable ? { "--bl-poll-x": `${(pollSwipeX * 0.16).toFixed(1)}px`, "--bl-poll-rotation": `${Math.max(-4, Math.min(4, pollSwipeX / 65)).toFixed(2)}deg` } : undefined} onPointerDown={poll ? onPollSwipeStart : undefined} onPointerMove={poll ? onPollSwipeMove : undefined} onPointerUp={poll ? onPollSwipeEnd : undefined} onPointerCancel={poll ? onPollSwipeCancel : undefined} onClick={stageTap} role="button" tabIndex={0} aria-label="Tocca per far sparire il contenuto" onKeyDown={(e) => !poll && !question && (e.key === "Enter" || e.key === " ") && stageTap()}>
           {viewer.status === "loading" && <p className="bl-viewer-msg">Un attimo…</p>}
           {viewer.status === "error" && <p className="bl-viewer-msg">{viewer.gone ? "Questa bolla è scaduta: il suo contenuto non esiste più." : <>Non riusciamo ad aprire questo contenuto. {viewer.loadError ? `Dettaglio: ${viewer.loadError}` : "La bolla è comunque scoppiata."}</>}</p>}
-          {viewer.status === "ready" && isMediaKind && <div className="bl-story-frame">
+          {viewer.status === "ready" && isMediaKind && <div className={`bl-story-frame ${pollIdle ? "bl-poll-idle" : ""}`}>
             {viewer.type === "image" && <img className={[viewer.kindHint === "confession" ? "bl-unblur" : "", (viewer.kindHint === "gif" || /\.gif(\?|$)/i.test(String(viewer.url || ""))) ? "bl-gif-full" : ""].filter(Boolean).join(" ") || undefined} src={viewer.url} alt={viewer.caption || "Foto della bolla"} draggable={false} />}
             {viewer.type === "video" && vEditReady && <EditedVideo src={viewer.url} edit={vEdit} />}
             {overlayOnMedia && <p className={`bl-overlay-text pos-${viewer.captionPos || "bot"}`}>{viewer.caption}</p>}
             <OverlayLayer overlays={ovs} />
-            {poll && !poll.my_vote && !viewer.isAuthor && <PollHalves x={pollSwipeX} confirmed={pollSwipeFlying} />}
-            {poll && !poll.my_vote && !viewer.isAuthor && Math.abs(pollSwipeX) <= 24 && <><p className="bl-poll-swipe-hint" aria-live="polite">Fai swipe verso la tua scelta</p></>}
+            {poll && !poll.my_vote && !viewer.isAuthor && <PollHalves x={pollSwipeX} confirmed={pollSwipeFlying} idle={pollIdle} />}
+            {poll && !poll.my_vote && !viewer.isAuthor && Math.abs(pollSwipeX) <= 24 && <PollSwipeGesture />}
           </div>}
+          {pollStage && Math.abs(pollSwipeX) <= 24 && <PollSwipeNote />}
           {poll && !poll.my_vote && !viewer.isAuthor && Math.abs(pollSwipeX) > 24 && <div className={`bl-poll-swipe-choice ${pollSwipeX < 0 ? "left" : "right"}`} aria-hidden="true">{pollSwipeX < 0 ? poll.a : poll.b}</div>}
           {dissolving && <span className="bl-dust" aria-hidden="true">
             {Array.from({ length: 40 }, (_, i) => <i key={i} style={{ left: `${(i * 37) % 100}%`, top: `${(i * 53) % 100}%`, "--dx": `${((i * 29) % 90) - 30}px`, "--dy": `${-20 - ((i * 17) % 90)}px`, "--sz": `${2 + (i % 4) * 1.5}px`, "--dl": `${(i % 6) * 45}ms` }} />)}
@@ -456,8 +581,8 @@ export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact,
           {chainCard}
         </div>
         <footer className="bl-story-bar">
-          {timerOn && <p className="bl-story-hint">{storyPaused ? "Il timer è in pausa mentre scrivi" : "Si polverizza tra 6 secondi · non si riapre più"}</p>}
-          {scrollMode && <p className="bl-story-hint">Scorri su e giù per cambiare bolla · tocca l'immagine per chiudere</p>}
+          {timerOn && storyPaused && <p className="bl-story-hint">Il timer è in pausa mentre scrivi</p>}
+          {scrollMode && <p className="bl-story-hint">Scorri su e giù per cambiare bolla · tocca l&apos;immagine per chiudere</p>}
           {interactive && !scrollMode && <p className="bl-story-hint">Puoi interagire finché non chiudi questa schermata.</p>}
           {msgNote && <p className="bl-story-note" role="status">{msgNote}</p>}
           {msgFocus && !interactive && !viewer.reacted && !viewer.isAuthor && <div className="bl-story-quick" role="group" aria-label="Reazioni rapide">
@@ -485,13 +610,13 @@ export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact,
     </div>;
   }
   return <div className={`bl-viewer ${viewer.chain?.root_bubble_id ? "bl-viewer-chain-open" : ""} ${interactive ? "bl-viewer-interactive" : ""} ${dissolving ? "dissolving" : ""} ${swipeClosing ? "swipe-closing" : ""} ${isDragging ? "is-dragging" : ""} ${springing ? "is-springing" : ""} ${settled ? "is-settled" : ""} ${navOut ? (navOut > 0 ? "is-nav-out-up" : "is-nav-out-down") : ""}`} style={{ "--bl-drag-y": `${dragY}px`, "--bl-drag-scale": String(dragScale), "--bl-drag-progress": String(Math.min(dragY / 360, 1)) }} role="dialog" aria-modal="true" aria-label="Contenuto della bolla" onPointerDown={onHandlePointerDown} onPointerMove={onHandlePointerMove} onPointerUp={onHandlePointerEnd} onPointerCancel={onHandlePointerCancel} onClick={onBackdropClick}>
-    {scrollMode && <span className={`bl-nav-film ${navOut ? "bl-nav-film--out" : ""}`} key={navOut ? "out" : viewer.id} aria-hidden="true" />}
+    {scrollMode && <span className={`bl-nav-film ${navOut ? "bl-nav-film--out" : ""}`} key={navOut ? "film-out" : `film-${viewer.id}`} aria-hidden="true" />}
     <div className="bl-viewer-top bl-viewer-drag-handle"
       aria-label="Trascina verso il basso per chiudere"><span className="bl-viewer-grip" aria-hidden="true" /> <span>{scrollMode ? "Scorri su o giù per cambiare bolla" : "Un momento per te · trascina giù per chiudere"}</span></div>
-    {auto && !viewer.chain?.root_bubble_id && !poll && !question && !truth && !rating && !interactionLoading && !dissolving && <div className="bl-timer" key={viewer.id} aria-hidden="true" />}
+    {auto && !viewer.chain?.root_bubble_id && !poll && !question && !truth && !rating && !interactionLoading && !dissolving && <div className="bl-timer" key={`timer-${viewer.id}`} aria-hidden="true" />}
     <div className="bl-implosion-ring" aria-hidden="true" />
     {onToggleScroll && <button type="button" className={`bl-viewer-scroll-toggle ${scrollMode ? "on" : ""}`} onClick={onToggleScroll} aria-pressed={scrollMode} aria-label={scrollMode ? "Disattiva la modalità scorrimento" : "Attiva la modalità scorrimento"} title={scrollMode ? "Esci dallo scorrimento" : "Scorri le bolle"}><ScrollIcon size={22} /></button>}
-    <div key={viewer.id} className={`${scrollMode ? `bl-viewer-stage--nav-${scrollDir} ` : ""}bl-viewer-stage ${poll && !poll.my_vote && !viewer.isAuthor ? "bl-poll-swipe-stage" : ""} ${pollSwipeFlying ? "bl-poll-swipe-flying" : ""}`} style={poll && !poll.my_vote && !viewer.isAuthor ? {"--bl-poll-x": `${(pollSwipeX * 0.16).toFixed(1)}px`, "--bl-poll-rotation": `${Math.max(-4, Math.min(4, pollSwipeX / 65)).toFixed(2)}deg`} : undefined} onPointerDown={poll ? onPollSwipeStart : undefined} onPointerMove={poll ? onPollSwipeMove : undefined} onPointerUp={poll ? onPollSwipeEnd : undefined} onPointerCancel={poll ? onPollSwipeCancel : undefined} onClick={interactive ? undefined : () => { if (Date.now() >= suppressClickUntil.current) dissolve(); }} role="button" tabIndex={0} aria-label="Tocca per far sparire il contenuto"
+    <div key={`stage-${viewer.id}`} className={`${scrollMode ? `bl-viewer-stage--nav-${scrollDir} ` : ""}bl-viewer-stage ${poll && !poll.my_vote && !viewer.isAuthor ? "bl-poll-swipe-stage" : ""} ${pollSwipeFlying ? "bl-poll-swipe-flying" : ""}`} style={poll && !poll.my_vote && !viewer.isAuthor ? {"--bl-poll-x": `${(pollSwipeX * 0.16).toFixed(1)}px`, "--bl-poll-rotation": `${Math.max(-4, Math.min(4, pollSwipeX / 65)).toFixed(2)}deg`} : undefined} onPointerDown={poll ? onPollSwipeStart : undefined} onPointerMove={poll ? onPollSwipeMove : undefined} onPointerUp={poll ? onPollSwipeEnd : undefined} onPointerCancel={poll ? onPollSwipeCancel : undefined} onClick={interactive ? undefined : () => { if (Date.now() >= suppressClickUntil.current) dissolve(); }} role="button" tabIndex={0} aria-label="Tocca per far sparire il contenuto"
       onKeyDown={(e) => !poll && !question && (e.key === "Enter" || e.key === " ") && dissolve()}>
       {viewer.status === "loading" && <p className="bl-viewer-msg">Un attimo…</p>}
       {viewer.status === "error" && <p className="bl-viewer-msg">{viewer.gone ? "Questa bolla è scaduta: il suo contenuto non esiste più." : <>Non riusciamo ad aprire questo contenuto. {viewer.loadError ? `Dettaglio: ${viewer.loadError}` : "La bolla è comunque scoppiata."}</>}</p>}
@@ -502,8 +627,9 @@ export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact,
       {viewer.caption && <p className="bl-caption">{viewer.caption}</p>}
       {viewer.attribution && <p className="bl-system-attrib">— {viewer.attribution}</p>}
       {viewer.link && <a className="bl-system-link" href={viewer.link} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>Leggi su {viewer.source || "la fonte"} ↗</a>}
-      {poll && !poll.my_vote && !viewer.isAuthor && Math.abs(pollSwipeX) <= 24 && <><p className="bl-poll-swipe-hint" aria-live="polite">Fai swipe verso la tua scelta</p></>}
+      {poll && !poll.my_vote && !viewer.isAuthor && Math.abs(pollSwipeX) <= 24 && <PollSwipeGesture />}
       {pollError && <small role="alert" className="bl-poll-error">{pollError}</small>}
+      {pollStage && Math.abs(pollSwipeX) <= 24 && <PollSwipeNote />}
       {poll && !poll.my_vote && !viewer.isAuthor && Math.abs(pollSwipeX) > 24 && <div className={`bl-poll-swipe-choice ${pollSwipeX < 0 ? "left" : "right"}`} aria-hidden="true">{pollSwipeX < 0 ? poll.a : poll.b}</div>}
       
       {poll && (Boolean(poll.my_vote) || viewer.isAuthor) && pollGlassVisible && <div className="bl-poll-glass" role="status" aria-live="polite"><div className="bl-poll-glass-card"><strong>Risultati del sondaggio</strong>{[[poll.a,poll.votes_a],[poll.b,poll.votes_b]].map(([label,count],i)=>{const total=Number(poll.votes_a)+Number(poll.votes_b);const pct=total?Math.round(Number(count)*100/total):0;return <div className="bl-poll-glass-row" key={i}><span>{label}</span><b>{pct}%</b><i style={{width:`${pct}%`}} aria-hidden="true" /></div>})}<small>{viewer.isAuthor ? "Il tuo sondaggio" : "Voto registrato"} · Scorri verso il basso per chiudere</small></div></div>}

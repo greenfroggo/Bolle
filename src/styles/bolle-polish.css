@@ -85,7 +85,7 @@
   .bl-root.bl-root .bl-profile-hub .bl-profile-edit-link {
     margin: 0; padding: 7px 12px; min-height: 32px;
     border: 1px solid var(--pl-line); border-radius: 999px;
-    background: transparent; color: inherit; font: 700 12px/1 inherit;
+    background: transparent; color: inherit; font-weight: 700; font-size: 12px; line-height: 1; font-family: inherit;
   }
   
   /* titoli di gruppo */
@@ -146,7 +146,7 @@
     border: 0; border-radius: 0; box-shadow: none; background: transparent; color: inherit; text-align: left;
   }
   .bl-profile-badges-title { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; }
-  .bl-profile-badges-name { font: 700 15px/1.2 inherit; white-space: nowrap; }
+  .bl-profile-badges-name { font-weight: 700; font-size: 15px; line-height: 1.2; font-family: inherit; white-space: nowrap; }
   .bl-profile-badges-bar { flex: 1; height: 5px; border-radius: 5px; background: var(--pl-line); overflow: hidden; }
   .bl-profile-badges-bar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #8d7af0, #d8a3fa); }
   .bl-root.bl-root .bl-profile-hub .bl-profile-badges-toggle > strong {
@@ -352,7 +352,7 @@
 .bl-root .bl-top .bl-counter-wrap .bl-counter.bl-counter-ring { margin-right: 0; }
 .bl-counter-pop {
   position: absolute; top: calc(100% + 10px); left: 0; z-index: 40; white-space: nowrap;
-  padding: 9px 14px; border-radius: 14px; font: 700 13px/1.2 inherit;
+  padding: 9px 14px; border-radius: 14px; font-weight: 700; font-size: 13px; line-height: 1.2; font-family: inherit;
   background: rgba(20, 14, 38, .92); color: #fff; border: 1px solid rgba(255,255,255,.18);
   box-shadow: 0 10px 26px rgba(0,0,0,.32); animation: bl-pop-in .18s ease-out;
 }
@@ -558,7 +558,7 @@
 
 /* Elenco conversazioni & pulsante nuovo gruppo */
 .bl-threads-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
-.bl-new-group-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--pl-line, rgba(127,110,180,.26)); background: var(--pl-fill, rgba(127,110,180,.12)); color: inherit; font: 700 12px/1 inherit; cursor: pointer; transition: transform .15s ease, background .15s ease; }
+.bl-new-group-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--pl-line, rgba(127,110,180,.26)); background: var(--pl-fill, rgba(127,110,180,.12)); color: inherit; font-weight: 700; font-size: 12px; line-height: 1; font-family: inherit; cursor: pointer; transition: transform .15s ease, background .15s ease; }
 .bl-new-group-btn:hover { background: var(--pl-line, rgba(127,110,180,.26)); }
 .bl-thread-group-avatar { background: linear-gradient(135deg, #7c5cdb, #ba7ed8) !important; color: #fff !important; }
 .bl-thread-group-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; background: var(--pl-fill, rgba(127,110,180,.15)); border: 1px solid var(--pl-line, rgba(127,110,180,.26)); margin-left: 6px; opacity: .85; vertical-align: middle; }
@@ -582,7 +582,7 @@
 
 .bl-group-section { display: flex; flex-direction: column; gap: 10px; }
 .bl-group-section-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 700; }
-.bl-group-add-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--bl-accent, #20b8a5); background: color-mix(in srgb, var(--bl-accent, #20b8a5) 18%, transparent); color: #fff; font: 700 12px/1 inherit; cursor: pointer; transition: background .15s ease; }
+.bl-group-add-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--bl-accent, #20b8a5); background: color-mix(in srgb, var(--bl-accent, #20b8a5) 18%, transparent); color: #fff; font-weight: 700; font-size: 12px; line-height: 1; font-family: inherit; cursor: pointer; transition: background .15s ease; }
 .bl-group-add-btn:hover { background: color-mix(in srgb, var(--bl-accent, #20b8a5) 30%, transparent); }
 .bl-group-add-btn.locked { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.06); opacity: .7; }
 
@@ -590,8 +590,8 @@
 .bl-group-add-input-row { display: flex; align-items: center; gap: 6px; }
 .bl-group-add-input-row input { flex: 1; min-width: 0; padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: rgba(0,0,0,.25); color: #fff; font: inherit; font-size: 13px; }
 
-.bl-cta-small { padding: 8px 14px; border-radius: 10px; border: 0; background: var(--bl-accent, #20b8a5); color: #fff; font: 700 12px/1 inherit; cursor: pointer; flex: none; }
-.bl-ghost-small { padding: 8px 10px; border-radius: 10px; border: 0; background: transparent; color: inherit; font: 600 12px/1 inherit; cursor: pointer; flex: none; opacity: .7; }
+.bl-cta-small { padding: 8px 14px; border-radius: 10px; border: 0; background: var(--bl-accent, #20b8a5); color: #fff; font-weight: 700; font-size: 12px; line-height: 1; font-family: inherit; cursor: pointer; flex: none; }
+.bl-ghost-small { padding: 8px 10px; border-radius: 10px; border: 0; background: transparent; color: inherit; font-weight: 600; font-size: 12px; line-height: 1; font-family: inherit; cursor: pointer; flex: none; opacity: .7; }
 
 .bl-group-members-list { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; padding-right: 4px; }
 .bl-group-member-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); }
@@ -601,7 +601,7 @@
 .bl-group-member-name { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
 .bl-group-admin-tag { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 999px; background: rgba(255, 180, 0, .2); color: #ffca3a; border: 1px solid rgba(255, 180, 0, .35); flex: none; }
 .bl-group-me-tag { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,.12); opacity: .7; flex: none; }
-.bl-group-remove-btn { flex: none; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255, 59, 48, .3); background: rgba(255, 59, 48, .12); color: #ff453a; font: 700 11px/1 inherit; cursor: pointer; transition: background .15s ease; }
+.bl-group-remove-btn { flex: none; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(255, 59, 48, .3); background: rgba(255, 59, 48, .12); color: #ff453a; font-weight: 700; font-size: 11px; line-height: 1; font-family: inherit; cursor: pointer; transition: background .15s ease; }
 .bl-group-remove-btn:hover { background: rgba(255, 59, 48, .25); }
 
 .bl-group-modal-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 4px; }
@@ -800,7 +800,7 @@
 .bl-hidden-toggle {
   align-self: center; margin: 8px auto 4px; padding: 6px 14px; border-radius: 999px;
   border: 1px solid var(--pl-line, rgba(127,110,180,.26)); background: var(--pl-fill, rgba(127,110,180,.12));
-  color: inherit; font: 700 12px/1 inherit; cursor: pointer;
+  color: inherit; font-weight: 700; font-size: 12px; line-height: 1; font-family: inherit; cursor: pointer;
 }
 @media (prefers-reduced-motion: reduce) { .bl-swipe-track { transition: none; } }
 
@@ -846,11 +846,11 @@
 .bl-archive-btn.on { background: var(--pl-line, rgba(127,110,180,.3)); }
 .bl-archive-btn > i {
   position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; padding: 0 4px; box-sizing: border-box;
-  border-radius: 999px; background: #7c5cdb; color: #fff; font: 700 10px/17px inherit; font-style: normal; text-align: center;
+  border-radius: 999px; background: #7c5cdb; color: #fff; font-weight: 700; font-size: 10px; line-height: 17px; font-family: inherit; font-style: normal; text-align: center;
 }
 .bl-archive-back {
   border: 1px solid var(--pl-line, rgba(127,110,180,.26)); background: var(--pl-fill, rgba(127,110,180,.12)); color: inherit;
-  border-radius: 999px; padding: 6px 12px; font: 700 12px/1 inherit; cursor: pointer;
+  border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: 12px; line-height: 1; font-family: inherit; cursor: pointer;
 }
 
 /* Menu rapido: morbido, elastico */
@@ -867,10 +867,10 @@
   animation: bl-jelly-in .6s cubic-bezier(.3, 1.2, .5, 1) both;
 }
 .bl-ctx-layer.is-closing .bl-ctx-menu { animation: bl-jelly-out .17s ease-in both; }
-.bl-ctx-title { padding: 6px 10px 8px; font: 700 12px/1.2 inherit; opacity: .6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bl-ctx-title { padding: 6px 10px 8px; font-weight: 700; font-size: 12px; line-height: 1.2; font-family: inherit; opacity: .6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bl-ctx-item {
   width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 12px; border: 0; border-radius: 16px;
-  background: transparent; color: inherit; font: 600 15px/1 inherit; text-align: left; cursor: pointer;
+  background: transparent; color: inherit; font-weight: 600; font-size: 15px; line-height: 1; font-family: inherit; text-align: left; cursor: pointer;
   animation: bl-item-in .5s cubic-bezier(.34, 1.56, .64, 1) both; animation-delay: calc(var(--i, 0) * 60ms + 120ms);
   transition: background .15s ease, transform .25s cubic-bezier(.34, 1.56, .64, 1);
 }
@@ -1336,7 +1336,7 @@
 .bl-mine-card:not(.is-wide) .bl-bubble-miniature { width: 100%; height: auto; aspect-ratio: 16 / 11; border-radius: 20px 18px 22px 16px; }
 .bl-mine-card .bl-bubble-miniature img, .bl-mine-card .bl-bubble-miniature video, .bl-mine-card .bl-bubble-miniature canvas { width: 100%; height: 100%; object-fit: cover; }
 .bl-mine-card-text { min-width: 0; display: grid; gap: 2px; }
-.bl-mine-card-text p { margin: 0; font-size: 13px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bl-mine-card-text p { margin: 0; font-size: 13px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .bl-mine-card-text small { font-size: 10.5px; color: var(--cosmos-muted, #65597f); }
 .bl-mine-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 12px; font-weight: 700; }
 .bl-mine-meta span { display: inline-flex; align-items: center; gap: 4px; }
@@ -1385,3 +1385,426 @@
 @media (prefers-reduced-motion: reduce) {
   .bl-poll-halves.is-confirmed .bl-poll-halfwrap { animation: none; }
 }
+
+/* =====================================================================
+   HOME V2 — header, segmento «Per te / Preferiti», footbar con «+» centrale
+   Non tocca gli stili delle bolle né il ventaglio del «+» (BubbleFan).
+   ===================================================================== */
+
+/* Header: logo a sinistra, «N scoppi», notifiche, profilo a destra */
+.bl-root .bl-top { align-items: center !important; justify-content: flex-start !important; gap: 8px !important; padding: calc(14px + env(safe-area-inset-top)) 16px 10px !important; }
+.bl-root .bl-wordmark { margin-right: auto; display: inline-flex; align-items: baseline; padding: 0; border: 0; background: transparent; color: var(--cosmos-text, #fff); font-family: inherit; font-size: 31px; font-weight: 800; line-height: 1; letter-spacing: -.035em; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.bl-root .bl-wordmark i { display: inline-block; width: .17em; height: .17em; margin-left: .05em; border-radius: 50%; background: #ff5fa8; }
+.bl-root .bl-counter-wrap { flex: none; margin-left: auto; }
+.bl-root .bl-counter.bl-counter-pill { width: auto !important; height: 46px !important; min-width: 0 !important; padding: 0 18px !important; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px !important; background: rgba(255, 255, 255, .06) !important; border: 1.5px solid rgba(255, 255, 255, .28) !important; box-shadow: none !important; color: #fff; font-family: inherit; }
+.bl-root .bl-counter-pill strong { font-size: 25px; font-weight: 800; line-height: 1; }
+.bl-root .bl-counter-pill span { font-size: 15px; font-weight: 600; opacity: .92; }
+.bl-root .bl-counter-pill.is-red strong { color: #ff8a8a; }
+.bl-root .bl-counter-pill.is-orange strong { color: #ffc27a; }
+.bl-root .bl-top .bl-round { width: 46px !important; height: 46px !important; }
+.bl-root .bl-top .bl-home-actions { gap: 8px; }
+
+/* Segmento «Per te / Preferiti» */
+.bl-root .bl-filter { top: calc(80px + env(safe-area-inset-top)) !important; }
+.bl-root .bl-segment--home { padding: 5px !important; gap: 2px !important; background: rgba(24, 14, 58, .72) !important; border: 1.5px solid rgba(255, 255, 255, .26) !important; box-shadow: none !important; }
+.bl-root .bl-filter .bl-filter-row .bl-segment--home button { display: inline-flex; align-items: center; gap: 7px; padding: 11px 24px; border-radius: 999px; font-family: inherit; font-size: 16px; font-weight: 700; color: #fff; background: transparent; transition: background .35s, box-shadow .35s, color .35s; }
+.bl-root .bl-filter .bl-filter-row .bl-segment--home button.on { background: #fff !important; color: #241446 !important; }
+.bl-root .bl-author-filter-compact { width: 0; }
+.bl-root .bl-author-popover { position: fixed !important; top: calc(140px + env(safe-area-inset-top)) !important; left: 50% !important; right: auto !important; transform: translateX(-50%); }
+
+/* Footbar: Scopri · Vicino a me · [+] · Classifiche · Messaggi */
+.bl-root .bl-footbar { position: fixed; z-index: 19; left: 50%; transform: translateX(-50%); bottom: calc(14px + env(safe-area-inset-bottom)); width: min(calc(100vw - 24px), 440px); height: 68px; display: grid; grid-template-columns: 1fr 1fr 84px 1fr 1fr; align-items: stretch; padding: 0 6px; border-radius: 999px; background: rgba(24, 14, 58, .92); border: 1.5px solid rgba(255, 255, 255, .26); box-shadow: 0 10px 30px rgba(5, 2, 22, .45); }
+.bl-root .bl-foot-gap { pointer-events: none; }
+.bl-root .bl-foot-item, .bl-root .bl-footbar .bl-near-btn { display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-width: 0; height: 100%; padding: 0 2px !important; border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; color: #fff; opacity: .82; font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1.15; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.bl-root .bl-foot-item.on, .bl-root .bl-footbar .bl-near-btn.on { opacity: 1; font-weight: 800; }
+.bl-root .bl-foot-item.on svg { stroke-width: 2.4; }
+.bl-root .bl-foot-ico { position: relative; display: inline-flex; }
+.bl-root .bl-foot-ico .bl-notification-dot { right: -9px; top: -6px; }
+.bl-root .bl-footbar .bl-near-ico svg { width: 23px; height: 23px; }
+.bl-root .bl-footbar .bl-near-radius { display: block; margin: 0; padding: 0; background: transparent !important; font-size: 10px; opacity: .85; }
+
+/* «+» centrale: stesso pulsante e stesso ventaglio, spostato sul bordo alto della footbar */
+.bl-root .bl-bottom-actions { bottom: calc(34px + env(safe-area-inset-bottom)) !important; z-index: 21 !important; }
+
+/* Testo guida e spazi del feed a una bolla */
+.bl-root .bl-seq-hint-line { position: fixed; z-index: 9; left: 0; right: 0; bottom: calc(124px + env(safe-area-inset-bottom)); margin: 0; padding: 0 20px; text-align: center; font-size: 16px; font-weight: 600; color: #fff; text-shadow: 0 1px 10px rgba(12, 6, 36, .9), 0 0 3px rgba(12, 6, 36, .8); pointer-events: none; }
+.bl-root .bl-seq-hint-line span { display: inline-block; padding: 7px 16px; border-radius: 999px; background: rgba(20, 10, 50, .55); }
+.bl-root .bl-seq-wrap { padding-bottom: calc(170px + env(safe-area-inset-bottom)) !important; }
+.bl-root .bl-guest-banner { bottom: calc(168px + env(safe-area-inset-bottom)); }
+@media (max-width: 360px) {
+  .bl-root .bl-wordmark { font-size: 26px; }
+  .bl-root .bl-counter.bl-counter-pill { padding: 0 12px !important; }
+  .bl-root .bl-filter .bl-filter-row .bl-segment--home button { padding: 10px 18px; font-size: 14px; }
+  .bl-root .bl-foot-item, .bl-root .bl-footbar .bl-near-btn { font-size: 11px; }
+}
+
+
+/* Preferiti: filtro attivo = pulsante acceso con alone, diverso dal semplice «Per te» */
+.bl-root .bl-filter .bl-filter-row .bl-segment--home button.on.is-filter-active { background: linear-gradient(110deg, #ad91ec, #ff8fc7) !important; color: #fff !important; box-shadow: 0 0 0 2px rgba(255, 255, 255, .7), 0 0 20px rgba(255, 143, 199, .85), 0 0 38px rgba(173, 145, 236, .55) !important; animation: bl-filter-glow 2.4s ease-in-out infinite; }
+.bl-root .bl-segment--home button.is-filter-active svg { filter: drop-shadow(0 0 4px rgba(255, 255, 255, .9)); }
+@keyframes bl-filter-glow { 50% { box-shadow: 0 0 0 2px rgba(255, 255, 255, .85), 0 0 26px rgba(255, 143, 199, 1), 0 0 48px rgba(173, 145, 236, .7); } }
+
+/* Footbar: lente di vetro liquida che scivola sulla sezione attiva */
+.bl-root .bl-footbar { --lens-x: 0px; --lens-o: 0; }
+.bl-root .bl-foot-item, .bl-root .bl-footbar .bl-near-btn { position: relative; z-index: 1; }
+.bl-root .bl-foot-gap { position: relative; z-index: 1; }
+.bl-root .bl-foot-lens { position: absolute; left: 0; top: 5px; bottom: 5px; width: 76px; z-index: 0; pointer-events: none; opacity: var(--lens-o); transform: translate3d(calc(var(--lens-x) - 38px), 0, 0); transition: transform .7s cubic-bezier(.3, 1.5, .5, 1), opacity .25s; will-change: transform; }
+.bl-root .bl-footbar:not([data-ready]) .bl-foot-lens { transition: none; }
+.bl-root .bl-foot-lens i { display: block; width: 100%; height: 100%; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, .6);
+  background:
+    radial-gradient(ellipse 55% 34% at 30% 18%, rgba(255, 255, 255, .8), rgba(255, 255, 255, 0) 72%),
+    radial-gradient(ellipse 50% 28% at 72% 86%, rgba(160, 220, 255, .45), rgba(160, 220, 255, 0) 75%),
+    radial-gradient(ellipse at 50% 55%, rgba(255, 255, 255, .03) 52%, rgba(255, 255, 255, .22) 80%, rgba(255, 255, 255, .5) 100%),
+    linear-gradient(135deg, rgba(120, 200, 255, .22), rgba(255, 140, 220, .22));
+  box-shadow: inset 0 0 14px rgba(255, 255, 255, .38), inset 5px 7px 14px rgba(110, 200, 255, .32), inset -5px -7px 14px rgba(255, 120, 220, .3), 0 6px 18px rgba(8, 4, 34, .5);
+  -webkit-backdrop-filter: blur(.5px) saturate(1.7) brightness(1.2); backdrop-filter: blur(.5px) saturate(1.7) brightness(1.2);
+  animation: bl-lens-squish .75s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes bl-lens-squish { 0% { transform: scale(1.5, .78); } 32% { transform: scale(1.28, .86); } 62% { transform: scale(.9, 1.1); } 100% { transform: scale(1, 1); } }
+/* l'icona sotto la lente è «ingrandita» con una frangia cromatica, come in una lente vera */
+.bl-root .bl-foot-item svg { transition: transform .55s cubic-bezier(.3, 1.6, .5, 1), filter .4s; }
+.bl-root .bl-foot-item.on svg { transform: scale(1.3) translateY(-1px); filter: drop-shadow(1px 0 0 rgba(255, 95, 190, .6)) drop-shadow(-1px 0 0 rgba(95, 205, 255, .6)); }
+.bl-root .bl-footbar .bl-near-btn.on .bl-near-ico::before { display: none; }
+.bl-root .bl-footbar .bl-near-ico svg { width: 23px; height: 23px; }
+.bl-eco .bl-foot-lens i, .bl-root:has(.bl-viewer, .bl-sheet-wrap) .bl-foot-lens i { -webkit-backdrop-filter: none; backdrop-filter: none; }
+@media (prefers-reduced-motion: reduce) { .bl-root .bl-foot-lens { transition: opacity .2s; } .bl-root .bl-foot-lens i, .bl-root .bl-filter .bl-filter-row .bl-segment--home button.on.is-filter-active { animation: none !important; } .bl-root .bl-foot-item svg { transition: none; } }
+
+
+/* =====================================================================
+   HOME V2 · ritocchi: contatore a bolla, mappa a tendina, footbar su una riga
+   ===================================================================== */
+
+/* Contatore: una bolla di sapone con gli scoppi residui al centro */
+.bl-root .bl-counter.bl-counter-bubble { position: relative; width: 62px !important; height: 62px !important; min-width: 0 !important; padding: 0 !important; display: grid !important; place-items: center; align-content: center; gap: 0; overflow: visible; border-radius: 50% !important; border: 1.5px solid rgba(255, 255, 255, .62) !important; color: #fff !important; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  background:
+    radial-gradient(ellipse 52% 34% at 30% 20%, rgba(255, 255, 255, .8), rgba(255, 255, 255, 0) 72%),
+    radial-gradient(circle at 50% 52%, rgba(22, 10, 58, .74) 0 46%, rgba(255, 255, 255, .1) 70%, rgba(255, 255, 255, .34) 100%) !important;
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, .42), inset 4px 6px 12px rgba(110, 200, 255, .36), inset -4px -6px 12px rgba(255, 120, 220, .32), 0 8px 22px rgba(8, 4, 34, .55) !important;
+  animation: bl-cb-float 5.2s ease-in-out infinite; }
+.bl-root .bl-cb-film { position: absolute; inset: -1px; border-radius: 50%; pointer-events: none; opacity: .8;
+  background: conic-gradient(from 0deg, rgba(120, 205, 255, .85), rgba(255, 140, 225, .85), rgba(255, 236, 150, .7), rgba(150, 255, 205, .75), rgba(120, 205, 255, .85));
+  -webkit-mask: radial-gradient(circle farthest-side, transparent 78%, #000 85%); mask: radial-gradient(circle farthest-side, transparent 78%, #000 85%);
+  animation: bl-cb-spin 9s linear infinite; }
+.bl-root .bl-cb-glint { position: absolute; top: 9%; left: 17%; width: 28%; height: 17%; border-radius: 50%; background: rgba(255, 255, 255, .9); transform: rotate(-28deg); pointer-events: none; animation: bl-cb-glint 4.2s ease-in-out infinite; }
+.bl-root .bl-counter-bubble strong { position: relative; z-index: 1; font-size: 25px; font-weight: 800; line-height: 1; color: #fff !important; text-shadow: 0 1px 6px rgba(8, 4, 34, .95); }
+.bl-root .bl-counter-bubble small { position: relative; z-index: 1; margin-top: 1px; font-size: 9px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 5px rgba(8, 4, 34, .95); }
+.bl-root .bl-counter-bubble.is-orange { border-color: #ffc27a !important; }
+.bl-root .bl-counter-bubble.is-orange strong { color: #ffd9a3 !important; }
+.bl-root .bl-counter-bubble.is-red { border-color: #ff8a8a !important; animation-duration: 2.4s; }
+.bl-root .bl-counter-bubble.is-red strong { color: #ffb3b3 !important; }
+@keyframes bl-cb-float { 0%, 100% { transform: translateY(0) scale(1, 1); } 25% { transform: translateY(-3px) scale(1.04, .97); } 50% { transform: translateY(-1px) scale(.98, 1.03); } 75% { transform: translateY(-3.5px) scale(1.03, .98); } }
+@keyframes bl-cb-spin { to { transform: rotate(360deg); } }
+@keyframes bl-cb-glint { 0%, 100% { opacity: .95; } 50% { opacity: .45; } }
+
+/* Il contatore è più alto: header e filtro scendono di poco */
+.bl-root .bl-top { padding-bottom: 6px !important; }
+.bl-root .bl-filter { top: calc(90px + env(safe-area-inset-top)) !important; }
+.bl-root .bl-seq-wrap { padding-top: calc(158px + env(safe-area-inset-top)) !important; }
+
+/* Mappa «Vicino a me»: tendina chiusa, si tira giù dall'icona */
+.bl-root .bl-map-drawer { position: fixed; z-index: 10; left: 12px; right: 12px; top: calc(150px + env(safe-area-inset-top)); max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; pointer-events: none; }
+.bl-root .bl-map-drawer > * { pointer-events: auto; }
+.bl-root .bl-map-drawer-body { width: 100%; display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .6s cubic-bezier(.3, 1.25, .5, 1), opacity .3s; filter: drop-shadow(0 14px 26px rgba(8, 4, 34, .5)); }
+.bl-root .bl-map-drawer.is-open .bl-map-drawer-body { grid-template-rows: 1fr; opacity: 1; }
+.bl-root .bl-map-drawer-inner { min-height: 0; overflow: hidden; border-radius: 22px; }
+.bl-root .bl-map-drawer.is-open .bl-map-drawer-inner { margin-bottom: 8px; }
+.bl-root .bl-map-drawer-handle { display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 16px; border: 1.5px solid rgba(255, 255, 255, .34); border-radius: 999px; background: rgba(24, 14, 58, .92); color: #fff; cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; box-shadow: 0 8px 20px rgba(8, 4, 34, .45); animation: bl-drawer-bob 2.6s ease-in-out infinite; }
+.bl-root .bl-map-drawer.is-open .bl-map-drawer-handle { animation: none; }
+.bl-root .bl-map-drawer-chev { transition: transform .5s cubic-bezier(.3, 1.6, .5, 1); }
+.bl-root .bl-map-drawer.is-open .bl-map-drawer-chev { transform: rotate(180deg); }
+@keyframes bl-drawer-bob { 50% { transform: translateY(3px); } }
+
+/* Footbar: etichette sempre su una riga («Vicino a me» compreso) */
+.bl-root .bl-footbar { width: min(calc(100vw - 16px), 440px); grid-template-columns: 1fr 1fr 76px 1fr 1fr; padding: 0 4px; }
+.bl-root .bl-foot-item, .bl-root .bl-footbar .bl-near-btn { white-space: nowrap; font-size: clamp(10px, 2.9vw, 12px); letter-spacing: -.01em; }
+.bl-root .bl-footbar .bl-near-btn .bl-near-ico { display: inline-grid; }
+.bl-root .bl-footbar .bl-near-radius { position: absolute; top: 8px; left: calc(50% + 8px); display: block; margin: 0; padding: 1px 5px; border-radius: 999px; background: #ff5fa8 !important; color: #fff; font-size: 9px; font-weight: 800; line-height: 1.3; opacity: 1; white-space: nowrap; }
+.bl-root .bl-foot-lens { width: 72px; transform: translate3d(calc(var(--lens-x) - 36px), 0, 0); }
+
+@media (prefers-reduced-motion: reduce) { .bl-root .bl-counter.bl-counter-bubble, .bl-root .bl-cb-film, .bl-root .bl-cb-glint, .bl-root .bl-map-drawer-handle { animation: none !important; } .bl-root .bl-map-drawer-body { transition: opacity .2s; } }
+
+/* =====================================================================
+   FOOTBAR SEMPRE VISIBILE
+   La barra di navigazione resta sopra schede, profilo, messaggi, viewer e
+   notifiche. Le schede lasciano libero lo spazio in basso; il ventaglio (90),
+   le finestre modali (100) e il menu rapido (99999) restano sopra di lei.
+   Si nasconde solo nell'editor foto/video a schermo intero, che ha il suo
+   pulsante «Pubblica» in basso.
+   ===================================================================== */
+.bl-root .bl-footbar { z-index: 85 !important; display: grid !important; visibility: visible !important; opacity: 1 !important; transform: translateX(-50%) !important; }
+.bl-root .bl-bottom-actions { z-index: 86 !important; }
+
+/* le schede non finiscono sotto la barra */
+.bl-root .bl-sheet-wrap { padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important; box-sizing: border-box; }
+.bl-root .bl-sheet-wrap > .bl-sheet { max-height: calc(100dvh - 110px - env(safe-area-inset-bottom)) !important; }
+@media (max-width: 640px) {
+  .bl-root .bl-sheet:has(.bl-profile-hub) { height: calc(100dvh - 110px - env(safe-area-inset-bottom)) !important; max-height: calc(100dvh - 110px - env(safe-area-inset-bottom)) !important; }
+  .bl-root .bl-sheet.bl-sheet-composer { height: min(calc(100dvh - 110px - env(safe-area-inset-bottom)), 720px) !important; max-height: calc(100dvh - 110px - env(safe-area-inset-bottom)) !important; }
+}
+
+/* il «+» resta visibile anche su Classifiche, Messaggi, Profilo...; si nasconde solo nel composer, dove serve a poco */
+.bl-root:has(.bl-sheet-composer) .bl-bottom-actions { visibility: hidden; pointer-events: none; }
+
+/* «Vicino a me»: la distanza (pallino rosa) sta a sinistra dell'icona, lontano dal «+» centrale */
+.bl-root .bl-footbar .bl-near-radius { left: auto !important; right: calc(50% + 9px); }
+
+/* bolla aperta a tutto schermo: la barra resta sopra, con un velo per leggerla */
+.bl-root:has(.bl-viewer) .bl-footbar { background: rgba(24, 14, 58, .94) !important; }
+
+/* eccezione: editor foto/video a schermo intero */
+.bl-root:has(.bl-me-full) .bl-footbar,
+.bl-root:has(.bl-me-full) .bl-bottom-actions { display: none !important; }
+
+
+/* ===== Footbar: scorrimento con la lente che segue il dito ===== */
+.bl-root .bl-footbar { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+/* durante il trascinamento la lente segue il dito senza molla; al rilascio torna la molla */
+.bl-root .bl-footbar[data-drag] .bl-foot-lens { transition: opacity .25s !important; }
+.bl-root .bl-footbar[data-drag] .bl-foot-lens i { animation: none; }
+/* l'icona sotto la lente si ingrandisce, le altre tornano normali */
+.bl-root .bl-footbar[data-drag] .bl-foot-item:not(.is-lens) svg { transform: none; filter: none; }
+.bl-root .bl-foot-item.is-lens { opacity: 1; font-weight: 800; }
+.bl-root .bl-foot-item.is-lens svg { transform: scale(1.3) translateY(-1px); filter: drop-shadow(1px 0 0 rgba(255, 95, 190, .6)) drop-shadow(-1px 0 0 rgba(95, 205, 255, .6)); }
+
+
+/* =====================================================================
+   BOLLE REALISTICHE E LUCIDE (come nella presentazione)
+   Si ridisegnano soltanto i tre strati di vetro sopra ogni bolla:
+     .bl-liquid-film       pellicola di sapone: bordo luminoso + frange iridescenti
+     .bl-bubble-glint      riflesso principale in alto a sinistra
+     .bl-bubble-reflection riflesso secondario in basso a destra
+   Sfondo, tinta e decori di ogni tipo (foto, sondaggio, capsula, sistema,
+   categorie, rara, età) restano quelli di bolle.css: l'effetto vetro ci va sopra.
+   Nessun backdrop-filter e nessun filter: costo minimo, niente cambi in modalità eco.
+   ===================================================================== */
+.bl-root .bl-bubble .bl-liquid-film {
+  position: absolute !important; inset: 0 !important; border-radius: inherit !important; pointer-events: none; z-index: 1;
+  opacity: 1 !important; mix-blend-mode: normal !important; filter: none !important; transform: none;
+  background:
+    conic-gradient(from 25deg at 50% 50%,
+      rgba(255, 96, 205, 0) 0%, rgba(255, 96, 205, .58) 7%, rgba(255, 96, 205, 0) 17%,
+      rgba(110, 195, 255, 0) 24%, rgba(110, 195, 255, .62) 33%, rgba(110, 195, 255, 0) 43%,
+      rgba(140, 255, 210, 0) 48%, rgba(140, 255, 210, .5) 56%, rgba(255, 238, 140, .55) 64%, rgba(255, 238, 140, 0) 72%,
+      rgba(175, 135, 255, 0) 77%, rgba(175, 135, 255, .58) 86%, rgba(255, 96, 205, 0) 96%, rgba(255, 96, 205, 0) 100%) !important;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255, 255, 255, .72),
+    inset 0 0 12px 1px rgba(255, 255, 255, .42),
+    inset 7px 9px 18px rgba(120, 205, 255, .30),
+    inset -7px -9px 18px rgba(255, 125, 225, .28) !important;
+  -webkit-mask: radial-gradient(circle farthest-side at 50% 50%, transparent 56%, rgba(0, 0, 0, .55) 72%, #000 88%);
+  mask: radial-gradient(circle farthest-side at 50% 50%, transparent 56%, rgba(0, 0, 0, .55) 72%, #000 88%);
+  animation: none !important;
+}
+.bl-root .bl-bubble .bl-bubble-glint {
+  position: absolute !important; z-index: 1; pointer-events: none;
+  top: 8% !important; left: 14% !important; right: auto !important; bottom: auto !important; width: 36% !important; height: 21% !important;
+  border-radius: 50% !important; transform: rotate(-33deg) !important; opacity: 1 !important; filter: none !important; mix-blend-mode: normal !important;
+  background: radial-gradient(ellipse 50% 50% at 42% 42%, rgba(255, 255, 255, .98) 0%, rgba(255, 255, 255, .7) 38%, rgba(255, 255, 255, .16) 74%, rgba(255, 255, 255, 0) 100%) !important;
+  box-shadow: none !important; animation: none !important;
+}
+/* piccola scintilla accanto al riflesso */
+.bl-root .bl-bubble .bl-bubble-glint::after {
+  content: ""; position: absolute; left: 104%; top: 66%; width: 13%; height: 22%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, .9), rgba(255, 255, 255, 0) 72%);
+}
+.bl-root .bl-bubble .bl-bubble-reflection {
+  position: absolute !important; z-index: 1; pointer-events: none;
+  right: 13% !important; bottom: 10% !important; left: auto !important; top: auto !important; width: 24% !important; height: 11% !important;
+  border-radius: 50% !important; transform: rotate(-36deg) !important; opacity: 1 !important; filter: none !important; mix-blend-mode: normal !important;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255, 255, 255, .62), rgba(190, 225, 255, .28) 55%, rgba(255, 255, 255, 0) 100%) !important;
+  box-shadow: none !important; animation: none !important;
+}
+/* un velo di luce sul bordo opposto, come il riflesso di una finestra */
+.bl-root .bl-bubble .bl-bubble-reflection::before {
+  content: ""; position: absolute; left: -210%; top: -520%; width: 150%; height: 110%; border-radius: 50%; transform: rotate(48deg);
+  background: radial-gradient(ellipse, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 70%);
+}
+
+/* testi e badge restano leggibili sopra il vetro */
+.bl-root .bl-bubble .bl-bubble-username, .bl-root .bl-bubble .bl-system-mark, .bl-root .bl-bubble .bl-capsule-timer,
+.bl-root .bl-bubble .bl-dist, .bl-root .bl-bubble .bl-age-countdown, .bl-root .bl-bubble .bl-rare-label,
+.bl-root .bl-bubble .bl-secret-label, .bl-root .bl-bubble .bl-bubble-category-badge { z-index: 3; }
+
+/* movimento: solo sulle bolle animate (le più vicine al centro), la pellicola gira piano come una vera bolla */
+@media (prefers-reduced-motion: no-preference) {
+  .bl-root:not(.bl-eco) .bl-slot--live .bl-bubble .bl-liquid-film { animation: bl-real-film 16s linear var(--liquid-delay, 0s) infinite !important; will-change: transform; }
+  .bl-root:not(.bl-eco) .bl-slot--live .bl-bubble .bl-bubble-glint { animation: bl-real-glint 6.5s ease-in-out var(--breath-delay, 0s) infinite !important; }
+}
+.bl-eco .bl-bubble .bl-liquid-film, .bl-eco .bl-bubble .bl-bubble-glint { animation: none !important; will-change: auto; }
+@keyframes bl-real-film { to { transform: rotate(360deg); } }
+@keyframes bl-real-glint { 0%, 100% { opacity: 1; } 50% { opacity: .72; } }
+/* =====================================================================================
+   Media offuscati (foto, video, GIF): liquidi e molli, mai sgranati né pixellati.
+   Vale ovunque compaiano: visore, storie, miniature, costellazione, «Le mie bolle», chat.
+   ===================================================================================== */
+
+/* 1. Rivelazione: il blur si scioglie a gradini fitti, con un respiro elastico (niente scatti) */
+@keyframes bl-unblur {
+  0%   { filter: blur(22px) saturate(1.25); opacity: .5;  transform: scale(1.06, .95); }
+  30%  { filter: blur(12px) saturate(1.18); opacity: .78; transform: scale(.98, 1.04); }
+  55%  { filter: blur(5px)  saturate(1.08); opacity: .92; transform: scale(1.02, .99); }
+  78%  { filter: blur(1.2px) saturate(1.02); opacity: 1;  transform: scale(.995, 1.005); }
+  100% { filter: blur(0) saturate(1);        opacity: 1;  transform: none; }
+}
+.bl-viewer-stage img.bl-unblur, .bl-viewer-stage video.bl-unblur,
+.bl-story-frame img.bl-unblur,  .bl-story-frame video.bl-unblur {
+  animation: bl-unblur 1.9s cubic-bezier(.25, .8, .3, 1) both;
+  transform-origin: 50% 50%;
+  will-change: filter, transform, opacity;   /* livello GPU solo durante la rivelazione */
+  backface-visibility: hidden;
+}
+
+/* 2. Media ancora offuscato (classe riutilizzabile ovunque): blur morbido + respiro gelatinoso.
+      Il wrapper ritaglia il bordo, così la sfocatura non lascia aloni trasparenti. */
+.bl-liquid-blur-wrap { position: relative; overflow: hidden; border-radius: inherit; isolation: isolate; }
+.bl-liquid-blur,
+.bl-liquid-blur-wrap > img, .bl-liquid-blur-wrap > video, .bl-liquid-blur-wrap > canvas {
+  display: block; width: 100%; height: 100%; object-fit: cover;
+  image-rendering: auto;                      /* interpolazione bilineare: mai blocchi */
+  filter: blur(var(--bl-blur, 16px)) saturate(1.25);
+  transform: scale(1.12);                      /* copre i bordi che il blur schiarirebbe */
+  animation: bl-liquid-breathe 4.8s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes bl-liquid-breathe {
+  0%   { transform: scale(1.12, 1.09) translate3d(0, 0, 0);       filter: blur(var(--bl-blur, 16px)) saturate(1.25); }
+  50%  { transform: scale(1.09, 1.13) translate3d(1.2%, -1%, 0);  filter: blur(calc(var(--bl-blur, 16px) * 1.18)) saturate(1.32); }
+  100% { transform: scale(1.13, 1.1)  translate3d(-1%, 1.2%, 0);  filter: blur(calc(var(--bl-blur, 16px) * .9)) saturate(1.2); }
+}
+/* velo di luce morbido sopra, per l'effetto «sapone» */
+.bl-liquid-blur-wrap::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(ellipse at 30% 22%, rgba(255,255,255,.34), transparent 55%),
+              radial-gradient(ellipse at 75% 85%, rgba(180,150,255,.22), transparent 60%);
+}
+
+/* 3. Anteprime e miniature: sempre interpolate e arrotondate, mai a blocchi */
+.bl-bubble-miniature img, .bl-bubble-miniature video, .bl-bubble-miniature canvas,
+.bl-star-face img, .bl-star-face video, .bl-star-face canvas,
+.bl-mine-card canvas, .bl-thread-avatar canvas, .bl-me-thumb canvas {
+  image-rendering: auto;
+  -ms-interpolation-mode: bicubic;
+}
+/* se una miniatura è offuscata: stesso blur morbido e il cerchio resta netto */
+.bl-bubble-miniature.is-blurred > img, .bl-bubble-miniature.is-blurred > video, .bl-bubble-miniature.is-blurred > canvas,
+.bl-star-face.is-blurred > img, .bl-star-face.is-blurred > video, .bl-star-face.is-blurred > canvas {
+  filter: blur(7px) saturate(1.25); transform: scale(1.18); image-rendering: auto;
+  animation: bl-liquid-breathe 4.8s ease-in-out infinite alternate; --bl-blur: 7px;
+}
+
+/* 4. Modalità eco / movimento ridotto: stesso aspetto morbido, ma fermo */
+.bl-eco .bl-liquid-blur, .bl-eco .bl-liquid-blur-wrap > img, .bl-eco .bl-liquid-blur-wrap > video, .bl-eco .bl-liquid-blur-wrap > canvas,
+.bl-eco .bl-bubble-miniature.is-blurred > *, .bl-eco .bl-star-face.is-blurred > * { animation: none; will-change: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .bl-liquid-blur, .bl-liquid-blur-wrap > img, .bl-liquid-blur-wrap > video, .bl-liquid-blur-wrap > canvas,
+  .bl-bubble-miniature.is-blurred > *, .bl-star-face.is-blurred > * { animation: none; will-change: auto; }
+  .bl-viewer-stage .bl-unblur, .bl-story-frame .bl-unblur { animation: none; }
+}
+/* ===== Viewer: i comandi (cuore, messaggio, condividi) non finiscono sotto la footbar =====
+   La footbar è fissa (z-index 85, bottom 14px, altezza 68px) e sta sopra il viewer (z-index 30):
+   riserviamo in basso lo spazio che occupa, più un po' d'aria. */
+.bl-root { --bl-foot-clear: calc(96px + env(safe-area-inset-bottom)); }
+.bl-root .bl-viewer,
+.bl-root .bl-viewer.bl-viewer-interactive,
+.bl-root .bl-viewer.bl-viewer-chain-open { padding-bottom: var(--bl-foot-clear) !important; box-sizing: border-box; }
+/* la colonna dei cuori (centrata in verticale) segue lo spazio rimasto libero */
+.bl-root .bl-viewer:not(:has(.bl-surprise)) .bl-reactions { top: calc(50% - 41px); }
+
+/* ===== Chat: testo leggibile nei fumetti, anche in tema chiaro =====
+   I miei messaggi: fondo pieno e abbastanza scuro per ogni tinta, testo sempre bianco
+   (anche su paragrafi, orario, link e citazioni, che altrimenti ereditano il colore scuro dello sheet). */
+.bl-root .bl-msg-row.bl-msg-colored .bl-message-bubble.mine {
+  background: hsl(var(--bl-msg-h, 200) 50% 30%) !important;
+  color: #fff !important;
+}
+.bl-root .bl-msg-row.bl-msg-colored .bl-message-bubble.mine :is(p, a, b, span, em, .bl-chat-tag, .bl-chat-ref, .bl-chat-ref-copy small) { color: #fff !important; }
+.bl-root .bl-msg-row.bl-msg-colored .bl-message-bubble.mine small { color: rgba(255, 255, 255, .8) !important; }
+/* messaggi degli altri in tema chiaro: tinta leggera con testo scuro */
+.bl-root.bl-appearance-light .bl-msg-row.bl-msg-colored .bl-message-bubble:not(.mine) { color: #282144; }
+.bl-root.bl-appearance-light .bl-msg-row.bl-msg-colored .bl-message-bubble:not(.mine) :is(p, a, small, b) { color: #282144; }
+@media (prefers-color-scheme: light) {
+  .bl-root.bl-appearance-auto .bl-msg-row.bl-msg-colored .bl-message-bubble:not(.mine),
+  .bl-root.bl-appearance-auto .bl-msg-row.bl-msg-colored .bl-message-bubble:not(.mine) :is(p, a, small, b) { color: #282144; }
+}
+
+/* ===== Gruppi: suggerimenti utenti mentre si digita ===== */
+.bl-user-suggest { list-style: none; margin: 0; padding: 4px; display: flex; flex-direction: column; gap: 2px; max-height: 196px; overflow-y: auto; border-radius: 14px; background: rgba(0, 0, 0, .28); border: 1px solid rgba(255, 255, 255, .14); }
+.bl-user-suggest li { margin: 0; }
+.bl-user-suggest button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 9px; border: 0; border-radius: 10px; background: transparent; color: #fff; font: inherit; font-size: 13px; font-weight: 700; text-align: left; cursor: pointer; touch-action: manipulation; }
+.bl-user-suggest button:hover, .bl-user-suggest button.on { background: rgba(255, 255, 255, .14); }
+.bl-user-suggest-avatar { flex: 0 0 26px; width: 26px; height: 26px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-size: 14px; background: rgba(255, 255, 255, .1); }
+.bl-user-suggest-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.bl-user-suggest-empty { padding: 8px 10px; font-size: 12px; color: #fff; opacity: .7; }
+
+/* ===== Chat: cella di digitazione con colori espliciti (il testo ereditava un colore che in tema chiaro spariva sullo sfondo) ===== */
+.bl-root.bl-appearance-light .bl-message-compose :is(textarea, input) {
+  background: #fff !important; color: #282144 !important; -webkit-text-fill-color: #282144; caret-color: #282144; border-color: #cfc3e6 !important;
+}
+.bl-root.bl-appearance-light .bl-message-compose :is(textarea, input)::placeholder { color: #7a6f95 !important; -webkit-text-fill-color: #7a6f95; opacity: 1; }
+@media (prefers-color-scheme: light) {
+  .bl-root.bl-appearance-auto .bl-message-compose :is(textarea, input) {
+    background: #fff !important; color: #282144 !important; -webkit-text-fill-color: #282144; caret-color: #282144; border-color: #cfc3e6 !important;
+  }
+  .bl-root.bl-appearance-auto .bl-message-compose :is(textarea, input)::placeholder { color: #7a6f95 !important; -webkit-text-fill-color: #7a6f95; opacity: 1; }
+}
+.bl-root.bl-appearance-dark .bl-message-compose :is(textarea, input) {
+  background: #302443 !important; color: #fff !important; -webkit-text-fill-color: #fff; caret-color: #fff; border-color: #8066a3 !important;
+}
+.bl-root.bl-appearance-dark .bl-message-compose :is(textarea, input)::placeholder { color: #c4b5d9 !important; -webkit-text-fill-color: #c4b5d9; opacity: 1; }
+@media (prefers-color-scheme: dark) {
+  .bl-root.bl-appearance-auto .bl-message-compose :is(textarea, input) {
+    background: #302443 !important; color: #fff !important; -webkit-text-fill-color: #fff; caret-color: #fff; border-color: #8066a3 !important;
+  }
+  .bl-root.bl-appearance-auto .bl-message-compose :is(textarea, input)::placeholder { color: #c4b5d9 !important; -webkit-text-fill-color: #c4b5d9; opacity: 1; }
+}
+
+/* ===== Tendina mappa: l'icona sta nella riga filtri, a destra di «Preferiti» ===== */
+.bl-root .bl-filter .bl-filter-row .bl-map-drawer-handle { flex: 0 0 auto; align-self: stretch; height: auto; padding: 0 14px; gap: 3px; background: rgba(24, 14, 58, .72); border: 1.5px solid rgba(255, 255, 255, .26); box-shadow: none; animation: none; }
+.bl-root .bl-map-drawer-handle.is-open .bl-map-drawer-chev { transform: rotate(180deg); }
+@media (max-width: 380px) { .bl-root .bl-filter .bl-filter-row .bl-map-drawer-handle { padding: 0 10px; } }
+/* ===== Funzioni da sbloccare (unlocks.jsx) ===== */
+.bl-root .bl-locked-note { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; margin: 8px 0; border-radius: 16px; border: 1px dashed rgba(143, 133, 172, .55); background: rgba(143, 133, 172, .12); color: inherit; }
+.bl-root .bl-locked-note .bl-locked-ico { font-size: 20px; line-height: 1.2; }
+.bl-root .bl-locked-note > div { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.bl-root .bl-locked-note strong { font-size: 14px; }
+.bl-root .bl-locked-note small { font-size: 12.5px; line-height: 1.35; opacity: .85; }
+.bl-root .bl-lock-progress { display: block; height: 6px; margin-top: 6px; border-radius: 999px; background: rgba(143, 133, 172, .28); overflow: hidden; }
+.bl-root .bl-lock-progress i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #7a5cff, #ff7eb6); }
+.bl-root .bl-lock-panel { display: grid; justify-items: center; gap: 10px; padding: 28px 22px; text-align: center; }
+.bl-root .bl-lock-panel-ico { font-size: 34px; }
+.bl-root .bl-lock-panel h3 { margin: 0; }
+.bl-root .bl-lock-panel p { margin: 0; }
+.bl-root .bl-lock-panel .bl-lock-progress { width: min(260px, 80%); }
+.bl-root .bl-cmpb.is-locked .bl-cmpb-orb { filter: saturate(.35) brightness(.92); }
+.bl-root .bl-cmpb.is-locked .bl-cmpb-label { opacity: .8; }
+.bl-root .bl-radius-fan button.is-locked, .bl-root .bl-radius button.is-locked { opacity: .6; }
+@media (prefers-color-scheme: dark) { .bl-root .bl-locked-note { background: rgba(143, 133, 172, .16); } }
+.bl-root .bl-new-group-btn.is-locked, .bl-root .bl-segment button.is-locked, .bl-root .bl-map-radii button.is-locked { opacity: .6; }
+
+/* ===== Bolla aperta (schermata cuore / messaggio / condividi): niente sotto la footbar =====
+   La footbar è fissa (z-index 85, bottom 14px, altezza 68px) e sta sopra sia .bl-viewer sia .bl-story.
+   Il fix precedente copriva solo .bl-viewer: nella schermata .bl-story la barra dei comandi restava a 10px dal fondo. */
+.bl-root .bl-story-card { padding-bottom: var(--bl-foot-clear) !important; }
+/* la foto cede lo spazio riservato alla footbar (prima: 235px di margini fissi) invece di essere tagliata */
+.bl-root .bl-story:not(.is-interactive) .bl-story-frame img,
+.bl-root .bl-story:not(.is-interactive) .bl-story-frame video { max-height: calc(100dvh - 321px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+/* il foglio «Condividi» è un pannello a filo del bordo: mentre è aperto la footbar (e il «+») si dissolvono, così lista e ricerca restano raggiungibili */
+.bl-root:has(.bl-share) .bl-footbar,
+.bl-root:has(.bl-share) .bl-bottom-actions { opacity: 0 !important; pointer-events: none !important; }
+/* mentre si scrive la risposta la tastiera si alza: la footbar non deve coprire il campo */
+.bl-root:has(.bl-story-reply input:focus) .bl-footbar,
+.bl-root:has(.bl-story-reply input:focus) .bl-bottom-actions { opacity: 0 !important; pointer-events: none !important; }
+.bl-root .bl-footbar, .bl-root .bl-bottom-actions { transition: opacity .18s ease; }
+
+/* ===== Popup «funzione bloccata»: al centro, si chiude con la X ===== */
+.bl-root .bl-lock-popup-wrap { position: fixed; inset: 0; z-index: 10010; display: grid; place-items: center; padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)); background: rgba(6, 4, 18, .55); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: bl-lock-fade .18s ease-out both; }
+.bl-root .bl-lock-popup { position: relative; box-sizing: border-box; width: min(100%, 360px); display: grid; justify-items: center; gap: 10px; padding: 30px 22px 22px; text-align: center; border-radius: 24px; background: #1a142e; color: #fff; border: 1px solid rgba(255, 255, 255, .22); box-shadow: 0 24px 70px rgba(0, 0, 0, .6); animation: bl-lock-pop .3s cubic-bezier(.2, 1.25, .32, 1) both; }
+.bl-root .bl-lock-popup-ico { font-size: 38px; line-height: 1; }
+.bl-root .bl-lock-popup h3 { margin: 0; font-size: 19px; color: #fff; }
+.bl-root .bl-lock-popup p { margin: 0; font-size: 15px; line-height: 1.45; color: #eee6ff; }
+.bl-root .bl-lock-popup small { font-size: 12.5px; line-height: 1.4; color: #cfc3ea; }
+.bl-root .bl-lock-popup .bl-lock-progress { width: min(260px, 90%); margin-top: 2px; }
+.bl-root .bl-lock-popup-x { position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .12); color: #fff; font-size: 26px; line-height: 1; cursor: pointer; }
+.bl-root .bl-lock-popup-x:active { transform: scale(.9); }
+@keyframes bl-lock-fade { from { opacity: 0; } }
+@keyframes bl-lock-pop { from { opacity: 0; transform: scale(.9) translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { .bl-root .bl-lock-popup-wrap, .bl-root .bl-lock-popup { animation: none; } }

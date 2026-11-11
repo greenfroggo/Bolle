@@ -2,6 +2,7 @@ import React from "react";
 import { Hand, Orbit, Circle, Plus, VenetianMask, Trophy } from "lucide-react";
 import Sheet from "../../components/Sheet.jsx";
 import useEscape from "../../hooks/useEscape.js";
+import ReportProblemButton from "./ReportProblemButton.jsx";
 
 /* Finestra "Come funziona" */
 export default function InfoSheet({ me, onClose, onTutorial }) {
@@ -44,6 +45,7 @@ export default function InfoSheet({ me, onClose, onTutorial }) {
           </li>
         ))}
       </ul>
+      <ReportProblemButton context="Come funziona: problema segnalato dall'utente" label="Qualcosa non funziona? Segnala agli sviluppatori" />
       <button type="button" className="bl-cta" onClick={onClose}>
         Ho capito
       </button>

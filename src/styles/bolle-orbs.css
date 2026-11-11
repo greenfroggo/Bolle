@@ -1,0 +1,56 @@
+/* =====================================================================
+   STEMMI DEI TRAGUARDI — bolle di vetro con icona fluttuante (componente GlassOrb)
+   Importare DOPO bolle.css / bolle-polish.css.
+   ===================================================================== */
+.bl-orb{--orb:76px;position:relative;display:block;flex:0 0 var(--orb);width:var(--orb);height:var(--orb);border-radius:50%;isolation:isolate;
+  animation:bl-orb-bob 4.6s ease-in-out var(--d,0s) infinite;will-change:transform}
+.bl-orb>i,.bl-orb>span{position:absolute;pointer-events:none}
+.bl-orb>i{display:block}
+
+/* vetro: corpo quasi trasparente tinto, spessore, bordo netto */
+.bl-orb-glass{inset:0;border-radius:50%;
+  background:
+    radial-gradient(closest-side,transparent 60%,rgba(20,28,90,.14) 80%,rgba(20,28,90,.26) 90%,rgba(255,255,255,.3) 95%,rgba(255,255,255,.7) 98%,rgba(255,255,255,.1) 100%),
+    radial-gradient(closest-side,rgb(var(--tint)/.06),rgb(var(--tint)/.26) 100%),
+    linear-gradient(165deg,rgba(255,255,255,.28),rgba(255,255,255,.05) 48%,rgba(120,150,255,.14) 100%);
+  box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.7),inset 0 0 0 3px rgb(var(--tint)/.5),
+    inset 6px 8px 12px -5px rgba(255,255,255,.4),inset -7px -9px 14px -5px rgba(110,170,255,.32),
+    0 0 12px rgb(var(--tint)/.35),0 calc(var(--orb) * .12) calc(var(--orb) * .22) rgba(20,24,70,.3)}
+/* parete interna: dà profondità e l'aria tra icona e pellicola */
+.bl-orb-wall{inset:9%;border-radius:50%;z-index:1;
+  background:radial-gradient(circle at 50% 38%,transparent 40%,rgb(var(--tint)/.16) 78%,rgba(20,20,80,.2) 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 calc(var(--orb) * .04) calc(var(--orb) * .08) -2px rgba(255,255,255,.22)}
+/* ombra dell'icona sulla parete in basso: opposta al movimento dell'icona (stessa durata e fase) */
+.bl-orb-shadow{z-index:2;left:30%;width:40%;bottom:12%;height:8%;border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(24,14,84,.55),rgba(24,14,84,.2) 55%,transparent 75%);filter:blur(calc(var(--orb) * .02));
+  animation:bl-orb-shadow 5.3s ease-in-out var(--d,0s) infinite}
+.bl-orb>.bl-orb-icon{display:grid;place-items:center;margin:0;padding:0;line-height:1;font-size:calc(var(--orb) * .42)}
+.bl-orb-icon{z-index:3;inset:0;display:grid;place-items:center;color:rgb(var(--tint));
+  filter:drop-shadow(0 calc(var(--orb) * .05) calc(var(--orb) * .04) rgba(20,10,70,.38));
+  animation:bl-orb-float 5.3s ease-in-out var(--d,0s) infinite;will-change:transform}
+.bl-orb-icon svg{display:block;stroke:currentColor;width:46%;height:46%;max-width:none;flex:none}
+/* pellicola: anello interno, riflesso a finestra, arco opposto con dispersione */
+.bl-orb-film{inset:5%;border-radius:50%;z-index:4;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),inset 0 3px 6px -2px rgba(255,255,255,.3),inset 0 -3px 6px -2px rgba(150,200,255,.24)}
+.bl-orb-glint{z-index:5;top:14%;left:18%;width:30%;height:14%;transform:rotate(-34deg);border-radius:55% 45% 60% 40%/60% 50% 50% 40%;
+  background:linear-gradient(180deg,#fff,rgba(255,255,255,.7) 65%,rgba(255,255,255,.2));box-shadow:0 0 5px rgba(255,255,255,.7)}
+.bl-orb-arc{z-index:5;inset:3%;border-radius:50%;
+  background:conic-gradient(from 105deg,rgba(255,255,255,0) 0deg,rgba(190,225,255,.7) 22deg,rgba(255,255,255,.85) 44deg,rgba(255,190,235,.45) 62deg,rgba(255,255,255,0) 84deg,transparent 360deg);
+  -webkit-mask-image:radial-gradient(closest-side,transparent 88%,#000 90.5%,#000 95%,transparent 97%);mask-image:radial-gradient(closest-side,transparent 88%,#000 90.5%,#000 95%,transparent 97%)}
+
+@keyframes bl-orb-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(calc(var(--orb) * -.03))}}
+@keyframes bl-orb-float{0%,100%{transform:translateY(calc(var(--orb) * .035)) rotate(-3deg)}50%{transform:translateY(calc(var(--orb) * -.055)) rotate(3deg)}}
+@keyframes bl-orb-shadow{0%,100%{transform:scale(.8,.8);opacity:.5}50%{transform:scale(1.15,1);opacity:.95}}
+
+/* traguardo non ancora ottenuto: vetro freddo, icona spenta e ferma, ombra statica */
+.bl-orb.is-locked{filter:saturate(.7)}
+.bl-orb.is-locked .bl-orb-icon{filter:grayscale(1) brightness(1.15) drop-shadow(0 2px 2px rgba(20,10,70,.25));opacity:.5;animation:none;transform:translateY(calc(var(--orb) * .02))}
+.bl-orb.is-locked .bl-orb-shadow{animation:none;transform:scale(.9);opacity:.35}
+.bl-orb.is-locked .bl-orb-glass{background:
+    radial-gradient(closest-side,transparent 60%,rgba(20,28,90,.12) 82%,rgba(255,255,255,.55) 97%,rgba(255,255,255,.08) 100%),
+    linear-gradient(165deg,rgba(255,255,255,.22),rgba(150,165,200,.12))}
+
+/* fuori schermo la griglia non viene dipinta (content-visibility): niente costo di rendering */
+.bl-profile-badges-grid{content-visibility:auto;contain-intrinsic-size:auto 300px}
+.bl-badge-dialog-orbwrap{display:grid;place-items:center;margin:0 auto 14px}
+@media(prefers-reduced-motion:reduce){.bl-orb,.bl-orb-icon,.bl-orb-shadow{animation:none}}

@@ -5,6 +5,18 @@
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Bolle utilizza la tua posizione per mostrarti le bolle pubblicate nelle vicinanze.</string>
 
+    <key>NSCameraUsageDescription</key>
+    <string>Bolle usa la fotocamera per permetterti di scattare foto o registrare video da pubblicare nelle tue bolle.</string>
+
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Bolle usa il microfono per registrare l’audio dei video che pubblichi nelle tue bolle.</string>
+
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Bolle accede alle tue foto e ai tuoi video solo per permetterti di sceglierli e pubblicarli nelle tue bolle o come avatar.</string>
+
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
+
     <key>CAPACITOR_DEBUG</key>
     <string>$(CAPACITOR_DEBUG)</string>
 
@@ -69,14 +81,12 @@
 
     <key>UIRequiredDeviceCapabilities</key>
     <array>
-        <string>armv7</string>
+        <string>arm64</string>
     </array>
 
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
 
     <key>UISupportedInterfaceOrientations~ipad</key>

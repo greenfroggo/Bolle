@@ -1,0 +1,97 @@
+/* =====================================================================
+   BOLLE DI VETRO — ultimo livello (da importare DOPO bolle.css e bolle-polish.css)
+
+   Sostituisce l'aspetto "bolla di sapone" delle bolle sparse (Vicino a me / Tutte)
+   con quello di una sfera di vetro trasparente:
+     • corpo quasi trasparente, appena freddo, con la tinta del tipo di bolla nel bordo
+     • bordo netto + spessore del vetro (anello interno più scuro/luminoso)
+     • luce che entra in alto a sinistra, rifrazione fredda in basso a destra
+     • riflessi duri (finestra + arco sul bordo), caustica che si raccoglie in basso
+     • dispersione cromatica sottilissima sul bordo (ciano / blu / rosa), non più "sapone"
+   Stessa struttura DOM, stessi tipi, stessa fisica: cambia solo l'aspetto.
+   Nessun backdrop-filter e nessun filter (costo minimo, niente differenze in modalità eco).
+   Le bolle rare (oro) restano come prima. Per tornare indietro basta togliere l'import.
+   ===================================================================== */
+
+/* --- corpo e bordo --- */
+.bl-root .bl-slot > button.bl-bubble{
+  border:1px solid rgba(255,255,255,.5)!important;
+  background:
+    /* caustica: la luce attraversa la sfera e si concentra in basso */
+    radial-gradient(ellipse 60% 30% at 50% 93%,rgba(255,255,255,.55),rgba(190,225,255,.20) 55%,transparent 100%),
+    /* bordo spesso del vetro: si schiarisce verso l'esterno */
+    radial-gradient(closest-side,transparent 62%,rgba(20,28,90,.16) 82%,rgba(20,28,90,.30) 91%,rgba(255,255,255,.30) 95.5%,rgba(255,255,255,.60) 98%,rgba(255,255,255,.12) 100%),
+    /* vetro leggermente colorato dal tipo di bolla (foto, sondaggio, domanda…) */
+    radial-gradient(closest-side,rgb(var(--tint,255 255 255)/calc(.04*var(--tint-a,0))),rgb(var(--tint,255 255 255)/calc(.20*var(--tint-a,0))) 100%),
+    /* corpo: quasi trasparente, un po' più chiaro in alto, freddo in basso */
+    linear-gradient(165deg,rgba(255,255,255,.13),rgba(255,255,255,.02) 45%,rgba(120,150,255,.08) 100%)!important;
+}
+.bl-root .bl-slot > button.bl-bubble:not(.bl-bubble--rare){
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255,255,255,.62),                               /* bordo netto */
+    inset 0 0 0 3.5px rgb(var(--tint,255 255 255)/calc(.5*var(--tint-a,0))), /* il tipo si legge dal bordo */
+    inset 0 0 0 6px rgba(20,30,100,.16),                                    /* spessore del vetro */
+    inset 7px 9px 14px -5px rgba(255,255,255,.30),                          /* luce da sopra a sinistra */
+    inset -8px -10px 16px -5px rgba(110,170,255,.28),                       /* rifrazione fredda in basso a destra */
+    inset 0 0 14px 2px rgba(255,255,255,.14),
+    0 0 10px rgb(var(--tint,255 255 255)/calc(.28*var(--tint-a,0))),
+    0 9px 18px rgba(6,4,36,.38),                                            /* ombra: dà volume alla sfera */
+    var(--outer,0 0 0 0 transparent)!important;
+}
+
+/* --- anello interno (seconda superficie del vetro) --- */
+.bl-root .bl-slot > button.bl-bubble:before{
+  inset:5%;border:0;border-radius:50%;z-index:2;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 3px 6px -2px rgba(255,255,255,.28),inset 0 -3px 6px -2px rgba(150,200,255,.22);
+}
+
+/* --- arco di luce sul bordo in alto a sinistra --- */
+.bl-root .bl-slot > button.bl-bubble:after{
+  content:"";position:absolute;top:2.5%;left:2.5%;right:2.5%;bottom:2.5%;width:auto;height:auto;border-radius:50%;transform:none;z-index:4;
+  filter:none!important;pointer-events:none;
+  background:conic-gradient(from 285deg,rgba(255,255,255,0) 0deg,rgba(255,255,255,1) 26deg,rgba(255,255,255,.7) 50deg,rgba(255,255,255,0) 78deg,transparent 360deg);
+  -webkit-mask-image:radial-gradient(closest-side,transparent 83%,#000 86%,#000 96%,transparent 98.5%);
+  mask-image:radial-gradient(closest-side,transparent 83%,#000 86%,#000 96%,transparent 98.5%);
+}
+
+/* --- riflesso "finestra": duro e netto, come sul vetro (non sfumato come sul sapone) --- */
+.bl-root .bl-slot > button.bl-bubble > .bl-bubble-glint{
+  top:15%!important;left:19%!important;right:auto!important;bottom:auto!important;width:30%!important;height:14%!important;z-index:5;
+  transform:rotate(-34deg)!important;border-radius:55% 45% 60% 40% / 60% 50% 50% 40%!important;
+  background:linear-gradient(180deg,#fff,rgba(255,255,255,.7) 65%,rgba(255,255,255,.2))!important;
+  box-shadow:0 0 6px rgba(255,255,255,.7)!important;
+}
+
+/* --- arco opposto in basso a destra, con riflessi freddo/caldo --- */
+.bl-root .bl-slot > button.bl-bubble > .bl-bubble-reflection{
+  top:2.5%!important;left:2.5%!important;right:2.5%!important;bottom:2.5%!important;width:auto!important;height:auto!important;
+  transform:none!important;border-radius:50%!important;z-index:4;
+  background:conic-gradient(from 105deg,rgba(255,255,255,0) 0deg,rgba(190,225,255,.7) 22deg,rgba(255,255,255,.85) 44deg,rgba(255,190,235,.45) 62deg,rgba(255,255,255,0) 84deg,transparent 360deg)!important;
+  -webkit-mask-image:radial-gradient(closest-side,transparent 88%,#000 90.5%,#000 95%,transparent 97%);
+  mask-image:radial-gradient(closest-side,transparent 88%,#000 90.5%,#000 95%,transparent 97%);
+}
+.bl-root .bl-slot > button.bl-bubble > .bl-bubble-reflection::before{display:none}
+
+/* --- dispersione cromatica sul bordo: ciano, blu, rosa, molto sottile (niente più frange da sapone) --- */
+.bl-root .bl-slot > button.bl-bubble > .bl-liquid-film{
+  background:conic-gradient(from 25deg,
+    rgba(90,210,255,0) 0%,rgba(90,210,255,.32) 10%,rgba(90,210,255,0) 22%,
+    rgba(120,140,255,0) 38%,rgba(120,140,255,.3) 50%,rgba(120,140,255,0) 62%,
+    rgba(255,130,215,0) 72%,rgba(255,130,215,.26) 84%,rgba(255,130,215,0) 96%)!important;
+  box-shadow:none!important;
+  -webkit-mask:radial-gradient(circle farthest-side at 50% 50%,transparent 72%,rgba(0,0,0,.5) 86%,#000 96%);
+  mask:radial-gradient(circle farthest-side at 50% 50%,transparent 72%,rgba(0,0,0,.5) 86%,#000 96%);
+}
+
+/* --- etichette in vetro: distanza e bandierina --- */
+.bl-root .bl-bubble .bl-dist{
+  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.12));
+  border:1px solid rgba(255,255,255,.5);color:#fff;text-shadow:0 1px 3px rgba(10,8,50,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 10px rgba(8,6,40,.3);
+}
+.bl-root .bl-slot .bl-country-flag{
+  background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.65);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 3px 10px rgba(8,6,40,.4);
+}
+/* testo leggibile anche su vetro chiaro */
+.bl-root .bl-slot > .bl-bubble > .bl-bubble-username{text-shadow:0 1px 3px rgba(12,8,50,.8),0 0 9px rgba(12,8,50,.55)}

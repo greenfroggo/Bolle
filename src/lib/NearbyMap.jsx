@@ -35,10 +35,11 @@ function placeByDistance(center, b) {
 }
 
 const KIND_ICON = { photo: "📷", video: "🎬", gif: "🎞️", poll: "📊", question: "❓", thought: "💭", confession: "💜", truth: "🕵️", rating: "⭐", meme: "😂", capsule: "⏳" };
+const authorLabel = (b) => String(b?.author_display_name || "").trim() || `@${b?.username || b?.author_username || "utente"}`;
 const fmtRadius = (km) => (km < 1 ? `${Math.round(km * 1000)} m` : `${km} km`);
 const fmtDist = (km) => (!Number.isFinite(Number(km)) ? "" : Number(km) < 1 ? `${Math.max(10, Math.round(Number(km) * 100) * 10)} m` : `${Number(km).toFixed(Number(km) < 10 ? 1 : 0)} km`);
 
-export default function NearbyMap({ center, radiusKm = 5, bubbles = [], getKind, onOpen, locked = false, collapsed = false, onToggle, radii = [], onRadius }) {
+export default function NearbyMap({ center, accuracyM = 0, radiusKm = 5, bubbles = [], getKind, onOpen, locked = false, collapsed = false, onToggle, radii = [], onRadius, lockedAbove = null }) {
   const boxRef = useRef(null);
   const [size, setSize] = useState({ w: 340, h: 200 });
   const [zoomShift, setZoomShift] = useState(0);
@@ -57,7 +58,9 @@ export default function NearbyMap({ center, radiusKm = 5, bubbles = [], getKind,
     return () => ro.disconnect();
   }, [collapsed]);
 
-  useEffect(() => { setZoomShift(0); setSelected(null); failed.current = 0; setTilesOk(true); }, [radiusKm, center?.lat, center?.lng]);
+  /* Lo zoom si azzera solo cambiando raggio: se ti muovi (posizione live) la mappa non deve "saltare". */
+  useEffect(() => { setZoomShift(0); setSelected(null); failed.current = 0; setTilesOk(true); }, [radiusKm]);
+  useEffect(() => { setSelected(null); }, [center?.lat, center?.lng]);
 
   const view = useMemo(() => {
     if (!center) return null;
@@ -97,6 +100,7 @@ export default function NearbyMap({ center, radiusKm = 5, bubbles = [], getKind,
 
   if (!center || !view) return null;
   const ringPx = (radiusKm * 1000) / view.mpp;
+  const accPx = accuracyM > 30 ? Math.min(accuracyM / view.mpp, Math.min(size.w, size.h) / 2) : 0;
   const sel = markers.list.find((m) => m.b.id === selected)?.b || null;
   const total = markers.list.length;
 
@@ -114,7 +118,7 @@ export default function NearbyMap({ center, radiusKm = 5, bubbles = [], getKind,
       </header>
       {!collapsed && radii.length > 0 && onRadius && (
         <div className="bl-map-radii" role="group" aria-label="Distanza">
-          {radii.map((r) => <button key={r} type="button" className={r === radiusKm ? "on" : ""} aria-pressed={r === radiusKm} onClick={() => onRadius(r)}>{fmtRadius(r)}</button>)}
+          {radii.map((r) => <button key={r} type="button" className={`${r === radiusKm ? "on" : ""} ${lockedAbove != null && r > lockedAbove ? "is-locked" : ""}`} aria-pressed={r === radiusKm} onClick={() => onRadius(r)}>{lockedAbove != null && r > lockedAbove ? "🔒 " : ""}{fmtRadius(r)}</button>)}
         </div>
       )}
       {!collapsed && (
@@ -131,6 +135,7 @@ export default function NearbyMap({ center, radiusKm = 5, bubbles = [], getKind,
           )}
           <div className="bl-map-tint" aria-hidden="true" />
           <svg className="bl-map-rings" width={size.w} height={size.h} aria-hidden="true">
+            {accPx > 0 && <circle cx={size.w / 2} cy={size.h / 2} r={accPx} className="bl-map-acc" />}
             {[1, 0.5].map((f) => <circle key={f} cx={size.w / 2} cy={size.h / 2} r={ringPx * f} className={f === 1 ? "bl-map-ring" : "bl-map-ring bl-map-ring--in"} />)}
           </svg>
           <span className="bl-map-me" style={{ left: size.w / 2, top: size.h / 2 }} aria-label="La tua posizione"><i /></span>
@@ -140,7 +145,7 @@ export default function NearbyMap({ center, radiusKm = 5, bubbles = [], getKind,
             const on = selected === b.id;
             return (
               <button key={b.id} type="button" className={`bl-map-pin ${on ? "on" : ""}`} style={{ left: x, top: y, "--h": (hashStr(String(b.id)) % 300) + 20, animationDelay: `${(i % 8) * 70}ms` }}
-                aria-label={`Bolla di ${b.username || b.author_username || "utente"}${fmtDist(b.distance_km) ? `, a ${fmtDist(b.distance_km)}` : ""}`} aria-pressed={on}
+                aria-label={`Bolla di ${authorLabel(b)}${fmtDist(b.distance_km) ? `, a ${fmtDist(b.distance_km)}` : ""}`} aria-pressed={on}
                 onClick={(e) => { e.stopPropagation(); setSelected(on ? null : b.id); }}>
                 <span aria-hidden="true">{KIND_ICON[k] || "🫧"}</span>
               </button>
@@ -149,12 +154,12 @@ export default function NearbyMap({ center, radiusKm = 5, bubbles = [], getKind,
           {!total && <p className="bl-map-empty">Nessuna bolla di utenti in quest'area.<br /><small>Prova con un raggio più grande.</small></p>}
           {sel && (
             <div className="bl-map-card" role="dialog" aria-label="Bolla selezionata" onClick={(e) => e.stopPropagation()}>
-              <div><b>@{sel.username || sel.author_username || "utente"}</b>{fmtDist(sel.distance_km) && <small>a {fmtDist(sel.distance_km)}</small>}</div>
+              <div><b>{authorLabel(sel)}</b>{fmtDist(sel.distance_km) && <small>a {fmtDist(sel.distance_km)}</small>}</div>
               <button type="button" onClick={() => { onOpen?.(sel); setSelected(null); }}>{locked ? "Scopri" : "Scoppia"} 🫧</button>
             </div>
           )}
           <a className="bl-map-credit" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>© OpenStreetMap</a>
-          {markers.approx && <small className="bl-map-note">Direzione indicativa: la distanza è reale</small>}
+          {total > 0 && <small className="bl-map-note">{markers.approx ? "Posizione indicativa delle bolle (±decine di metri)" : "Posizione delle bolle approssimata (±decine di metri)"}</small>}
         </div>
       )}
     </section>

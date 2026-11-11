@@ -4,6 +4,7 @@ import AvatarImage from "../../components/AvatarImage.jsx";
 import { avatarFor } from "../../lib/bolleCore.jsx";
 import { openUserProfile } from "../../components/UserLinkText.jsx";
 import { groupErrorText } from "./chatUtils.js";
+import { useUserSuggest, UserSuggestList } from "./UserSuggest.jsx";
 
 export function GroupManageModal({ group, me, avatarMap, onClose, onAddMember, onRemoveMember, onLeaveGroup, onNotify }) {
   const [newMember, setNewMember] = useState("");
@@ -11,14 +12,19 @@ export function GroupManageModal({ group, me, avatarMap, onClose, onAddMember, o
   const adminUser = group?.admin || group?.createdBy || "";
   const isAdmin = Boolean(me?.username && adminUser && String(adminUser).toLowerCase() === String(me.username).toLowerCase());
   const members = Array.isArray(group?.members) ? group.members : [me?.username, group?.username].filter(Boolean);
+  const sug = useUserSuggest(adding ? newMember : "", [...members, me?.username]);
+
+  function pickMember(username) {
+    onAddMember(username);
+    setNewMember("");
+    setAdding(false);
+  }
 
   function submitAdd(e) {
     e?.preventDefault();
     const clean = newMember.trim().replace(/^@/, "");
     if (!clean) return;
-    onAddMember(clean);
-    setNewMember("");
-    setAdding(false);
+    pickMember(clean);
   }
 
   function handleAddClick() {
@@ -75,12 +81,18 @@ export function GroupManageModal({ group, me, avatarMap, onClose, onAddMember, o
                   placeholder="Nome utente (senza @)"
                   value={newMember}
                   onChange={(e) => setNewMember(e.target.value)}
+                  onKeyDown={(e) => sug.onKeyDown(e, pickMember)}
                   autoFocus
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   maxLength={30}
                 />
                 <button type="submit" className="bl-cta-small" disabled={!newMember.trim()}>Aggiungi</button>
                 <button type="button" className="bl-ghost-small" onClick={() => setAdding(false)}>Annulla</button>
               </div>
+              <UserSuggestList items={sug.items} active={sug.active} empty={sug.empty} onPick={pickMember} onHover={sug.setActive} avatarMap={avatarMap} />
             </form>
           )}
 
@@ -135,6 +147,7 @@ export function NewGroupModal({ me, avatarMap, onClose, onCreateGroup, onNotify 
   const [name, setName] = useState("");
   const [membersInput, setMembersInput] = useState("");
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const sug = useUserSuggest(membersInput, [...selectedMembers, me?.username]);
 
   function addMemberBadge(u) {
     const clean = u.trim().replace(/^@/, "");
@@ -210,7 +223,12 @@ export function NewGroupModal({ me, avatarMap, onClose, onCreateGroup, onNotify 
                 placeholder="Digita @username e premi Invio"
                 value={membersInput}
                 onChange={(e) => setMembersInput(e.target.value)}
+                autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 onKeyDown={(e) => {
+                  if (sug.onKeyDown(e, addMemberBadge)) return;
                   if ((e.key === "Enter" || e.key === "," || e.key === " ") && membersInput.trim()) {
                     e.preventDefault();
                     addMemberBadge(membersInput);
@@ -224,6 +242,7 @@ export function NewGroupModal({ me, avatarMap, onClose, onCreateGroup, onNotify 
               )}
             </div>
           </label>
+          <UserSuggestList items={sug.items} active={sug.active} empty={sug.empty} onPick={addMemberBadge} onHover={sug.setActive} avatarMap={avatarMap} />
 
           {selectedMembers.length > 0 && (
             <div className="bl-selected-members-chips">
@@ -252,5 +271,3 @@ export function NewGroupModal({ me, avatarMap, onClose, onCreateGroup, onNotify 
     </div>
   );
 }
-
-

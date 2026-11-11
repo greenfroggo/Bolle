@@ -5,6 +5,8 @@ import { useGoogleAccount, GoogleAccountBadge } from "../../hooks/useGoogleAccou
 import { ecoForced, applyEco } from "../../lib/ecoMode.js";
 import { NOTIFICATION_CATEGORIES } from "../notifications/notificationTypes.js";
 import DeleteAccountSection from "./DeleteAccountSection.jsx";
+import { useUnlocks, LockedNote } from "../../unlocks.jsx";
+import IdentityCard from "../auth/IdentityCard.jsx"; // adatta il percorso se IdentityCard sta altrove
 
 export default function SettingsView({
   me,
@@ -27,6 +29,7 @@ export default function SettingsView({
   const [snd, setSnd] = useState(soundOn);
   const [eco, setEco] = useState(ecoForced);
   const googleAccount = useGoogleAccount();
+  const themesOk = useUnlocks().isUnlocked("themes");
 
   return (
     <div className="bl-insights">
@@ -49,21 +52,26 @@ export default function SettingsView({
         <div className="bl-segment bl-theme-options" role="group" aria-label="Tema speciale attivo">
           <button
             type="button"
-            className={themeChoice === "special" ? "on" : ""}
+            className={`${themeChoice === "special" ? "on" : ""} ${themesOk ? "" : "is-locked"}`}
             aria-pressed={themeChoice === "special"}
+            aria-disabled={themesOk ? undefined : "true"}
             onClick={() => onThemeChoiceChange("special")}
           >
-            {BOLLE_THEMES.find(t => t.id === activeTheme)?.label || "🫧 Bolle"}
+            {themesOk ? "" : "🔒 "}{BOLLE_THEMES.find(t => t.id === activeTheme)?.label || "🫧 Bolle"}
           </button>
         </div>
+        <LockedNote feature="themes" />
       </section>
 
       <section className="bl-insights-section">
-        <div className="bl-insights-heading"><h3><VenetianMask size={21} aria-hidden="true" /> Identità anonima</h3></div>
+        <div className="bl-insights-heading"><h3><VenetianMask size={21} aria-hidden="true" /> Identità e anonimato</h3></div>
         <div className="bl-account-ready">
           <strong>@{me?.username || "…"}</strong>
-          <p>Generato automaticamente e non modificabile. È l’unico nome che gli altri possono vedere.</p>
+          <p>Il tuo username è generato automaticamente e non si può modificare.</p>
         </div>
+        {me?.registered
+          ? <IdentityCard username={me?.username} />
+          : <p className="bl-muted">Crea un account per scegliere se mostrare il tuo nome.</p>}
       </section>
 
       <section className="bl-insights-section">

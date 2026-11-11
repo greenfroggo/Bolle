@@ -18,6 +18,7 @@ import {
   Sprout,
   Activity,
   Users,
+  Trophy,
   Gauge,
   Settings
 } from "lucide-react";
@@ -73,6 +74,7 @@ const AD_VIEWS = [
   { id: "usage", label: "Utilizzo", Icon: Activity, hint: "Quanto e come viene usata" },
   { id: "maps", label: "Mappe", Icon: AdIcMap, hint: "Dove succedono scoppi, aperture, interazioni e iscrizioni" },
   { id: "audience", label: "Pubblico", Icon: Users, hint: "Chi sono gli utenti" },
+  { id: "people", label: "Attività utenti", Icon: Trophy, hint: "Chi usa di più l'app e chi meno, utente per utente" },
   { id: "content", label: "Contenuti", Icon: AdIcLayers, hint: "Bolle, scoppi, reazioni e regali" },
   { id: "system", label: "Sistema", Icon: Gauge, hint: "Errori, prestazioni e segnalazioni" },
   { id: "settings", label: "Impostazioni", Icon: Settings, hint: "Tema dell'app, limiti e sessione" },
@@ -363,9 +365,10 @@ function MapsView({ dark, refreshKey }) {
 function Pager({ page, size, total, busy, onPage }) {
   return <div className="bl-ad-pager"><button type="button" className="bl-ad-icon" disabled={busy || page === 0} onClick={() => onPage(page - 1)} aria-label="Pagina precedente"><AdIcPrev size={16} /></button><span>{total ? `${page * size + 1}–${Math.min((page + 1) * size, total)} di ${fmtInt(total)}` : "Nessun risultato"}</span><button type="button" className="bl-ad-icon" disabled={busy || (page + 1) * size >= total} onClick={() => onPage(page + 1)} aria-label="Pagina successiva"><AdIcNext size={16} /></button></div>;
 }
-function UsersTable() {
+function UsersTable({ autoOpen = false }) {
   const SIZE = 25;
-  const [open, setOpen] = useState(false), [q, setQ] = useState(""), [term, setTerm] = useState(""), [page, setPage] = useState(0);
+  const box = useRef(null);
+  const [open, setOpen] = useState(!!autoOpen), [q, setQ] = useState(""), [term, setTerm] = useState(""), [page, setPage] = useState(0);
   const [res, setRes] = useState(null), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const load = useCallback(async (search, p) => {
     setBusy(true); setError("");
@@ -375,8 +378,10 @@ function UsersTable() {
     setRes(data);
   }, []);
   useEffect(() => { if (open) load(term, page); }, [open, term, page, load]);
+  // Arrivando dalla panoramica ("Registrazioni") l'elenco si apre già e viene portato in vista.
+  useEffect(() => { if (autoOpen) box.current?.scrollIntoView({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); }, [autoOpen]);
   const fmt = (d) => (d ? new Date(d).toLocaleDateString("it-IT") : "–"), rows = res?.rows || [], total = num(res?.total);
-  return <Panel title="Utenti registrati" note="Contiene dati personali: ogni consultazione viene salvata nel log degli accessi admin." actions={open ? <button type="button" className="bl-ad-btn" onClick={() => { setOpen(false); setRes(null); setPage(0); setTerm(""); setQ(""); }}>Nascondi</button> : <button type="button" className="bl-ad-btn primary" onClick={() => setOpen(true)}>Mostra elenco</button>}>
+  return <div ref={box} style={{ scrollMarginTop: 12 }}><Panel title="Utenti registrati" note="Contiene dati personali: ogni consultazione viene salvata nel log degli accessi admin." actions={open ? <button type="button" className="bl-ad-btn" onClick={() => { setOpen(false); setRes(null); setPage(0); setTerm(""); setQ(""); }}>Nascondi</button> : <button type="button" className="bl-ad-btn primary" onClick={() => setOpen(true)}>Mostra elenco</button>}>
     {open && <>
       <form className="bl-ad-search" onSubmit={(e) => { e.preventDefault(); setPage(0); setTerm(q.trim()); }}><AdIcSearch size={16} aria-hidden="true" /><input className="bl-ad-input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cerca username, nome, email o telefono" aria-label="Cerca utenti" /><button className="bl-ad-btn" type="submit">Cerca</button></form>
       {error && <p className="bl-ad-error" role="alert">{error}</p>}
@@ -386,7 +391,7 @@ function UsersTable() {
       <Pager page={page} size={SIZE} total={total} busy={busy} onPage={setPage} />
       <p className="bl-ad-note">Gli utenti registrati prima della v3 non hanno ancora dati personali (“–”).</p>
     </>}
-  </Panel>;
+  </Panel></div>;
 }
 function BubblesTable() {
   const SIZE = 20;
@@ -461,28 +466,47 @@ function BugReports() {
 /* ---------------------------- Viste ---------------------------- */
 function KpiBand({ items, onPick, picked }) {
   return <div className="bl-ad-kpis">{items.map((k) => {
+    const st = k.accent ? { borderInlineStart: `4px solid ${k.accent}` } : undefined;
     const body = <><span className="bl-ad-kpi-l">{k.label}</span><span className="bl-ad-kpi-v"><b>{k.value}</b><DeltaChip pct={k.delta} /></span>{k.sub && <small>{k.sub}</small>}{k.spark && k.spark.length > 1 && <Spark values={k.spark} color={k.color} />}</>;
+    if (k.onClick) return <button type="button" key={k.label} className="bl-ad-kpi action" style={st} title={k.hint} onClick={k.onClick}>{body}</button>;
     return k.drill
-      ? <button type="button" key={k.label} className="bl-ad-kpi action" aria-expanded={picked === k.drill} onClick={() => onPick(k.drill)}>{body}</button>
-      : <div key={k.label} className="bl-ad-kpi">{body}</div>;
+      ? <button type="button" key={k.label} className="bl-ad-kpi action" style={st} aria-expanded={picked === k.drill} onClick={() => onPick(k.drill)}>{body}</button>
+      : <div key={k.label} className="bl-ad-kpi" style={st}>{body}</div>;
   })}</div>;
 }
 function OverviewView({ c }) {
-  const { K, series, stick, guests, fq, days, errs, perf, go } = c, by = (k) => series.map((d) => num(d[k]));
+  const { K, series, stick, guests, fq, days, errs, perf, go, ret, data } = c, by = (k) => series.map((d) => num(d[k]));
   const items = [
     { label: "Attivi nelle ultime 24 ore", value: fmtInt(K.dau), spark: by("dau"), color: AD_COLORS.dau, delta: weekDelta(series, "dau"), drill: "dau" },
     { label: "Attivi negli ultimi 7 giorni", value: fmtInt(K.wau), drill: "wau" },
     { label: "Attivi negli ultimi 30 giorni", value: fmtInt(K.mau), drill: "mau" },
     { label: "Coinvolgimento", value: `${stick}%`, sub: "Utenti del mese che tornano ogni giorno" },
     { label: "Nuovi utenti", value: fmtInt(K.new_users), sub: `Ultimi ${days} giorni`, spark: by("new_users"), color: AD_COLORS.new_users, delta: weekDelta(series, "new_users") },
-    { label: "Registrazioni", value: fmtInt(K.new_registrations), sub: `Ultimi ${days} giorni`, spark: by("registrations"), color: AD_COLORS.registrations, delta: weekDelta(series, "registrations") },
+    { label: "Registrazioni", value: fmtInt(K.new_registrations), sub: `Ultimi ${days} giorni · apri l'elenco`, spark: by("registrations"), color: AD_COLORS.registrations, delta: weekDelta(series, "registrations"), onClick: () => go("audience", "users"), hint: "Apri l'elenco degli utenti registrati" },
     { label: "Utenti totali", value: fmtInt(K.total_users), sub: `${fmtInt(K.registered_users)} registrati, ${fmtInt(guests)} ospiti` },
     { label: "Sessioni per utente", value: fmtDec(fq.avg_sessions), sub: `${fmtDec(fq.avg_active_days)} giorni attivi per utente` },
+  ];
+  const regs = Math.max(1, num(K.total_users)), regPct = Math.round((num(K.registered_users) / regs) * 100);
+  const sum = (k) => series.reduce((t, d) => t + num(d[k]), 0), periodSub = `Ultimi ${days} giorni`;
+  const activityItems = [
+    { label: "Scoppi", value: fmtInt(sum("pops")), sub: periodSub, spark: by("pops"), color: AD_COLORS.pops, delta: weekDelta(series, "pops") },
+    { label: "Bolle pubblicate", value: fmtInt(sum("publishes")), sub: periodSub, spark: by("publishes"), color: AD_COLORS.publishes, delta: weekDelta(series, "publishes") },
+    { label: "Reazioni", value: fmtInt(sum("reactions")), sub: periodSub, spark: by("reactions"), color: AD_COLORS.reactions, delta: weekDelta(series, "reactions") },
+    { label: "Aperture dell'app", value: fmtInt(sum("opens")), sub: periodSub, spark: by("opens"), color: AD_COLORS.opens, delta: weekDelta(series, "opens") },
+  ];
+  const stepUsers = (ev) => num((data.features || []).find((f) => f.event === ev)?.users), guestsStarted = stepUsers("guest_start"), completed = stepUsers("register_complete");
+  const bootP95 = perf.find((p) => p.metric === "boot")?.p95_ms, d7 = ret.d7 || {};
+  const healthItems = [
+    { label: "Tasso di registrazione", value: `${regPct}%`, sub: `${fmtInt(K.registered_users)} registrati su ${fmtInt(K.total_users)} utenti`, onClick: () => go("audience", "users"), hint: "Apri l'elenco degli utenti registrati" },
+    { label: "Ospiti che si iscrivono", value: guestsStarted ? `${Math.min(100, Math.round((completed / guestsStarted) * 100))}%` : "–", sub: guestsStarted ? `${fmtInt(completed)} su ${fmtInt(guestsStarted)} ospiti nel periodo` : "Ancora nessun ospite tracciato", onClick: () => go("usage"), hint: "Apri Utilizzo" },
+    { label: "Fedeltà a 7 giorni", value: `${num(d7.rate)}%`, sub: `${fmtInt(d7.retained)} su ${fmtInt(d7.cohort)} utenti`, onClick: () => go("usage"), hint: "Apri Utilizzo" },
+    { label: "Errori", value: fmtInt(errs.total), sub: num(errs.total) ? "Apri Sistema per i dettagli" : "Nessun errore nel periodo", spark: by("errors"), color: AD_COLORS.errors, accent: num(errs.total) ? AD_COLORS.errors : undefined, onClick: () => go("system"), hint: "Apri Sistema" },
+    { label: "Avvio dell'app (p95)", value: bootP95 == null ? "–" : `${fmtInt(bootP95)} ms`, sub: "Tempo entro cui parte il 95% delle volte", accent: num(bootP95) > 2000 ? AD_COLORS.errors : undefined, onClick: () => go("system"), hint: "Apri Sistema" },
   ];
   const alerts = [];
   if (num(errs.total)) alerts.push(`${fmtInt(errs.total)} errori registrati nel periodo`);
   perf.filter((p) => num(p.p95_ms) > 2000).forEach((p) => alerts.push(`${PERF_LABELS[p.metric] || p.metric}: p95 a ${fmtInt(p.p95_ms)} ms`));
-  const feats = c.feats.slice(0, 6), regs = Math.max(1, num(K.total_users)), regPct = Math.round((num(K.registered_users) / regs) * 100);
+  const feats = c.feats.slice(0, 6);
   return <div className="bl-ad-stack">
     <div className={`bl-ad-status ${alerts.length ? "warn" : "ok"}`}>
       <span className="bl-ad-status-dot" aria-hidden="true" />
@@ -491,6 +515,8 @@ function OverviewView({ c }) {
     </div>
     <KpiBand items={items} onPick={c.pickMetric} picked={c.metricDetail} />
     {["dau", "wau", "mau"].includes(c.metricDetail) && <Drilldown metric={c.metricDetail} c={c} onClose={() => c.pickMetric(null)} />}
+    <Panel title="Attività nel periodo" note={`Totali degli ultimi ${days} giorni, con la variazione sugli ultimi 7 giorni completi.`}><KpiBand items={activityItems} /></Panel>
+    <Panel title="Salute e conversione" note="Quanti ospiti diventano iscritti, quanti tornano e come va l'app. Clicca un indicatore per aprire il dettaglio."><KpiBand items={healthItems} /></Panel>
     <Panel title="Utenti attivi e crescita" note="Per giorno. Clicca la legenda per nascondere una serie.">
       <TrendChart data={series} series={[{ key: "dau", name: "Utenti attivi", color: AD_COLORS.dau }, { key: "new_users", name: "Nuovi utenti", color: AD_COLORS.new_users }, { key: "registrations", name: "Registrazioni", color: AD_COLORS.registrations, dash: "5 4" }]} />
     </Panel>
@@ -504,11 +530,80 @@ function OverviewView({ c }) {
     </div>
   </div>;
 }
+/* ---------------------------- Sessioni live e click sul link ---------------------------- */
+const LIVE_REFRESH_MS = 5 * 60 * 1000; // la dashboard si aggiorna ogni 5 minuti
+const APP_LINK = "https://bolle-beta.vercel.app";
+const pctOf = (a, b) => (num(b) ? Math.round((num(a) / num(b)) * 1000) / 10 : 0);
+const hhmm = (iso) => (iso ? new Date(iso).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) : "–");
+function LiveSessions({ days }) {
+  const [s, setS] = useState(null), [links, setLinks] = useState(null), [err, setErr] = useState(""), [at, setAt] = useState(null), [busy, setBusy] = useState(false);
+  const load = useCallback(async (retried = false) => {
+    setBusy(true);
+    const [a, b] = await Promise.all([supabase.rpc("bolle_admin_sessions", { p_days: days }), supabase.rpc("bolle_admin_link_clicks", { p_days: days })]);
+    setBusy(false);
+    if (a.error) {
+      const m = String(a.error.message || "");
+      if (/Load failed|Failed to fetch|NetworkError|aborted/i.test(m)) {
+        setErr("Connessione interrotta durante il caricamento delle sessioni. Riprovo tra poco…");
+        if (!retried) setTimeout(() => load(true), 3000);
+      } else if (/forbidden/i.test(m)) setErr("Accesso negato: inserisci il controllo admin nello script SQL (bolle_admin_sessions).");
+      else if (/could not find the function|does not exist/i.test(m)) setErr("Funzione non trovata: esegui lo script SQL allegato.");
+      else setErr("Sessioni non disponibili: " + m.slice(0, 120));
+    } else { setErr(""); setS(a.data); }
+    if (!b.error) setLinks(b.data);
+    setAt(new Date());
+  }, [days]);
+  useEffect(() => {
+    load(false);
+    const id = setInterval(() => { if (document.visibilityState !== "hidden") load(false); }, LIVE_REFRESH_MS);
+    return () => clearInterval(id);
+  }, [load]);
+
+  const live = s?.live || {}, T = s?.totals || {}, D = s?.devices || {}, series = s?.series || [], recent = s?.recent || [];
+  const liveTotal = num(live.guests) + num(live.registered);
+  const items = s ? [
+    { label: "Online adesso", value: fmtInt(liveTotal), sub: `${fmtInt(live.guests)} ospiti · ${fmtInt(live.registered)} registrati`, accent: AD_COLORS.new_users },
+    { label: "Sessioni nel periodo", value: fmtInt(T.sessions), sub: `durata media ${fmtDec(T.avg_minutes)} min` },
+    { label: "Sessioni da ospite", value: fmtInt(T.guest_sessions), sub: `${pctOf(T.guest_sessions, T.sessions)}% del totale` },
+    { label: "Sessioni da registrato", value: fmtInt(T.registered_sessions), sub: `${pctOf(T.registered_sessions, T.sessions)}% del totale` },
+    { label: "Da ospite a iscritto", value: `${pctOf(D.converted_devices, D.guest_devices)}%`, sub: `${fmtInt(D.converted_devices)} su ${fmtInt(D.guest_devices)} dispositivi · nella stessa sessione: ${pctOf(T.converted_sessions, T.guest_sessions)}%`, accent: AD_COLORS.registrations },
+  ] : [];
+  const L = links?.totals || {};
+  const srcRows = (links?.by_src || []).map((r) => ({ label: r.k, value: num(r.count) }));
+  return <>
+    <Panel title="Sessioni live" note={`Ospiti e registrati · aggiornamento automatico ogni 5 minuti${at ? ` · ultimo alle ${hhmm(at)}` : ""}`} actions={<button type="button" className="bl-ad-btn" onClick={() => load(false)} disabled={busy}>{busy ? "Aggiorno…" : "Aggiorna ora"}</button>}>
+      {err && <p className="bl-ad-error" role="alert">{err}</p>}
+      {!err && !s && <p className="bl-ad-empty">Carico le sessioni…</p>}
+      {s && <>
+        <KpiBand items={items} />
+        <h4>Nuove sessioni per giorno</h4>
+        <TrendChart type="bar" data={series} series={[{ key: "guests", name: "Iniziate da ospite", color: AD_COLORS.opens }, { key: "registered", name: "Iniziate da registrato", color: AD_COLORS.dau }, { key: "converted", name: "Ospiti diventati iscritti", color: AD_COLORS.new_users }]} height={200} />
+        <p className="bl-ad-note">«Online adesso» = sessioni con attività negli ultimi 5 minuti. La conversione sui dispositivi conta chi è arrivato come ospite e in seguito ha usato l'app da registrato, anche in una sessione successiva.</p>
+        <h4>Ultime 50 sessioni</h4>
+        {recent.length ? <div className="bl-ad-scroll"><table className="bl-ad-table"><thead><tr><th>Sessione</th><th>Tipo</th><th>Inizio</th><th>Ultima attività</th><th>Sorgente</th></tr></thead><tbody>
+          {recent.map((r) => <tr key={r.id}><td><code>{r.id}</code></td><td>{r.is_guest ? "Ospite" : (r.started_as_guest ? "Ospite → iscritto" : "Registrato")}</td><td>{new Date(r.started_at).toLocaleString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</td><td>{hhmm(r.last_seen)}</td><td>{r.src || "–"}</td></tr>)}
+        </tbody></table></div> : <p className="bl-ad-empty">Ancora nessuna sessione registrata.</p>}
+      </>}
+    </Panel>
+    <Panel title="Click sul link dell'app" note={`${APP_LINK} · quante persone arrivano dal link e da dove`}>
+      {!links && <p className="bl-ad-empty">{err ? "Dati non disponibili." : "Carico i click…"}</p>}
+      {links && <>
+        <KpiBand items={[{ label: "Arrivi dal link", value: fmtInt(L.landings), sub: `${fmtInt(L.today)} oggi` }, { label: "Click su link nell'app", value: fmtInt(L.clicks) }]} />
+        <h4>Per sorgente</h4>
+        <Distribution color={AD_COLORS.opens} rows={srcRows} empty="Ancora nessun click." />
+        <h4>Per giorno</h4>
+        <TrendChart type="bar" data={links.series || []} series={[{ key: "count", name: "Click", color: AD_COLORS.opens }]} height={180} />
+        <p className="bl-ad-note">Per distinguere dove viene pubblicato il link, usa una sorgente diversa per ogni posto: <code>{APP_LINK}/?src=instagram</code>, <code>?src=whatsapp</code>, <code>?src=newsletter</code>… Senza <code>?src=</code> l'arrivo risulta «diretto».</p>
+      </>}
+    </Panel>
+  </>;
+}
 function UsageView({ c }) {
   const { ret, fq, stick, feats, data } = c;
   const steps = [["guest_start", "Ospiti iniziati"], ["register_start", "Registrazioni avviate"], ["register_step", "Dati compilati"], ["register_complete", "Registrazioni completate"]]
     .map(([ev, label]) => { const f = (data.features || []).find((x) => x.event === ev); return f ? { label, value: num(f.users) } : null; }).filter(Boolean);
   return <div className="bl-ad-stack">
+    <LiveSessions days={c.days} />
     <Panel title="Fedeltà degli utenti" note="Quanti utenti tornano dopo N giorni dal primo evento. Clicca per i dettagli.">
       <div className="bl-ad-ret">{["d1", "d7", "d30"].map((k) => <button type="button" key={k} className="bl-ad-retcard" aria-expanded={c.metricDetail === k} onClick={() => c.pickMetric(k)}>
         <span>Dopo {k.slice(1)} {k === "d1" ? "giorno" : "giorni"}</span><b>{num(ret[k]?.rate)}%</b>
@@ -572,8 +667,76 @@ function AudienceView({ c }) {
       <Panel title="Età" note="Fasce d'età dei registrati"><Distribution color="#6d56d8" rows={((demoExtra?.age || demo.age) || []).map((s) => ({ label: s.k, value: num(s.count) }))} /></Panel>
     </div>
     {natRows && <Panel title="Nazionalità" note="Prime 8, le altre sono raggruppate"><Distribution color="#0e9aa7" rows={natRows} /></Panel>}
-    <UsersTable />
+    <UsersTable autoOpen={c.focus === "users"} />
     <DeletedAccounts />
+  </div>;
+}
+/* ---------------------------- Attività utenti ---------------------------- */
+// Scala graduata: la posizione in classifica è divisa in cinque quinti, dal meno al più attivo. Il colore non è mai l'unico indicatore: c'è sempre anche il nome del livello.
+const ACT_LEVELS = [
+  { name: "Minima", color: "#e5484d" },
+  { name: "Bassa", color: "#f08a3c" },
+  { name: "Media", color: "#e9b72f" },
+  { name: "Alta", color: "#7bc96f" },
+  { name: "Altissima", color: "#12b886" },
+];
+const actScore = (u) => num(u.active_days) * 5 + num(u.sessions) + num(u.bubbles) * 3 + num(u.pops) + num(u.reactions);
+const actDate = (d) => (d ? new Date(d).toLocaleDateString("it-IT") : "mai");
+function UserActivityView({ c }) {
+  const { days } = c, STEP = 25;
+  const [rows, setRows] = useState(null), [total, setTotal] = useState(0), [mode, setMode] = useState("full");
+  const [busy, setBusy] = useState(false), [error, setError] = useState(""), [shown, setShown] = useState(STEP), [q, setQ] = useState("");
+  // Caricata solo quando si apre la sezione o si preme Aggiorna: non rientra nell'aggiornamento automatico, per non pesare sul backend.
+  const load = useCallback(async () => {
+    setBusy(true); setError("");
+    let res = await supabase.rpc("bolle_admin_user_activity", { p_days: days }), m = "full";
+    if (res.error) {
+      if (String(res.error.message).includes("forbidden")) { setBusy(false); setError("Sessione admin scaduta: riapri il portale."); return; }
+      res = await supabase.rpc("bolle_admin_users", { p_search: null, p_limit: 500, p_offset: 0 }); m = "basic";
+    }
+    setBusy(false);
+    if (res.error) { setError("Classifica non disponibile: " + String(res.error.message).slice(0, 100)); return; }
+    const list = Array.isArray(res.data) ? res.data : res.data?.rows || [];
+    setRows(list); setTotal(Array.isArray(res.data) ? list.length : num(res.data?.total) || list.length); setMode(m); setShown(STEP);
+  }, [days]);
+  useEffect(() => { load(); }, [load]);
+
+  const ranked = useMemo(() => {
+    const list = (rows || []).filter((u) => u.username).map((u) => ({ ...u, score: actScore(u) }));
+    list.sort((a, b) => b.score - a.score || String(b.last_seen || "").localeCompare(String(a.last_seen || "")));
+    const n = list.length;
+    return list.map((u, i) => ({ ...u, rank: i + 1, level: u.score <= 0 ? 0 : n < 2 ? 4 : Math.min(4, Math.floor(((n - 1 - i) / n) * 5)) }));
+  }, [rows]);
+  const top = ranked[0], low = ranked.length > 1 ? ranked[ranked.length - 1] : null, max = Math.max(1, top?.score || 1);
+  const detail = (u) => [`${fmtInt(u.bubbles)} bolle`, `${fmtInt(u.pops)} scoppi`, ...(mode === "full" ? [`${fmtInt(u.reactions)} reazioni`, `${fmtInt(u.active_days)} giorni attivi`] : []), `ultimo accesso ${actDate(u.last_seen)}`].join(" · ");
+  const term = q.trim().replace(/^@/, "").toLowerCase();
+  const filtered = term ? ranked.filter((u) => String(u.username).toLowerCase().includes(term)) : ranked, visible = filtered.slice(0, shown);
+  const items = top ? [
+    { label: "Più attivo", value: `@${top.username}`, sub: detail(top), accent: ACT_LEVELS[4].color },
+    ...(low ? [{ label: "Meno attivo", value: `@${low.username}`, sub: detail(low), accent: ACT_LEVELS[0].color }] : []),
+    { label: "Utenti in classifica", value: fmtInt(ranked.length), sub: total > ranked.length ? `Primi ${fmtInt(ranked.length)} su ${fmtInt(total)}` : undefined },
+    { label: "Senza attività", value: fmtInt(ranked.filter((u) => u.score <= 0).length), sub: "Punteggio zero" },
+  ] : [];
+
+  return <div className="bl-ad-stack">
+    {error && <div className="bl-ad-unlock"><p className="bl-ad-error" role="alert">{error}</p><button type="button" className="bl-ad-btn" onClick={load}>Riprova</button></div>}
+    {!error && !rows && <p className="bl-ad-empty">Carico la classifica…</p>}
+    {rows && !ranked.length && !error && <p className="bl-ad-empty">Ancora nessun utente con attività.</p>}
+    {top && <KpiBand items={items} />}
+    {top && <Panel title="Classifica per utente" note={mode === "full" ? `Ultimi ${days} giorni. Punteggio = 5 × giorni attivi + sessioni + 3 × bolle pubblicate + scoppi + reazioni.` : "Conteggi complessivi dall'iscrizione. Punteggio = 3 × bolle pubblicate + scoppi. Per vedere anche giorni attivi, sessioni e reazioni nel periodo serve la funzione SQL bolle_admin_user_activity."} actions={<button type="button" className="bl-ad-btn" onClick={() => load(false)} disabled={busy}>{busy ? "Aggiorno…" : "Aggiorna"}</button>}>
+      <div role="list" aria-label="Scala di attività" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 16px", fontSize: 12 }}>
+        <span>Dal più al meno attivo:</span>
+        {[4, 3, 2, 1, 0].map((i) => <span role="listitem" key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i aria-hidden="true" style={{ width: 12, height: 12, borderRadius: 3, background: ACT_LEVELS[i].color }} />{ACT_LEVELS[i].name}</span>)}
+      </div>
+      <form className="bl-ad-search" onSubmit={(e) => e.preventDefault()}><AdIcSearch size={16} aria-hidden="true" /><input className="bl-ad-input" type="search" value={q} onChange={(e) => { setQ(e.target.value); setShown(STEP); }} placeholder="Cerca un username" aria-label="Cerca un utente in classifica" /></form>
+      <ul className="bl-ad-dist">{visible.map((u) => { const lv = ACT_LEVELS[u.level]; return <li key={u.username}>
+        <span className="bl-ad-dist-l"><b>#{u.rank}</b> @{u.username}{u.rank === 1 && <> <span className="bl-ad-chip on">Più attivo</span></>}{low && u.rank === ranked.length && <> <span className="bl-ad-chip off">Meno attivo</span></>}<small>{detail(u)}</small></span>
+        <span className="bl-ad-track"><i style={{ width: `${Math.max(2, (u.score / max) * 100)}%`, background: lv.color }} /></span>
+        <b>{fmtInt(u.score)}</b><small>{lv.name}</small>
+      </li>; })}</ul>
+      {!filtered.length && <p className="bl-ad-empty">Nessun utente con questo username.</p>}
+      {filtered.length > shown && <div><button type="button" className="bl-ad-btn" onClick={() => setShown((v) => v + STEP)}>Mostra altri {Math.min(STEP, filtered.length - shown)} di {fmtInt(filtered.length - shown)}</button></div>}
+    </Panel>}
   </div>;
 }
 function ContentView({ c }) {
@@ -627,6 +790,7 @@ function AdminPortal({ onNotify, onClose }) {
   const [days, setDays] = useState(30);
   const [view, setView] = useState("overview");
   const [metricDetail, setMetricDetail] = useState(null);
+  const [focus, setFocus] = useState(null);
   const [activity, setActivity] = useState(null);
   const [activityError, setActivityError] = useState("");
   const [data, setData] = useState(null);
@@ -683,6 +847,9 @@ function AdminPortal({ onNotify, onClose }) {
   }
   async function lock() { await supabase.rpc("bolle_admin_lock"); setLocked(true); setData(null); onNotify("Portale admin bloccato."); }
 
+  // Cambia sezione; "target" chiede alla sezione di aprire direttamente un elenco (es. "users").
+  const go = useCallback((id, target = null) => { setView(id); setFocus(target); }, []);
+
   let c = null;
   if (data) {
     const K = data.kpi || {}, errs = data.errors || { top: [], recent: [] };
@@ -698,7 +865,7 @@ function AdminPortal({ onNotify, onClose }) {
       return rest ? [...all.slice(0, 8), { label: "Altre", value: rest }] : all.slice(0, 8);
     })();
     c = {
-      data, K, errs, days, natRows, demoExtra, activity, activityError, onNotify, metricDetail, go: setView,
+      data, K, errs, days, natRows, demoExtra, activity, activityError, onNotify, metricDetail, go, focus,
       fq: data.frequency || {}, ret: data.retention || {}, series: data.series || [], perf: data.performance || [], demo: data.demographics || {}, C: data.content || {},
       guests: Math.max(0, num(K.total_users) - num(K.registered_users)),
       stick: num(K.mau) ? Math.round((num(K.dau) / num(K.mau)) * 100) : 0,
@@ -707,12 +874,12 @@ function AdminPortal({ onNotify, onClose }) {
     };
   }
   const current = AD_VIEWS.find((v) => v.id === view) || AD_VIEWS[0];
-  const periodView = ["overview", "usage", "audience", "content", "system"].includes(view);
+  const periodView = ["overview", "usage", "audience", "people", "content", "system"].includes(view);
 
   return <div className="bl-ad" data-theme={dark ? "dark" : "light"} role="dialog" aria-modal="true" aria-label="Portale amministrazione">
     <aside className="bl-ad-side">
       <div className="bl-ad-brand"><span aria-hidden="true">🫧</span><div><strong>Bolle</strong><small>Portale admin</small></div></div>
-      <nav aria-label="Sezioni">{AD_VIEWS.map(({ id, label, Icon }) => <button type="button" key={id} aria-current={view === id ? "page" : undefined} disabled={!c} onClick={() => setView(id)}><Icon size={18} aria-hidden="true" /><span>{label}</span>{id === "system" && c && num(c.errs.total) > 0 && <em aria-label={`${c.errs.total} errori`}>{num(c.errs.total) > 99 ? "99+" : num(c.errs.total)}</em>}</button>)}</nav>
+      <nav aria-label="Sezioni">{AD_VIEWS.map(({ id, label, Icon }) => <button type="button" key={id} aria-current={view === id ? "page" : undefined} disabled={!c} onClick={() => go(id)}><Icon size={18} aria-hidden="true" /><span>{label}</span>{id === "system" && c && num(c.errs.total) > 0 && <em aria-label={`${c.errs.total} errori`}>{num(c.errs.total) > 99 ? "99+" : num(c.errs.total)}</em>}</button>)}</nav>
     </aside>
     <div className="bl-ad-main">
       <header className="bl-ad-top">
@@ -735,6 +902,7 @@ function AdminPortal({ onNotify, onClose }) {
           {view === "usage" && <UsageView c={c} />}
           {view === "maps" && <MapsView dark={dark} refreshKey={stamp?.getTime()} />}
           {view === "audience" && <AudienceView c={c} />}
+          {view === "people" && <UserActivityView c={c} />}
           {view === "content" && <ContentView c={c} />}
           {view === "system" && <SystemView c={c} />}
           {view === "settings" && <AdSettingsView c={c} auto={auto} setAuto={setAuto} onLock={lock} />}

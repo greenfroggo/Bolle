@@ -1,12 +1,17 @@
 import { SYSTEM_CATEGORIES, systemDayKey, buildDailySystemBubbles, readSystemPops, saveSystemPops, readCachedNews, loadDailyNews } from "./lib/systemBubbles.js";
 import { rankDiscoveryBubbles, readDiscoverySignals, recordDiscoverySignal, discoveryEnabled } from "./lib/bolleDiscovery.js";
-import SequentialFeed, { feedApi, makeBlurPreview } from "./lib/SequentialFeed.jsx";
-import { OverlayStage, OverlayRail, OverlayTextField, OverlayLayer, blurFromFile } from "./lib/OverlayEditor.jsx";
+import SequentialFeed from "./lib/SequentialFeed.jsx";
+import SearchBar from "./lib/SearchBar.jsx";
+import InstallHint from "./lib/InstallHint.jsx";
+import GlassOrb, { ORB_TINTS } from "./lib/GlassOrb.jsx";
+import { useEdgeSwipeBack } from "./lib/useEdgeSwipeBack.js";
+import { kindsForChips } from "./lib/bubbleSearch.js";
+import { OverlayStage, OverlayRail, blurFromFile } from "./lib/OverlayEditor.jsx";
 import TagAutocomplete from "./lib/TagAutocomplete.jsx";
 import ChainOrbs, { chainCountFromRow } from "./lib/ChainOrbs.jsx";
 import NearbyMap from "./lib/NearbyMap.jsx";
-import { MapPin as NearPinIcon, Sparkles as AllSparkIcon } from "lucide-react";
-import MediaEditor, { defaultEdit, bakeImage, hasPhotoEdits, videoEditPayload, sanitizeVideoEdit, isEditableImage, EditedVideo } from "./lib/MediaEditor.jsx";
+import { MapPin as NearPinIcon, Compass as ExploreIcon, Map as MapDrawerIcon, ChevronDown as DrawerDownIcon } from "lucide-react";
+import MediaEditor, { defaultEdit, bakeImage, hasPhotoEdits, videoEditPayload, isEditableImage } from "./lib/MediaEditor.jsx";
 import PublicProfile from "./lib/PublicProfile.jsx";
 import AdminPortal from "./features/admin/AdminPortal.jsx";
 import LeaderboardView from "./features/leaderboard/LeaderboardView.jsx";
@@ -15,7 +20,6 @@ import LegalInfoView from "./features/settings/LegalInfoView.jsx";
 import PersonalDataView from "./features/settings/PersonalDataView.jsx";
 import MessagesView from "./features/chat/MessagesView.jsx";
 import Sheet from "./components/Sheet.jsx";
-import useEscape from "./hooks/useEscape.js";
 import WelcomeScreen from "./features/auth/WelcomeScreen.jsx";
 import TutorialSheet from "./features/auth/TutorialSheet.jsx";
 import InfoSheet from "./features/auth/InfoSheet.jsx";
@@ -23,10 +27,11 @@ import LoginSheet from "./features/auth/LoginSheet.jsx";
 import RegistrationSheet from "./features/auth/RegistrationSheet.jsx";
 import Viewer from "./features/viewer/Viewer.jsx";
 import { formatCountdown, useCapsuleRemaining, capsuleRemainingMs, capsuleNow, setCapsuleClockSkew } from "./lib/capsule.js";
-import { KlipyPicker } from "./components/KlipyPicker.jsx";
+import { GifSimplePicker } from "./components/GifSimplePicker.jsx";
 import { GifAnswer } from "./components/GifAnswer.jsx";
 import { seqApi } from "./lib/seqApi.js";
 import GuestPermissions from "./features/auth/GuestPermissions.jsx";
+import { UnlocksProvider, useUnlocks, buildUnlocks, LockedNote, LockPopupHost, showLocked, MODE_FEATURE, FREE_RADIUS_KM } from "./unlocks.jsx";
 import {
   CHAT_MARK_SHARE,
   CHAT_MAX_BODY,
@@ -45,14 +50,19 @@ import { romeToday } from "./lib/geo.js";
 import { layoutConstellation } from "./lib/constellationLayout.js";
 import "./styles/bolle.css";
 import "./styles/bolle-polish.css";
+import "./styles/onboarding.css";
+import "./styles/bolle-home.css";
+import "./styles/bolle-orbs.css";
+import "./styles/bolle-dark.css";
+import "./styles/registration.css";
 import { nearbyPairs } from "./lib/spatialPairs.js";
 import { applyMagneticAttraction } from "./lib/magneticForces.js";
 import { magneticPriority, applyDiscoveryDrift } from "./lib/discoveryMotion.js";
 import { neighborhoodMagnetism } from "./lib/localMagnetism.js";
-import { getCtx, warmAudio, soundOn, supabase, BUCKET, MAX_UPLOAD_MB, RADII, BOLLE_COUNTRIES, countryFlag, STARTER_COUNT, MINI_THRESHOLD, miniStyle, AVATARS, avatarFor, shareBubbleWhatsApp, bubbleShareUrl, REACTIONS, ReactionIcon, PALETTES, cleanCaption, captionPosition, SURPRISES, setSoundOn, playPop, playDust, ensureSession, setAuthSession, hash, bubbleLook, getPosition, positionErrorText, errorText, formatDistance, subscribeFrame, USER_CATEGORIES, categoryIcon, categoryLabel, getBubbleAgeStage, getBubbleRemainingHours, KLIPY_API_KEY, GIPHY_API_KEY, BOLLE_THEMES } from "./lib/bolleCore.jsx";
+import { getCtx, warmAudio, supabase, BUCKET, MAX_UPLOAD_MB, RADII, BOLLE_COUNTRIES, countryFlag, AVATARS, avatarFor, shareBubbleWhatsApp, bubbleShareUrl, REACTIONS, ReactionIcon, cleanCaption, captionPosition, playPop, ensureSession, setAuthSession, hash, bubbleLook, getPosition, positionErrorText, errorText, formatDistance, USER_CATEGORIES, categoryIcon, categoryLabel, getBubbleAgeStage, getBubbleRemainingHours, BOLLE_THEMES } from "./lib/bolleCore.jsx";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Trash2, CircleUserRound, Circle, ChartColumn, Gift, Trophy, Settings, Hand, Droplets, Plus, VenetianMask, Heart, Smile, Eye, Sparkles, Frown, CalendarDays, CalendarRange, LockKeyhole, Award, Rocket, HeartHandshake, Waves, Zap, Medal, TrendingUp, TrendingDown, Minus, Orbit, Sprout, Volume2, KeyRound, Users, UserPlus, Activity, Gauge, RefreshCw, ShieldCheck, Bell, Share2, Camera, MessageCircle, Send as SendIcon, X as CloseIcon, MoreHorizontal as MoreIcon, EyeOff, Archive, ArchiveRestore, Star as StarIcon, Link2 as LinkIcon, ChevronsUpDown as ScrollIcon } from "lucide-react";
+import { CircleUserRound, Circle, ChartColumn, Gift, Trophy, Settings, Plus, Heart, Sparkles, CalendarDays, CalendarRange, LockKeyhole, Award, Rocket, HeartHandshake, Waves, Zap, Medal, Orbit, Sprout, Users, Activity, RefreshCw, ShieldCheck, Bell, Camera, MessageCircle, Star as StarIcon } from "lucide-react";
 
 
 const BOLLE_THEME_DECOR = {"halloween": ["🦇", "🎃", "👻", "🕸️", "🧙\u200d♀️", "🕷️", "🌙", "💀"], "natale": ["🎄", "❄️", "🎁", "⭐", "🔔", "🦌", "🧣", "🍬"], "pasqua": ["🐣", "🥚", "🐰", "🌷", "🌼", "🦋", "🐇", "🌸"], "capodanno": ["🎆", "🎇", "✨", "🥂", "🎉", "⭐", "🎊", "🪩"], "estate": ["☀️", "🌴", "🍉", "🏖️", "🐚", "🌊", "🕶️", "🍍"], "primavera": ["🌸", "🌷", "🦋", "🌼", "🐝", "🌱", "🌺", "🍃"], "autunno": ["🍂", "🍁", "🌰", "🍄", "🦔", "🌾", "☕", "🍃"], "inverno": ["❄️", "☃️", "🌨️", "🧤", "⛸️", "🏔️", "🧣", "❄️"], "caldo": ["☀️", "🔥", "🌞", "🌵", "🍊", "🌅", "✨", "🌶️"], "freddo": ["🧊", "❄️", "💎", "🌬️", "🧣", "🌨️", "🧤", "🧊"], "orientale": ["🏮", "🌸", "🎋", "🪭", "⛩️", "🐉", "🍵", "🌙"], "universo": ["🪐", "🌟", "🌙", "☄️", "✨", "🚀", "🌌", "⭐"], "bolle": ["🫧", "🫧", "✨", "💧", "🫧", "💠", "🫧", "✨"], "natura": ["🌿", "🍀", "🌳", "🦋", "🌱", "🌻", "🍃", "🌼"]};
@@ -175,8 +185,8 @@ export default function App() {
   const [appearance, setAppearance] = useState(() => { try { return localStorage.getItem("bolle-appearance-v1") || "dark"; } catch { return "dark"; } });
   const [activeTheme, setActiveTheme] = useState("bolle");
   const [themeChoice, setThemeChoice] = useState(() => { try { return localStorage.getItem("bolle-theme-choice-v2") || "standard"; } catch { return "standard"; } });
-  function updateThemeChoice(value) { setThemeChoice(value); try { localStorage.setItem("bolle-theme-choice-v2", value); } catch {} }
-  function updateAppearance(value) { setAppearance(value); updateThemeChoice("standard"); try { localStorage.setItem("bolle-appearance-v1", value); } catch {} }
+  function updateThemeChoice(value) { if (value === "special" && !unlocks.isUnlocked("themes")) { showLocked("themes"); return; } setThemeChoice(value); try { localStorage.setItem("bolle-theme-choice-v2", value); } catch { /* ignora */ } }
+  function updateAppearance(value) { setAppearance(value); updateThemeChoice("standard"); try { localStorage.setItem("bolle-appearance-v1", value); } catch { /* ignora */ } }
   const refreshTheme = useCallback(async () => {
     const { data, error } = await supabase.rpc("bolle_get_active_theme");
     if (!error && BOLLE_THEMES.some(t => t.id === data)) setActiveTheme(data);
@@ -211,7 +221,8 @@ export default function App() {
   const [radiusAct, setRadiusAct] = useState(null); // distanza sotto il dito durante lo scorrimento
   const nearBtnRef = useRef(null), nearTimer = useRef(0), nearIgnore = useRef(false), nearDown = useRef(false);
   const [coords, setCoords] = useState(null);
-  const [mapCollapsed, setMapCollapsed] = useState(false); // mappa «Vicino a me»: aperta di default, si può ridurre a una barra
+  const [mapDrawerShown, setMapDrawerShown] = useState(false); // tendina mappa «Vicino a me»: montata (la mappa si carica solo quando serve)
+  const [mapDrawerOpen, setMapDrawerOpen] = useState(false); // ...e aperta (animazione a molla)
   const [geoIssue, setGeoIssue] = useState(null); // { denied, text }: posizione non concessa o non disponibile
   const [geoBusy, setGeoBusy] = useState(false);
   const [bubbles, setBubbles] = useState([]);
@@ -222,6 +233,7 @@ export default function App() {
   const [authorFilter, setAuthorFilter] = useState("all"); // all | favorites | username
   const [authorMenuOpen, setAuthorMenuOpen] = useState(false);
   const [authorSearchQuery, setAuthorSearchQuery] = useState("");
+  const [kindChips, setKindChips] = useState([]); // filtri per tipologia dalla ricerca (id di SEARCH_CHIPS)
   const [blockedUsers, setBlockedUsers] = useState(() => new Set());
   // Bolle di sistema (curiosità, aforismi, motivazione, notizie): cambiano ogni giorno e non consumano scoppi.
   const [dayKey, setDayKey] = useState(() => systemDayKey());
@@ -273,7 +285,7 @@ export default function App() {
   function changeNotificationPref(key, enabled) {
     setNotificationPrefs(prev => {
       const next = { ...prev, [key]: enabled };
-      try { localStorage.setItem(`bolle-notification-prefs-v1-${uid || "guest"}`, JSON.stringify(next)); } catch {}
+      try { localStorage.setItem(`bolle-notification-prefs-v1-${uid || "guest"}`, JSON.stringify(next)); } catch { /* ignora */ }
       return next;
     });
   }
@@ -453,17 +465,21 @@ export default function App() {
       setLiveNotification(current => current || notificationQueue.current.shift() || null);
     };
   });
+  // Avanzamento dei traguardi: lo riempie il controllo qui sotto (stessa chiamata, nessuna richiesta in più); alimenta le funzioni da sbloccare.
+  const [milestoneProgress, setMilestoneProgress] = useState(null);
   // Traguardi sbloccati: controllo globale (non solo quando "Le mie statistiche" è aperta).
   // Si rilancia quando cambiano i contatori del profilo, quando arrivano nuove notifiche e al rientro nell'app.
   useEffect(() => {
     if (!ready || !uid || guestMode || !me?.registered) return;
-    const owner = achievementOwner(me);
-    if (!owner) return;
+    const owner = achievementOwner(me) || uid; // se lo stato non espone un id si usa quello di sessione: l'avanzamento serve anche alle funzioni da sbloccare
     const storeKey = `bolle-achievements-v1-${owner}`;
     (async () => {
       const { data, error } = await supabase.rpc("my_bubbles_media_dashboard");
       if (error || !Array.isArray(data)) return;
-      const unlocked = buildMilestones(decorateEntries(data), me).filter(m => m.value >= m.target).map(m => m.name);
+      const milestones = buildMilestones(decorateEntries(data), me);
+      const nextProgress = Object.fromEntries(milestones.map(m => [m.name, { value: m.value, target: m.target, unit: m.unit }]));
+      setMilestoneProgress(prev => JSON.stringify(prev) === JSON.stringify(nextProgress) ? prev : nextProgress);
+      const unlocked = milestones.filter(m => m.value >= m.target).map(m => m.name);
       let previous = null;
       try { const raw = localStorage.getItem(storeKey); previous = raw === null ? null : JSON.parse(raw); } catch { previous = null; }
       if (!Array.isArray(previous)) { try { localStorage.setItem(storeKey, JSON.stringify(unlocked)); } catch { /* ignora */ } return; }
@@ -479,14 +495,31 @@ export default function App() {
       setLiveNotification(current => current || notificationQueue.current.shift() || null);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, uid, guestMode, me?.registered, me?.opens_total, me?.bubbles_count, me?.gifts_sent, unreadNotifications, refreshKey]);
+  }, [ready, uid, guestMode, me?.registered, me?.opens_total, me?.bubbles_count, me?.gifts_sent, me?.messages_sent, unreadNotifications, refreshKey]);
+  // Ospiti e utenti non registrati: nessun traguardo, quindi le funzioni da sbloccare restano chiuse; al logout si riparte da zero.
+  useEffect(() => {
+    if (ready && (guestMode || (me && !me.registered))) setMilestoneProgress(prev => (prev && Object.keys(prev).length === 0 ? prev : {}));
+    else if (!uid) setMilestoneProgress(null);
+  }, [ready, guestMode, me?.registered, uid]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Tabella unica funzione -> traguardo (unlocks.jsx). I traguardi già ottenuti restano validi anche se i contatori scendono.
+  // Finché il controllo completo non risponde, i contatori già presenti nello stato utente (bolle, aperture, regali) bastano per sbloccare le funzioni ovvie.
+  const meProgress = useMemo(() => (me?.registered ? Object.fromEntries(buildMilestones([], me).map(m => [m.name, { value: m.value, target: m.target, unit: m.unit }])) : null), [me?.registered, me?.opens_total, me?.bubbles_count, me?.gifts_sent, me?.messages_sent]); // eslint-disable-line react-hooks/exhaustive-deps
+  const unlocks = useMemo(() => {
+    let cached = [];
+    try { const owner = achievementOwner(me) || uid; const raw = owner ? localStorage.getItem(`bolle-achievements-v1-${owner}`) : null; const parsed = raw ? JSON.parse(raw) : []; if (Array.isArray(parsed)) cached = parsed; } catch { /* nessuna cache locale */ }
+    return buildUnlocks(milestoneProgress ?? meProgress, cached);
+  }, [milestoneProgress, meProgress, uid, me?.user_id, me?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const unlocksSettled = milestoneProgress !== null;
+  const wideRadiusOk = unlocks.isUnlocked("wideRadius");
+  // Raggio ampio ancora chiuso: si riporta al massimo libero, ma solo a traguardi caricati (così chi lo ha già sbloccato non lo perde).
+  useEffect(() => { if (unlocksSettled && !wideRadiusOk && radius > FREE_RADIUS_KM) setRadius(FREE_RADIUS_KM); }, [unlocksSettled, wideRadiusOk, radius]);
   const [daily, setDaily] = useState(null);
   const [secretIds, setSecretIds] = useState(() => new Set());
   const [allSecretIds, setAllSecretIds] = useState(() => new Set());
 
   const [travelToken, setTravelToken] = useState(() => new URLSearchParams(window.location.search).get("travel"));
   const [travelOpen, setTravelOpen] = useState(false); // solo compatibilità con link ricevuti
-  const [secretOnly, setSecretOnly] = useState(false);
+  const [secretOnly] = useState(false);
   const [bursting, setBursting] = useState(() => new Set());
   const busy = useRef(false);
   const [viewer, setViewer] = useState(null);
@@ -508,8 +541,6 @@ export default function App() {
   const [chainRootId, setChainRootId] = useState(null);
   const [chainInvite, setChainInvite] = useState(() => new URLSearchParams(window.location.search).get("chain") || null);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [countPop, setCountPop] = useState(false); // fumetto vicino al contatore
-  useEffect(() => { if (!countPop) return undefined; const t = setTimeout(() => setCountPop(false), 2800); const off = () => setCountPop(false); document.addEventListener("pointerdown", off); return () => { clearTimeout(t); document.removeEventListener("pointerdown", off); }; }, [countPop]);
   const [loginOpen, setLoginOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   // Il tutorial si avvia esclusivamente al completamento di una nuova registrazione.
@@ -523,6 +554,88 @@ export default function App() {
   const [profileView, setProfileView] = useState(null); // null | menu | bubbles | stats | gift | leaderboard | settings | messages
   const [initialChat, setInitialChat] = useState(null);
   const profileViewRef = useRef(null); profileViewRef.current = profileView;
+  // Footbar: la lente di vetro scivola sulla sezione attiva (posizione misurata e passata via variabili CSS, senza re-render).
+  const mapDrawerTimer = useRef(null);
+  const mapDragRef = useRef(null);
+  const mapSuppressClick = useRef(false);
+  function openMapDrawer() { if (!unlocks.isUnlocked("map")) { showLocked("map"); return; } clearTimeout(mapDrawerTimer.current); setMapDrawerShown(true); requestAnimationFrame(() => requestAnimationFrame(() => setMapDrawerOpen(true))); }
+  function closeMapDrawer() { setMapDrawerOpen(false); clearTimeout(mapDrawerTimer.current); mapDrawerTimer.current = setTimeout(() => setMapDrawerShown(false), 650); }
+  function mapHandleDown(e) { mapDragRef.current = { y: e.clientY, done: false }; try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* ignora */ } }
+  function mapHandleMove(e) {
+    const d = mapDragRef.current; if (!d || d.done) return;
+    const dy = e.clientY - d.y;
+    if (!mapDrawerOpen && dy > 26) { d.done = true; mapSuppressClick.current = true; openMapDrawer(); }
+    else if (mapDrawerOpen && dy < -26) { d.done = true; mapSuppressClick.current = true; closeMapDrawer(); }
+  }
+  function mapHandleUp() { mapDragRef.current = null; }
+  function mapHandleClick() { if (mapSuppressClick.current) { mapSuppressClick.current = false; return; } if (mapDrawerOpen) closeMapDrawer(); else openMapDrawer(); }
+  useEffect(() => { if (scope !== "nearby") { clearTimeout(mapDrawerTimer.current); setMapDrawerOpen(false); setMapDrawerShown(false); } }, [scope]);
+  useEffect(() => () => clearTimeout(mapDrawerTimer.current), []);
+  const footNode = useRef(null);
+  const footActive = profileView === "leaderboard" ? "rank" : profileView === "messages" ? "msg" : profileView ? null : scope === "nearby" ? "near" : "home";
+  const footActiveRef = useRef(footActive); footActiveRef.current = footActive;
+  const measureFoot = useCallback(() => {
+    const nav = footNode.current; if (!nav) return;
+    const el = footActiveRef.current ? nav.querySelector(`[data-foot="${footActiveRef.current}"]`) : null;
+    if (!el) { nav.style.setProperty("--lens-o", "0"); return; }
+    nav.style.setProperty("--lens-x", `${el.offsetLeft + el.offsetWidth / 2}px`);
+    nav.style.setProperty("--lens-o", "1");
+    if (!nav.dataset.ready) requestAnimationFrame(() => requestAnimationFrame(() => { if (footNode.current) footNode.current.dataset.ready = "1"; }));
+  }, []);
+  const footNavRef = useCallback((node) => { footNode.current = node; if (node) requestAnimationFrame(measureFoot); }, [measureFoot]);
+  useLayoutEffect(() => { measureFoot(); }, [footActive, measureFoot]);
+  useEffect(() => { window.addEventListener("resize", measureFoot); return () => window.removeEventListener("resize", measureFoot); }, [measureFoot]);
+  /* Scorrimento sulla footbar: la lente segue il dito e, al rilascio, si apre la sezione su cui si è fermata. */
+  const footDrag = useRef(null); // { id, x0, y0, on, key }
+  const footDragMoved = useRef(false);
+  function footItemCenters() {
+    const nav = footNode.current; if (!nav) return [];
+    return [...nav.querySelectorAll("[data-foot]")].map((el) => ({ key: el.dataset.foot, el, x: el.offsetLeft + el.offsetWidth / 2 }));
+  }
+  function footGo(key) {
+    if (key === "home") { setProfileView(null); setAuthorFilter("all"); chooseScope("global"); }
+    else if (key === "near") { setProfileView(null); if (scope !== "nearby") chooseScope("nearby"); }
+    else if (key === "rank") setProfileView("leaderboard");
+    else if (key === "msg") { if (guestMode || !me?.registered) { requestAccount(); return; } openMessages(null); }
+  }
+  function footPointerDown(e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    footDrag.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, on: false, key: null };
+  }
+  function footPointerMove(e) {
+    const d = footDrag.current, nav = footNode.current;
+    if (!d || d.id !== e.pointerId || !nav) return;
+    if (!d.on) {
+      if (radiusOpen) return; // sta scegliendo la distanza: niente scorrimento
+      const dx = e.clientX - d.x0, dy = e.clientY - d.y0;
+      if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy)) return;
+      d.on = true; footDragMoved.current = true;
+      clearTimeout(nearTimer.current); nearDown.current = false; nearIgnore.current = false; setRadiusAct(null); // annulla la pressione prolungata su «Vicino a me»
+      try { nav.setPointerCapture(e.pointerId); } catch { /* ignora */ }
+      nav.dataset.drag = "1"; nav.style.setProperty("--lens-o", "1");
+    }
+    const items = footItemCenters(); if (!items.length) return;
+    const r = nav.getBoundingClientRect();
+    const x = Math.max(items[0].x, Math.min(items[items.length - 1].x, e.clientX - r.left));
+    nav.style.setProperty("--lens-x", `${x}px`);
+    let best = items[0]; items.forEach((it) => { if (Math.abs(it.x - x) < Math.abs(best.x - x)) best = it; });
+    if (best.key !== d.key) { d.key = best.key; items.forEach((it) => it.el.classList.toggle("is-lens", it.key === best.key)); haptic("tick"); }
+  }
+  function footPointerEnd(e) {
+    const d = footDrag.current, nav = footNode.current;
+    if (!d || d.id !== e.pointerId) return;
+    footDrag.current = null;
+    if (!nav || !d.on) return;
+    delete nav.dataset.drag;
+    nav.querySelectorAll(".is-lens").forEach((el) => el.classList.remove("is-lens"));
+    setTimeout(() => { footDragMoved.current = false; }, 60);
+    const key = e.type === "pointercancel" ? null : d.key;
+    if (!key || key === footActiveRef.current) { measureFoot(); return; }
+    haptic("select");
+    footGo(key);
+    requestAnimationFrame(() => requestAnimationFrame(measureFoot)); // se la sezione non cambia (es. ospite su Messaggi) la lente torna a posto
+  }
+  const footClickCapture = (e) => { if (footDragMoved.current) { e.preventDefault(); e.stopPropagation(); } };
   const messagesOrigin = useRef(null); // da dove si è aperta la chat: { view, profile }
   function openMessages(initial = null, origin) {
     const current = profileViewRef.current;
@@ -551,7 +664,6 @@ export default function App() {
   const beginLogin = () => { setWelcome(false); setAuthPrompt(false); setRegistrationOpen(false); setLoginOpen(true); };
   const available = me?.available ?? 0;
   const bonusPerPost = me?.bonus_per_post ?? 2;
-  const dailyLimit = Math.max(1, Number(me?.daily_limit) || 25);
   const out = ready && me !== null && available <= 0;
 
   const notify = useCallback((text) => {
@@ -565,7 +677,7 @@ export default function App() {
     return () => window.removeEventListener("bolle:tag-skipped", onSkipped);
   }, [notify]);
 
-  const openNotification = useCallback(async (item) => {
+  const openNotification = async (item) => {
     dismissLiveNotification();
     if (item?.achievement) { setProfileView("stats"); return; }
     if (item?.kind === "group_added" || item?.kind === "group_message" || notifGroupId(item)) {
@@ -624,13 +736,17 @@ export default function App() {
       return;
     }
     notify("Bolla scaduta o non più disponibile.");
-  // openViewer e pop sono funzioni del componente, aggiornate a ogni render.
-  }, [dismissLiveNotification, guestMode, me, notify, available, bubbles, avatarMap]);
+  };
 
   const refreshMe = useCallback(async () => {
-    const { data, error } = await supabase.rpc("bolle_my_state");
-    if (!error && data) setMe(data);
-    return error ? null : data;
+    const [{ data, error }, sent] = await Promise.all([
+      supabase.rpc("bolle_my_state"),
+      supabase.rpc("bolle_my_messages_sent").then(r => r, () => ({ data: null })),
+    ]);
+    // Messaggi inviati (chat 1:1 + gruppi): servono al traguardo «Costellazione». Se la funzione manca vale 0.
+    const merged = data ? { ...data, messages_sent: Number(sent?.data) || 0 } : data;
+    if (!error && merged) setMe(merged);
+    return error ? null : merged;
   }, []);
 
   useEffect(() => { if (!out) setOutDismissed(false); }, [out]);
@@ -713,11 +829,6 @@ export default function App() {
     if(!message?.trim()) return;
     try {await startTravel(message.trim().slice(0,140));}catch(e){notify(errorText(e));}
   }
-  async function enableSecretFilter() {
-    if(secretOnly) {setSecretOnly(false);return;}
-    try {if(!coords) setCoords(await getPosition());setSecretOnly(true);setScope("nearby");}
-    catch(e){notify(positionErrorText(e));}
-  }
   async function uploadAvatar(file) {
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return notify("Usa una foto JPG, PNG o WebP.");
@@ -773,6 +884,8 @@ export default function App() {
     setReportThanks(true); setReportDetails(""); setErrorReport(null);
   }
   useEffect(() => { track("app_open"); }, []);
+  // Sessione live: "ospite" finché non esiste un profilo registrato; si aggiorna da sola quando l'ospite si registra.
+  useSessionTracking({ known: ready && (guestMode || me !== null), isGuest: guestMode || !me?.registered });
 
   useEffect(() => {
     let alive = true;
@@ -787,7 +900,7 @@ export default function App() {
         if (profile?.registered) {
           setGuestMode(false);
           setWelcome(false);
-          try { localStorage.setItem("bolle-guest-v1", "no"); localStorage.setItem("bolle-onboarding-v1", "done"); } catch {}
+          try { localStorage.setItem("bolle-guest-v1", "no"); localStorage.setItem("bolle-onboarding-v1", "done"); } catch { /* ignora */ }
         } else if (profile) {
           setGuestMode(true);
           // Se Google ha autenticato un nuovo utente, chiedi i dati mancanti.
@@ -896,6 +1009,7 @@ export default function App() {
     if (guestMode || !me?.registered) { requestAccount(); return; }
     const name = String(username || "").trim().replace(/^@/, "").toLowerCase();
     if (!name) { notify("Autore non disponibile: non riesco ad aggiornare i preferiti."); return; }
+    if (!favoriteAuthors.has(name) && !unlocks.isUnlocked("favorites")) { showLocked("favorites"); return; } // togliere un preferito resta sempre possibile
     if (favoriteBusyRef.current) return; // evita il doppio tocco: il toggle sul server inverterebbe due volte
     favoriteBusyRef.current = true;
     try {
@@ -940,6 +1054,7 @@ export default function App() {
     clearTimeout(nearTimer.current);
     nearTimer.current = setTimeout(async () => {
       nearIgnore.current = true; haptic("select");
+      setProfileView(null); // da Classifiche/Messaggi: la scheda si chiude
       if (scope !== "nearby") await chooseScope("nearby");
       setRadiusOpen(true);
     }, 320);
@@ -955,10 +1070,11 @@ export default function App() {
     if (nearIgnore.current && radiusOpen && radiusAct !== null && e.type !== "pointercancel") pickRadius(radiusAct);
     setRadiusAct(null);
   };
-  const pickRadius = (r) => { haptic("select"); try { playPop(); } catch { /* audio non disponibile */ } setRadius(r); setRadiusOpen(false); };
+  const pickRadius = (r) => { if (r > FREE_RADIUS_KM && !wideRadiusOk) { showLocked("wideRadius"); setRadiusOpen(false); return; } haptic("select"); try { playPop(); } catch { /* audio non disponibile */ } setRadius(r); setRadiusOpen(false); };
   const nearClick = () => {
     if (nearIgnore.current) { nearIgnore.current = false; return; }
     if (radiusOpen) { setRadiusOpen(false); return; }
+    if (profileViewRef.current) { setProfileView(null); if (scope === "nearby") return; } // da Classifiche/Messaggi: chiude la scheda
     chooseScope("nearby");
   };
   useEffect(() => { if (scope !== "nearby") setRadiusOpen(false); }, [scope]);
@@ -990,25 +1106,20 @@ export default function App() {
   }
 
   /* ---------- Account (username anonimo + PIN per accedere da altri dispositivi) ---------- */
-  async function registerAccount(pin) {
-    const { error } = await supabase.rpc("bolle_register_profile", { p_username: me.username, p_pin: pin });
-    if (error) throw error;
-    const { error: upgradeError } = await supabase.functions.invoke("bolle-auth", { body: { action: "upgrade" } });
-    await refreshMe();
-    if (upgradeError) throw new Error("Profilo creato, ma accesso da altri dispositivi non ancora attivo: " + upgradeError.message);
-    notify("PIN registrato: ora puoi accedere da altri dispositivi.");
-  }
   async function registerComplete(profile, pin) {
     // Richiede la RPC transazionale bolle_register_complete sul backend.
     // Non inviare mai il PIN a tabelle pubbliche o analytics.
     const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
     if (authError) throw authError;
     const viaGoogle = !authUser?.is_anonymous && (authUser?.identities || []).some(i => i.provider === "google");
-    const { error } = await supabase.rpc(viaGoogle ? "bolle_register_google" : "bolle_register_complete_v2", {
+    const { error } = await supabase.rpc(viaGoogle ? "bolle_register_google_v2" : "bolle_register_complete_v3", {
       p_first_name: profile.firstName, p_last_name: profile.lastName,
       p_email: profile.email, p_phone: profile.phone,
-      p_sex: profile.sex, p_age: profile.age,
+      p_sex: profile.sex, p_birth_date: profile.birthDate || null,
       p_nationality: profile.nationality, p_city: profile.city,
+      p_category: profile.category || "utente",
+      p_business_name: profile.businessName || null,
+      p_is_anonymous: profile.isAnonymous !== false,
       p_consent: profile.consent, ...(viaGoogle ? {} : { p_pin: pin }),
     });
     if (error) throw error;
@@ -1313,7 +1424,7 @@ export default function App() {
     const mark = kind === "share" ? CHAT_MARK_SHARE : makeBubbleReplyMark(bubble);
     const body = `${mark} ${String(text).slice(0, Math.max(0, CHAT_MAX_BODY - mark.length - 1))}`;
     const { error } = await supabase.rpc("bolle_chat_send", { p_username: username, p_body: body });
-    if (!error) { if (seqSession.current?.id) seqApi.interact(seqSession.current.id); return { ok: true }; }
+    if (!error) { if (seqSession.current?.id) seqApi.interact(seqSession.current.id); void refreshMe(); return { ok: true }; }
     const m = error.message || "";
     return { ok: false, error: m.includes("chat_blocked") ? "Non puoi scrivere a questo utente." : m.includes("chat_rate_limited") ? "Troppi messaggi: attendi un minuto." : m.includes("user_not_found") ? "Utente non trovato." : "Messaggio non inviato. Riprova." };
   }
@@ -1360,7 +1471,7 @@ export default function App() {
   }
 
   // Il filtro e solo visivo: non modifica il limite degli scoppi.
-  const filteredBubbles = useMemo(() => {
+  const authorFilteredBubbles = useMemo(() => {
     const eligible = bubbles.filter(b => {
       if(secretOnly && !secretIds.has(b.id)) return false;
       if (!secretOnly && allSecretIds.has(b.id)) return false;
@@ -1373,6 +1484,8 @@ export default function App() {
     return authorFilter === "all" && !secretOnly && discoveryEnabled()
       ? rankDiscoveryBubbles(eligible, { favorites: favoriteAuthors, signals: guestMode ? {} : readDiscoverySignals(uid), scope, seed: uid || "guest" })
       : eligible;
+    // discoveryRevision non è letta nel corpo: serve solo a rieseguire il ranking quando cambiano i segnali salvati in localStorage.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bubbles, authorFilter, favoriteAuthors, secretOnly, secretIds, allSecretIds, uid, guestMode, scope, discoveryRevision, blockedUsers]);
 
   const availableAuthors = useMemo(() => {
@@ -1413,6 +1526,12 @@ export default function App() {
   }, [viewer]);
   // Tipo di ogni bolla del feed (sondaggio, domanda, GIF…), letto dal server a blocchi e messo in cache.
   const [bubbleKinds, setBubbleKinds] = useState({});
+  // Filtro per tipologia (ricerca): solo visivo, non tocca il limite degli scoppi. Con un filtro attivo le bolle di sistema non hanno tipo e restano fuori.
+  const filteredBubbles = useMemo(() => {
+    if (!kindChips.length) return authorFilteredBubbles;
+    const kinds = kindsForChips(kindChips);
+    return authorFilteredBubbles.filter(b => !b.starter && kinds.has(bubbleKinds[b.id] || bubbleKind(b)));
+  }, [authorFilteredBubbles, kindChips, bubbleKinds]);
   useEffect(() => {
     const missing = bubbles.map(b => b.id).filter(id => id && !(id in bubbleKinds));
     if (!missing.length) return;
@@ -1683,6 +1802,32 @@ export default function App() {
         <form onSubmit={sendErrorReport}><strong>Hai riscontrato un problema?</strong><p>Puoi segnalarlo agli sviluppatori di Bolle.</p><textarea aria-label="Descrivi il problema" placeholder="Descrivi cosa stavi facendo (facoltativo)" value={reportDetails} maxLength={2000} onChange={e => setReportDetails(e.target.value)} /><div><button type="submit" disabled={reportBusy}>{reportBusy ? "Invio…" : "Invia segnalazione"}</button><button type="button" onClick={() => setErrorReport(null)}>Non ora</button></div></form>}
   </div>;
   // Un link regalo è un'esperienza autonoma: nessuna home, login o navigazione prima dell'apertura.
+  // Ricerca utenti per la barra della home (RPC già usata dal compositore: bolle_search_usernames).
+  const searchUsers = useCallback(async (prefix) => {
+    try {
+      const { data, error } = await supabase.rpc("bolle_search_usernames", { p_prefix: prefix, p_limit: 8 });
+      if (error || !Array.isArray(data)) return [];
+      return data.map((r) => ({ username: String(r?.username ?? r ?? "").toLowerCase() })).filter((r) => r.username && !blockedUsers.has(r.username));
+    } catch { return []; }
+  }, [blockedUsers]);
+
+  // Swipe dal bordo sinistro = indietro. Il compositore (modifiche non salvate) e la registrazione non si chiudono con il gesto.
+  const backAvailable = !!(viewer || profileUser || profileView || authPrompt || loginOpen || infoOpen || adminOpen);
+  const goBack = () => {
+    // i pannelli con un livello interno (es. chat aperta) possono gestire da soli il gesto: preventDefault = già gestito
+    if (window.dispatchEvent(new CustomEvent("bolle:swipe-back", { cancelable: true })) === false) return;
+    if (viewer) { setViewer(null); if (viewer.gift) setGiftToken(null); return; }
+    if (profileUser) { setProfileUser(null); return; }
+    if (authPrompt) { setAuthPrompt(false); return; }
+    if (loginOpen) { setLoginOpen(false); return; }
+    if (infoOpen) { setInfoOpen(false); return; }
+    if (adminOpen) { setAdminOpen(false); return; }
+    if (profileView === "messages") { leaveMessages(); return; }
+    if (profileView && !["menu", "leaderboard", "notifications"].includes(profileView)) { setProfileView("menu"); return; }
+    if (profileView) { setProfileView(null); setInitialChat(null); }
+  };
+  useEdgeSwipeBack(goBack, { enabled: backAvailable });
+
   if (giftToken) return (
     <main className={`bl-root bl-special-theme bl-theme-${activeTheme} bl-gift-landing`}>
       <div className="bl-ambient bl-ambient-a" aria-hidden="true" />
@@ -1709,6 +1854,7 @@ export default function App() {
   if (fatal) return <main className={`bl-root ${themeClass}`}><p className="bl-fatal">{fatal}</p></main>;
 
   return (
+    <UnlocksProvider value={unlocks}>
     <main className={`bl-root ${themeClass} ${galaxyOn ? "bl-has-galaxy" : ""} ${profileView ? "bl-profile-open" : ""}`} onTouchStart={pullTouchStart} onTouchMove={pullTouchMove} onTouchEnd={pullTouchEnd} onTouchCancel={pullTouchEnd}>
       
       
@@ -1723,39 +1869,29 @@ export default function App() {
       {(pullDistance > 0 || pullRefreshing) && <div className="bl-pull-status" aria-live="polite" style={{ transform: `translateX(-50%) translateY(${Math.min(65, pullDistance)}px)` }}><RefreshCw size={18} className={pullRefreshing ? "bl-spinning" : ""} /> {pullRefreshing ? "Aggiornamento…" : pullDistance >= 65 ? "Rilascia per aggiornare" : "Trascina per aggiornare"}</div>}
       <header className="bl-top">
         <button type="button" className="bl-round bl-brand-home" onClick={() => setInfoOpen(true)} aria-label="Come funziona BOLLE"><img src="/bolle-logo.png" alt="" aria-hidden="true" /></button>
-        <div className="bl-counter-wrap">
-          <button type="button" className={`bl-counter bl-counter-ring ${me && available <= 3 ? "is-red" : me && available <= 5 ? "is-orange" : ""}`} onPointerDown={(e) => e.stopPropagation()} onClick={() => setCountPop((v) => !v)} aria-label={me ? `Hai a disposizione ${available} bolle` : "Bolle disponibili"} aria-expanded={countPop} title="Bolle rimaste">
-            <svg viewBox="0 0 44 44" aria-hidden="true"><circle className="bl-ring-bg" cx="22" cy="22" r="19" /><circle className="bl-ring-fg" cx="22" cy="22" r="19" pathLength="100" strokeDasharray={`${Math.min(100, Math.max(0, dailyLimit ? (available / dailyLimit) * 100 : 0))} 100`} /></svg>
-            <strong key={available} className="bl-counter-num">{me ? available : "–"}</strong>
-          </button>
-          {countPop && <div className="bl-counter-pop" role="status">{me ? `Hai a disposizione ${available} ${available === 1 ? "bolla" : "bolle"}` : "Accedi per scoppiare le bolle"}</div>}
-        </div>
+        <SearchBar
+          activeChips={kindChips} onChipsChange={setKindChips}
+          authors={availableAuthors} fetchUsers={searchUsers}
+          renderAvatar={(u) => <AvatarImage avatar={avatarFor(u, avatarMap)} />}
+          onPickUser={(u) => { if (guestMode) { requestAccount(); return; } setProfileUser({ username: u }); }}
+          onFilterUser={(u) => { setAuthorFilter(u); }}
+        />
         <div className="bl-home-actions">
-          <button type="button" className={`bl-round bl-trophy ${profileView === "leaderboard" ? "bl-on" : ""}`} onClick={() => setProfileView("leaderboard")} aria-label="Apri classifiche" aria-pressed={profileView === "leaderboard"} title="Classifiche"><Trophy size={21} /></button>
+          
           <button type="button" className={`bl-round bl-bell ${profileView === "notifications" ? "bl-on" : ""}`} onClick={() => setProfileView("notifications")} aria-label="Apri notifiche" aria-pressed={profileView === "notifications"}><Bell size={21} />{unreadNotifications > 0 && <span className="bl-notification-dot">{Math.min(99, unreadNotifications)}</span>}</button>
-          <button type="button" className={`bl-round bl-messages-btn ${profileView === "messages" ? "bl-on" : ""}`} onClick={() => { if (guestMode || !me?.registered) { requestAccount(); return; } openMessages(null); }} aria-label="Apri messaggi" aria-pressed={profileView === "messages"} title="Messaggi"><MessageCircle size={21} />{unreadChatCount > 0 && <span className="bl-notification-dot">{Math.min(99, unreadChatCount)}</span>}</button>
+          
         </div>
         <button type="button" className={`bl-round bl-profile-btn ${profileView && profileView !== "leaderboard" && profileView !== "notifications" ? "bl-on" : ""}`} onClick={() => guestMode ? requestAccount() : setProfileView("menu")} aria-label="Apri il tuo profilo" aria-pressed={!!profileView && profileView !== "leaderboard" && profileView !== "notifications"}>{(!guestMode && me?.registered && myAvatar && myAvatar !== "🫧") ? <span className="bl-profile-btn-avatar"><AvatarImage avatar={myAvatar} /></span> : <CircleUserRound size={23} strokeWidth={1.9} aria-hidden="true" />}</button>
       </header>
 
       <div className="bl-filter">
         <div className="bl-filter-row">
-        <div className="bl-segment" role="group" aria-label="Quali bolle vedere">
-          <button className={scope === "global" ? "on" : ""} onClick={() => chooseScope("global")} aria-pressed={scope === "global"}><AllSparkIcon size={15} strokeWidth={2.2} aria-hidden="true" /> Tutte</button>
-          <button ref={nearBtnRef} type="button" className={`bl-near-btn ${scope === "nearby" ? "on" : ""} ${geoBusy ? "is-busy" : ""}`} style={{ touchAction: "none", userSelect: "none", WebkitTouchCallout: "none" }}
-            onPointerDown={nearPointerDown} onPointerMove={nearPointerMove} onPointerUp={nearPointerEnd} onPointerCancel={nearPointerEnd} onClick={nearClick} onContextMenu={(e) => e.preventDefault()}
-            aria-pressed={scope === "nearby"} aria-haspopup="menu" aria-expanded={radiusOpen} title="Tocca per attivare · tieni premuto per cambiare la distanza"><span className="bl-near-ico" aria-hidden="true"><NearPinIcon size={15} strokeWidth={2.4} /></span> {geoBusy ? "Cerco…" : "Vicino a me"}{scope === "nearby" && <small className="bl-near-radius">{radiusLabel(radius)}</small>}</button>
+        <div className="bl-segment bl-segment--home" role="group" aria-label="Quali bolle vedere">
+          <button type="button" className={authorFilter === "all" ? "on" : ""} onClick={() => { setAuthorFilter("all"); setAuthorMenuOpen(false); }} aria-pressed={authorFilter === "all"}>Per te</button>
+          <button type="button" className={authorFilter !== "all" ? "on is-filter-active" : ""} onClick={() => { if (authorFilter === "all") setAuthorFilter("favorites"); else setAuthorMenuOpen((o) => !o); }} aria-pressed={authorFilter !== "all"} aria-haspopup="dialog" aria-expanded={authorMenuOpen} title="Tocca di nuovo per scegliere un autore"><StarIcon size={15} strokeWidth={2.2} fill={authorFilter !== "all" ? "currentColor" : "none"} aria-hidden="true" /> Preferiti</button>
         </div>
         <div className="bl-author-filter-compact">
-          <button 
-            type="button" 
-            className={`bl-author-star-btn ${authorFilter !== "all" ? "active" : ""}`} 
-            onClick={() => setAuthorMenuOpen(o => !o)} 
-            aria-label="Filtra per autore" 
-            title="Filtra per autore"
-          >
-            ⭐
-          </button>
+          
           {authorMenuOpen && (
             <>
               <div 
@@ -1830,15 +1966,22 @@ export default function App() {
             </>
           )}
         </div>
+        {scope === "nearby" && coords && (
+          <button type="button" className={`bl-map-drawer-handle ${mapDrawerOpen ? "is-open" : ""}`} onPointerDown={mapHandleDown} onPointerMove={mapHandleMove} onPointerUp={mapHandleUp} onPointerCancel={mapHandleUp} onClick={mapHandleClick} aria-expanded={mapDrawerOpen} aria-label={mapDrawerOpen ? "Chiudi la mappa" : "Apri la mappa delle bolle vicine"} title="Tira giù per aprire la mappa">
+            <MapDrawerIcon size={20} strokeWidth={2.2} aria-hidden="true" /><DrawerDownIcon size={16} strokeWidth={2.6} className="bl-map-drawer-chev" aria-hidden="true" />
+          </button>
+        )}
         </div>
-        <RadiusFan open={radiusOpen && scope === "nearby"} radii={RADII} value={radius} active={radiusAct} originRef={nearBtnRef} onPick={pickRadius} />
+        <RadiusFan open={radiusOpen && scope === "nearby"} radii={RADII} lockedAbove={wideRadiusOk ? null : FREE_RADIUS_KM} value={radius} active={radiusAct} originRef={nearBtnRef} onPick={pickRadius} />
       </div>
 
       {scope === "nearby" && coords && (
-        <div className="bl-map-dock">
-          <NearbyMap center={coords} radiusKm={radius} bubbles={filteredBubbles} radii={RADII} onRadius={(r) => { haptic("select"); setRadius(r); }}
+        <div className={`bl-map-drawer ${mapDrawerOpen ? "is-open" : ""}`}>
+          <div className="bl-map-drawer-body"><div className="bl-map-drawer-inner">
+            {mapDrawerShown && <NearbyMap center={coords} radiusKm={radius} bubbles={filteredBubbles} radii={RADII} lockedAbove={wideRadiusOk ? null : FREE_RADIUS_KM} onRadius={(r) => { if (r > FREE_RADIUS_KM && !wideRadiusOk) { showLocked("wideRadius"); return; } haptic("select"); setRadius(r); }}
             getKind={(b) => bubbleKinds[b.id] || bubbleKind(b)} locked={out && !guestMode} onOpen={(b) => pop(b)}
-            collapsed={mapCollapsed} onToggle={() => setMapCollapsed((v) => !v)} />
+            collapsed={false} onToggle={closeMapDrawer} />}
+          </div></div>
         </div>
       )}
       {geoIssue && scope !== "nearby" && (
@@ -1853,12 +1996,19 @@ export default function App() {
           </div>
         </div>
       )}
+      {!profileView && !viewer && !profileUser && (
+        <div className={`bl-left-pill ${me && available <= 3 ? "is-red" : me && available <= 5 ? "is-orange" : ""}`} role="status" aria-live="polite">
+          {me
+            ? <><strong key={available}>{available}</strong><span>{available === 1 ? "scoppio rimasto oggi" : "scoppi rimasti oggi"}</span></>
+            : <span>Accedi per scoppiare le bolle</span>}
+        </div>
+      )}
+      <InstallHint hidden={!!viewer || !!profileView || !!profileUser} />
       {!sequentialHome && <ChaoticBubbleBackground />}
       {sequentialHome && (
         <div
           className="bl-seq-wrap"
-          style={{ position: "relative", zIndex: 1, height: "100dvh", boxSizing: "border-box", padding: "calc(140px + env(safe-area-inset-top)) 0 calc(112px + env(safe-area-inset-bottom))" }}
-          onTouchStart={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()} onTouchCancel={(e) => e.stopPropagation()}
+          style={{ position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none", boxSizing: "border-box", padding: "calc(140px + env(safe-area-inset-top)) 0 calc(112px + env(safe-area-inset-bottom))" }}
         >
           <SequentialFeed
             items={seqItems}
@@ -1871,18 +2021,19 @@ export default function App() {
             onNudgeNearby={() => chooseScope("nearby")}
             renderEnd={() => (
               <>
-                <strong>{loading && bubbles.length === 0 ? "Le bolle stanno arrivando…" : out && !guestMode ? "Per oggi hai finito gli scoppi" : "Hai visto tutte le bolle"}</strong>
+                <strong>{kindChips.length > 0 && !(loading && bubbles.length === 0) ? "Nessuna bolla di questo tipo" : loading && bubbles.length === 0 ? "Le bolle stanno arrivando…" : out && !guestMode ? "Per oggi hai finito gli scoppi" : "Hai visto tutte le bolle"}</strong>
                 <span>{loading && bubbles.length === 0 ? "Un attimo di pazienza 🫧" : out && !guestMode ? "Domani torni con nuovi scoppi. Intanto pubblica la tua bolla!" : "Torna tra poco: ne arrivano di nuove."}</span>
                 {!(loading && bubbles.length === 0) && <button type="button" className="bl-cta" onClick={() => guestMode ? requestAccount() : setComposing(true)}>Pubblica la tua bolla{out && !guestMode ? ` (+${bonusPerPost} scoppi)` : ""}</button>}
+                {kindChips.length > 0 && <button type="button" className="bl-ghost" onClick={() => setKindChips([])}>Azzera i filtri</button>}
                 {!(loading && bubbles.length === 0) && <button type="button" className="bl-ghost" onClick={() => chooseScope("nearby")}>Prova «Vicino a me»</button>}
               </>
             )}
           />
         </div>
       )}
-      {!sequentialHome && <section ref={fieldRef} className={`bl-field bl-field--physics ${scope === "nearby" && coords ? (mapCollapsed ? "has-map-slim" : "has-map") : ""}`} aria-busy={loading} aria-label="Bolle da scoprire">
+      {!sequentialHome && <section ref={fieldRef} className={`bl-field bl-field--physics `} aria-busy={loading} aria-label="Bolle da scoprire">
         {visibleBubbles.map((b) => (
-          <BubbleView key={b.id} bubble={b} bursting={bursting.has(b.id)} locked={!b.starter && (guestMode ? guestLeftFor(b) <= 0 : out)} showDistance={scope === "nearby"} onPop={() => pop(b)} isFavorite={favoriteAuthors.has(String(b.username || b.author_username || "").toLowerCase())} onToggleFavorite={() => toggleFavorite(b.username || b.author_username)} avatar={avatarFor(b.username || b.author_username, avatarMap)} countryCode={bubblePrivacy[b.id]?.show_nationality === false ? null : bubbleCountries[b.id]} onShare={() => shareBubbleWhatsApp(b.id)} isRare={!b.starter && isRareBubble(b.id)} isSecret={secretIds.has(b.id)} kindHint={bubbleKinds[b.id]} />
+          <BubbleView key={b.id} bubble={b} bursting={bursting.has(b.id)} locked={!b.starter && (guestMode ? guestLeftFor(b) <= 0 : out)} showDistance={scope === "nearby"} onPop={() => pop(b)} countryCode={bubblePrivacy[b.id]?.show_nationality === false ? null : bubbleCountries[b.id]} isRare={!b.starter && isRareBubble(b.id)} isSecret={secretIds.has(b.id)} kindHint={bubbleKinds[b.id]} />
         ))}
         {loading && bubbles.length === 0 && <div className="bl-loading"><span className="bl-loading-orb" aria-hidden="true" /><p>Le bolle stanno arrivando…</p></div>}
         {!loading && ready && authorFilter !== "all" && filteredBubbles.length === 0 && (
@@ -1911,6 +2062,21 @@ export default function App() {
         </div>
       )}
 
+      {sequentialHome && !profileView && !viewer && !profileUser && (
+        <div className="bl-foot-swipezone" aria-hidden="true"
+          onPointerDown={footPointerDown} onPointerMove={footPointerMove} onPointerUp={footPointerEnd} onPointerCancel={footPointerEnd} onClickCapture={footClickCapture}
+          onTouchStart={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()} onTouchCancel={(e) => e.stopPropagation()} />
+      )}
+      <nav className="bl-footbar" ref={footNavRef} aria-label="Navigazione principale" onPointerDown={footPointerDown} onPointerMove={footPointerMove} onPointerUp={footPointerEnd} onPointerCancel={footPointerEnd} onClickCapture={footClickCapture}>
+        <span className="bl-foot-lens" aria-hidden="true"><i key={footActive || "none"} /></span>
+        <button type="button" data-foot="home" className={`bl-foot-item ${!profileView && scope === "global" ? "on" : ""}`} onClick={() => { setProfileView(null); setAuthorFilter("all"); chooseScope("global"); }} aria-current={!profileView && scope === "global" ? "page" : undefined}><ExploreIcon size={23} strokeWidth={2} aria-hidden="true" /><span>Scopri</span></button>
+        <button ref={nearBtnRef} type="button" data-foot="near" className={`bl-foot-item bl-near-btn ${scope === "nearby" ? "on" : ""} ${geoBusy ? "is-busy" : ""}`} style={{ touchAction: "none", userSelect: "none", WebkitTouchCallout: "none" }}
+            onPointerDown={nearPointerDown} onPointerMove={nearPointerMove} onPointerUp={nearPointerEnd} onPointerCancel={nearPointerEnd} onClick={nearClick} onContextMenu={(e) => e.preventDefault()}
+            aria-pressed={scope === "nearby"} aria-haspopup="menu" aria-expanded={radiusOpen} title="Tocca per attivare · tieni premuto per cambiare la distanza"><span className="bl-near-ico" aria-hidden="true"><NearPinIcon size={15} strokeWidth={2.4} /></span> {geoBusy ? "Cerco…" : "Vicino a me"}{scope === "nearby" && <small className="bl-near-radius">{radiusLabel(radius)}</small>}</button>
+        <span className="bl-foot-gap" aria-hidden="true" />
+        <button type="button" data-foot="rank" className={`bl-foot-item ${profileView === "leaderboard" ? "on" : ""}`} onClick={() => setProfileView("leaderboard")} aria-pressed={profileView === "leaderboard"}><Trophy size={23} strokeWidth={2} aria-hidden="true" /><span>Classifiche</span></button>
+        <button type="button" data-foot="msg" className={`bl-foot-item ${profileView === "messages" ? "on" : ""}`} onClick={() => { if (guestMode || !me?.registered) { requestAccount(); return; } openMessages(null); }} aria-pressed={profileView === "messages"}><span className="bl-foot-ico"><MessageCircle size={23} strokeWidth={2} aria-hidden="true" />{unreadChatCount > 0 && <span className="bl-notification-dot">{Math.min(99, unreadChatCount)}</span>}</span><span>Messaggi</span></button>
+      </nav>
       <div className="bl-bottom-actions">
         <BubbleFan out={out} bonus={bonusPerPost} locked={guestMode} onTap={() => guestMode ? requestAccount() : setComposing(true)} onPick={fanPick} />
       </div>
@@ -1946,7 +2112,7 @@ export default function App() {
   }} />}
       {adminOpen && <AdminPortal onNotify={notify} onClose={() => setAdminOpen(false)} />}
       {infoOpen && <InfoSheet me={me} onClose={() => setInfoOpen(false)} onTutorial={() => { setInfoOpen(false); setTutorialOpen(true); }} />}
-      {tutorialOpen && <TutorialSheet onClose={closeTutorial} />}
+      {tutorialOpen && typeof document !== "undefined" && createPortal(<TutorialSheet onClose={closeTutorial} onStepChange={(step) => { if (step === 6) setProfileView("menu"); else if (profileView === "menu") setProfileView(null); }} />, document.body)}
       {profileView && (
         <ProfileSheet
           view={profileView} setView={setProfileView} onClose={() => { setProfileView(null); setInitialChat(null); }} me={me} onNotify={notify} initialChat={initialChat} onMessagesBack={leaveMessages}
@@ -2006,8 +2172,10 @@ export default function App() {
       )}
       <input ref={fanFileRef} type="file" accept="image/*,video/*" onChange={onFanFile} aria-hidden="true" tabIndex={-1} style={{ position: "fixed", left: -9999, top: 0, width: 1, height: 1, opacity: 0 }} />
       {composing && !guestMode && <Composer initial={typeof composing === "object" ? composing : null} uid={uid} bonus={bonusPerPost} chainRootId={chainRootId} onClose={() => {setComposing(false);setChainRootId(null);}} onDone={onPublished} daily={daily} />}
+      <LockPopupHost />
       <p className="bl-toast" role="status" aria-live="polite">{notice}</p>
     </main>
+    </UnlocksProvider>
   );
 }
 
@@ -2041,6 +2209,12 @@ function ProfileSheet({ view, setView, onClose, me, onNotify, initialChat, onMes
   const [deletingId, setDeletingId] = useState(null);
   const [activeChat, setActiveChat] = useState(null);
   const [groupModalOpen, setGroupModalOpen] = useState(false);
+  useEffect(() => {
+    if (!activeChat) return undefined;
+    const h = (e) => { e.preventDefault(); setActiveChat(null); setGroupModalOpen(false); };
+    window.addEventListener("bolle:swipe-back", h);
+    return () => window.removeEventListener("bolle:swipe-back", h);
+  }, [activeChat]);
   async function deleteOwnBubble(id) {
     if (deletingId) return; // la conferma è chiesta da BubblesView prima di arrivare qui
     setDeletingId(id);
@@ -2167,6 +2341,9 @@ function ProfileSheet({ view, setView, onClose, me, onNotify, initialChat, onMes
             </div>
           </div>
         </section>
+        <section className="bl-profile-achievements">
+          {loading ? <p className="bl-muted">Prepariamo i tuoi badge…</p> : <ProfileBadges entries={entries} me={me} />}
+        </section>
         <section className="bl-profile-activity" aria-label="Riepilogo attività">
           <div className="bl-profile-section-heading"><span>Il tuo andamento</span><button type="button" onClick={() => setView("stats")}>Apri statistiche <span aria-hidden="true">›</span></button></div>
           <div className="bl-profile-metrics">
@@ -2190,13 +2367,10 @@ function ProfileSheet({ view, setView, onClose, me, onNotify, initialChat, onMes
             ))}
           </div>
         </nav>
-        <section className="bl-profile-achievements">
-          {loading ? <p className="bl-muted">Prepariamo i tuoi badge…</p> : <ProfileBadges entries={entries} me={me} />}
-        </section>
       </div>}
       {needsData && loading && <p className="bl-muted">Caricamento del tuo universo…</p>}
       {view === "bubbles" && !loading && <BubblesView entries={entries} onCreate={onCreate} onOpenBubble={onOpenOwnBubble} onDelete={deleteOwnBubble} deletingId={deletingId} />}
-      {view === "stats" && !loading && <StatsView entries={entries} me={me} onCreate={onCreate} onNotify={onNotify} onOpenBubble={onOpenOwnBubble} />}
+      {view === "stats" && !loading && <StatsView entries={entries} me={me} onCreate={onCreate} onOpenBubble={onOpenOwnBubble} />}
       {view === "gift" && !loading && <GiftView entries={entries} onCreate={onCreate} onNotify={onNotify} />}
       {view === "leaderboard" && <LeaderboardView onNotify={onNotify} />}
       {view === "avatar" && <div className="bl-avatar-picker"><p>Scegli un emoji o una fotografia: sarà visibile anche agli altri utenti.</p><label className="bl-avatar-upload">📷 Carica una fotografia<input type="file" accept="image/jpeg,image/png,image/webp" onChange={async e => { const file = e.target.files?.[0]; e.target.value = ""; if (file) await onUploadAvatar(file); }} /></label><small className="bl-muted">JPG, PNG o WebP · massimo 2 MB</small><div className="bl-avatar-grid">{AVATARS.map(a => <button type="button" key={a} aria-label={`Scegli avatar ${a}`} aria-pressed={myAvatar === a} className={myAvatar === a ? "selected" : ""} onClick={() => onSaveAvatar(a)}>{a}</button>)}</div><button type="button" className="bl-avatar-remove" onClick={() => onSaveAvatar("🫧")}>🗑️ Rimuovi avatar</button></div>}
@@ -2218,6 +2392,8 @@ function NotificationsView({ me, notificationPrefs, onRead, onNotify, onOpenNoti
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(null);
   const [filter, setFilter] = useState("all");
+  const onReadRef = useRef(onRead); // sempre l'ultima callback, senza rilanciare il caricamento delle notifiche
+  useEffect(() => { onReadRef.current = onRead; });
   useEffect(() => {
     let active = true;
     (async () => {
@@ -2233,7 +2409,7 @@ function NotificationsView({ me, notificationPrefs, onRead, onNotify, onOpenNoti
       setItems([...(data || []), ...tagItems]);
       await supabase.rpc("bolle_mark_notifications_read");
       try { await supabase.rpc("bolle_mark_tags_seen"); } catch { /* idem */ }
-      onRead?.();
+      onReadRef.current?.();
     })();
     return () => { active = false; };
   }, []);
@@ -2289,10 +2465,10 @@ function AdmirersView({ onNotify }) {
   return <div className="bl-admirers" onClick={() => setConfirming(null)}>
     <div className="bl-admirers-intro"><span aria-hidden="true">⭐</span>
       <h3>Chi ti segue tra le bolle</h3>
-      <p>Questi utenti hanno aggiunto il tuo username ai loro preferiti. L'elenco è visibile soltanto a te. Con «Rimuovi» togli il tuo username dai loro preferiti e li avvisiamo con una notifica.</p>
+      <p>Questi utenti hanno aggiunto il tuo username ai loro preferiti. L&apos;elenco è visibile soltanto a te. Con «Rimuovi» togli il tuo username dai loro preferiti e li avvisiamo con una notifica.</p>
     </div>
     {loading ? <p className="bl-muted">Caricamento preferiti…</p> : error ?
-      <p role="alert" className="bl-muted">Impossibile caricare l'elenco: {error}</p> :
+      <p role="alert" className="bl-muted">Impossibile caricare l&apos;elenco: {error}</p> :
       people.length === 0 ? <p className="bl-muted">Nessuno ti ha ancora aggiunto ai preferiti.</p> : <>
         <p className="bl-admirers-count">⭐ {people.length} {people.length === 1 ? "utente ti ha" : "utenti ti hanno"} aggiunto ai preferiti</p>
         <ul className="bl-admirers-list">{people.map(person =>
@@ -2404,17 +2580,17 @@ function buildMilestones(entries, me) {
   return [
     { icon: Sprout, name: "Primo soffio", target: 1, value: count, unit: "bolle" },
     { icon: Zap, name: "Scintilla", target: 10, value: opens, unit: "aperture" },
-    { icon: Sparkles, name: "Costellazione", target: 10, value: count, unit: "bolle" },
+    { icon: Sparkles, name: "Costellazione", target: 5, value: Number(me?.messages_sent || 0), unit: "messaggi" },
     { icon: Heart, name: "Cuore pulsante", target: 25, value: reactions, unit: "reazioni" },
     { icon: Orbit, name: "Universo", target: 100, value: opens, unit: "aperture" },
     { icon: Camera, name: "Primo ricordo", target: 1, value: ofKind("photo", "video"), unit: "foto/video" },
     { icon: MessageCircle, name: "Voce curiosa", target: 5, value: ofKind("question"), unit: "domande" },
     { icon: ChartColumn, name: "Opinione conta", target: 5, value: ofKind("poll"), unit: "sondaggi" },
     { icon: Gift, name: "Un pensiero in dono", target: 1, value: Number(me?.gifts_sent || 0), unit: "regali" },
-    { icon: Medal, name: "Piccola celebrità", target: 250, value: opens, unit: "aperture" },
+    { icon: Medal, name: "Oltre l'orizzonte", target: 250, value: opens, unit: "aperture" },
     { icon: HeartHandshake, name: "Pioggia di affetto", target: 100, value: reactions, unit: "reazioni" },
     { icon: Waves, name: "Marea di bolle", target: 25, value: count, unit: "bolle" },
-    { icon: Rocket, name: "Oltre l'orizzonte", target: 500, value: opens, unit: "aperture" },
+    { icon: Rocket, name: "Piccola celebrità", target: 500, value: opens, unit: "aperture" },
     { icon: Orbit, name: "Galassia", target: 50, value: count, unit: "bolle" },
     { icon: Award, name: "Leggenda di Bolle", target: 1000, value: opens, unit: "aperture" },
   ];
@@ -2590,7 +2766,7 @@ function StatsTimeline() {
       {Object.keys(labels).map(key => <label key={key} style={{ display: "inline-flex", alignItems: "center", gap: 5, cursor: "pointer" }}><input type="checkbox" checked={visible[key]} onChange={e => setVisible(old => ({ ...old, [key]: e.target.checked }))} /><span style={{ color: colors[key] }}>●</span> {labels[key]} ({totals[key]})</label>)}
     </div>
     {state.loading ? <p className="bl-muted">Caricamento della timeline…</p>
-      : state.error ? <p className="bl-muted">Statistiche non disponibili: {state.error}. Esegui prima lo script SQL incluso nell'aggiornamento.</p>
+      : state.error ? <p className="bl-muted">Statistiche non disponibili: {state.error}. Esegui prima lo script SQL incluso nell&apos;aggiornamento.</p>
       : !points.length ? <p className="bl-muted">Nessun dato disponibile per questo periodo.</p>
       : <>
         <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Andamento di aperture ricevute, reazioni ricevute e scoppi effettuati; seleziona un punto per vedere i valori" style={{ width: "100%", height: "auto", minHeight: 140, touchAction: "pan-y" }}>
@@ -2613,58 +2789,88 @@ function ProfileBadges({ entries, me }) {
   const milestones = buildMilestones(entries, me);
   const unlocked = milestones.filter(m => m.value >= m.target).length;
   const [selectedBadge, setSelectedBadge] = useState(null);
-  const [open, setOpen] = useState(false); // chiusa: una sola riga; aperta: tutti i badge, senza scorrimento laterale
-  const badgeEmblems = ["🌱", "⚡", "✨", "💗", "🌌", "📸", "💬", "📊", "🎁", "🏅", "🤝", "🌊", "🚀", "🪐", "👑"];
+  const [open, setOpen] = useState(false);
   const explanations = {
-    "Primo soffio": "Hai pubblicato la tua prima Bolla: è il primo passo per dare vita al tuo spazio su Bolle.",
-    "Scintilla": "Le tue Bolle hanno raggiunto almeno 10 aperture. Qualcuno si è fermato a scoprirle!",
-    "Costellazione": "Hai pubblicato 10 Bolle e stai creando una piccola costellazione di storie.",
-    "Cuore pulsante": "Le tue Bolle hanno ricevuto almeno 25 reazioni. La community ha apprezzato ciò che condividi.",
-    "Universo": "Le tue Bolle hanno totalizzato almeno 100 aperture: il tuo universo si sta allargando.",
-    "Primo ricordo": "Hai condiviso almeno una foto o un video, trasformando un momento in un ricordo da scoprire.",
-    "Voce curiosa": "Hai pubblicato almeno 5 domande e invitato gli altri a partecipare.",
-    "Opinione conta": "Hai creato almeno 5 sondaggi e dato alla community la possibilità di esprimersi.",
-    "Un pensiero in dono": "Hai regalato almeno una Bolla a qualcuno, condividendo un pensiero speciale.",
-    "Piccola celebrità": "Le tue Bolle hanno raggiunto almeno 250 aperture: il tuo pubblico sta crescendo.",
-    "Pioggia di affetto": "Hai ricevuto almeno 100 reazioni: un bel segnale di apprezzamento dalla community.",
-    "Marea di bolle": "Hai pubblicato 25 Bolle e il tuo mare di contenuti continua a crescere.",
-    "Oltre l'orizzonte": "Le tue Bolle hanno raggiunto almeno 500 aperture: la tua curiosità viaggia lontano.",
-    "Galassia": "Hai pubblicato 50 Bolle: hai costruito una vera galassia di contenuti.",
-    "Leggenda di Bolle": "Le tue Bolle hanno raggiunto almeno 1.000 aperture. Un traguardo da leggenda!"
+    "Primo soffio": "Pubblica la tua prima Bolla.",
+    "Scintilla": "Le tue Bolle devono raggiungere 10 aperture.",
+    "Costellazione": "Invia 5 messaggi in totale nelle tue chat.",
+    "Cuore pulsante": "Ricevi 25 reazioni alle tue Bolle.",
+    "Universo": "Raggiungi 100 aperture complessive.",
+    "Primo ricordo": "Condividi almeno una foto o un video.",
+    "Voce curiosa": "Pubblica 5 Bolle di tipo Domanda.",
+    "Opinione conta": "Crea 5 Bolle «Questo o quello?».",
+    "Un pensiero in dono": "Regala almeno una Bolla.",
+    "Oltre l'orizzonte": "Raggiungi 250 aperture complessive.",
+    "Pioggia di affetto": "Ricevi 100 reazioni complessive.",
+    "Marea di bolle": "Pubblica 25 Bolle.",
+    "Piccola celebrità": "Raggiungi 500 aperture complessive.",
+    "Galassia": "Pubblica 50 Bolle.",
+    "Leggenda di Bolle": "Raggiungi 1.000 aperture complessive."
   };
-  return <section className="bl-profile-badges" aria-label="I tuoi badge">
+  const rewards = {
+    "Primo soffio": "Si attivano i tag degli utenti e la possibilità di aggiungere Bolle ai preferiti.",
+    "Primo ricordo": "Si sbloccano gli sticker da applicare alle foto.",
+    "Costellazione": "Si sbloccano i gruppi chat.",
+    "Universo": "Si sbloccano le capsule del tempo e i temi speciali."
+  };
+  const rewardFor = name => rewards[name] || "Ottieni il badge da collezione e aggiungi un nuovo traguardo alla tua costellazione personale.";
+  const close = () => setSelectedBadge(null);
+  return <section className="bl-profile-badges" aria-label="I tuoi traguardi">
+    <style>{`
+      .bl-profile-badges-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:16px;padding:18px 4px}
+      .bl-profile-badge{display:flex;min-width:0;align-items:center;flex-direction:column;gap:7px;border:0;background:transparent;padding:8px 4px;cursor:pointer;color:inherit;text-align:center}
+      .bl-achievement-orb{position:relative;isolation:isolate;display:grid;place-items:center;flex:0 0 76px;width:76px!important;height:76px!important;aspect-ratio:1/1;border-radius:50%!important;clip-path:circle(50% at 50% 50%);overflow:hidden;font-size:29px;background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.72) 0 7%,rgba(255,255,255,.28) 18%,rgba(170,225,255,.18) 44%,rgba(105,175,225,.10) 70%,rgba(255,255,255,.24) 100%);border:1px solid rgba(255,255,255,.82);box-shadow:inset 0 2px 12px rgba(255,255,255,.9),inset 0 -9px 18px rgba(80,130,190,.13),0 9px 24px rgba(40,90,140,.18);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);animation:blGlassFloat 3.8s ease-in-out infinite}
+      .bl-badge-crest:before{content:"";position:absolute;left:15px;top:9px;width:23px;height:10px;border-radius:50%;background:rgba(255,255,255,.8);filter:blur(3px);transform:rotate(-28deg)}
+      .bl-achievement-orb:before{content:"";position:absolute;z-index:-1;left:15px;top:9px;width:27px;height:12px;border-radius:50%;background:rgba(255,255,255,.86);filter:blur(4px);transform:rotate(-28deg)}
+      .bl-achievement-orb:after{content:"";position:absolute;right:11px;bottom:12px;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.72);box-shadow:0 0 9px rgba(255,255,255,.9)}
+      .bl-profile-badge.locked .bl-achievement-orb{filter:saturate(.78);opacity:.82}
+      .bl-profile-badge strong{font-size:12px;line-height:1.25}
+      .bl-profile-badge small{font-size:11px;opacity:.72}
+      .bl-badge-progress{width:72%;height:4px;border-radius:9px;background:rgba(120,140,160,.2);overflow:hidden}.bl-badge-progress i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#8bd9e9,#a99af5)}
+      @keyframes blGlassFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+      .bl-badge-dialog-backdrop{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:22px;background:rgba(15,25,45,.42);backdrop-filter:blur(9px)}
+      .bl-badge-dialog{position:relative;width:min(390px,100%);padding:30px 25px 24px;border:1px solid rgba(255,255,255,.8);border-radius:34px 28px 38px 25px;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(231,246,255,.94));box-shadow:0 24px 80px rgba(20,50,90,.28);text-align:center;animation:blPopIn .48s cubic-bezier(.2,1.55,.45,1) both;color:#24354b}
+      @keyframes blPopIn{0%{opacity:0;transform:translateY(24px) scale(.78) rotate(-3deg)}70%{transform:translateY(-4px) scale(1.025) rotate(1deg)}100%{opacity:1;transform:none}}
+      .bl-badge-dialog-orb{position:relative;display:grid;place-items:center;width:92px;height:92px;aspect-ratio:1/1;margin:0 auto 14px;border-radius:50%!important;overflow:hidden;background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.86) 0 8%,rgba(255,255,255,.32) 19%,rgba(170,225,255,.25) 45%,rgba(105,175,225,.12) 72%,rgba(255,255,255,.3));border:1px solid rgba(255,255,255,.95);box-shadow:inset 0 2px 14px rgba(255,255,255,.95),inset 0 -9px 20px rgba(80,130,190,.14),0 10px 28px rgba(70,130,180,.2);animation:blGlassFloat 3.5s ease-in-out infinite}
+      .bl-badge-dialog h4{font-size:23px;margin:8px 0}.bl-badge-dialog p{font-size:14px;line-height:1.5;margin:10px 0 17px}
+      .bl-badge-dialog-close{position:absolute;right:16px;top:12px;border:0;background:rgba(100,130,160,.12);border-radius:50%;width:34px;height:34px;font-size:23px;cursor:pointer}
+      .bl-profile-badges-kicker{font-size:10px;letter-spacing:1.4px;font-weight:800;color:#7296b4}
+      .bl-badge-dialog-section{margin:14px 0;padding:13px 15px;border-radius:18px;background:rgba(255,255,255,.7);text-align:left}
+      .bl-badge-dialog-section strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#7296b4;margin-bottom:5px}
+      .bl-badge-dialog-section span{font-size:13px;line-height:1.45}
+      .bl-badge-dialog-progress-label{display:flex;justify-content:space-between;font-size:12px;margin:15px 2px 6px}.bl-badge-dialog-progress{height:7px;border-radius:10px;background:#dce8f1;overflow:hidden}.bl-badge-dialog-progress i{display:block;height:100%;background:linear-gradient(90deg,#82d9df,#9f91ed);border-radius:10px}
+      .bl-badge-dialog-action{margin-top:19px;width:100%;border:0;border-radius:18px;padding:12px;background:linear-gradient(100deg,#8edce5,#b5a5f4);color:#24354b;font-weight:800;cursor:pointer}
+    `}</style>
     <button type="button" className="bl-profile-badges-heading bl-profile-badges-toggle" aria-expanded={open} onClick={() => setOpen(o => !o)}>
       <span className="bl-profile-badges-title"><span className="bl-profile-badges-name">Traguardi</span><span className="bl-profile-badges-bar" aria-hidden="true"><i style={{ width: `${Math.round(unlocked / milestones.length * 100)}%` }} /></span></span>
-      <strong>{unlocked}<small>/{milestones.length}</small></strong>
-      <i className="bl-profile-badges-chev" aria-hidden="true">{open ? "⌃" : "⌄"}</i>
+      <strong>{unlocked}<small>/{milestones.length}</small></strong><i className="bl-profile-badges-chev" aria-hidden="true">{open ? "⌃" : "⌄"}</i>
     </button>
-    {open && <div className="bl-profile-badges-grid">
-      {milestones.map((m, i) => {
-        const earned = m.value >= m.target;
-        return <button type="button" key={m.name} className={`bl-profile-badge ${earned ? "earned" : "locked"}`} aria-label={`Dettagli badge ${m.name}`} aria-haspopup="dialog" onClick={() => setSelectedBadge({ ...m, earned, emblem: badgeEmblems[i], explanation: explanations[m.name] || "Continua a usare Bolle per conquistare questo traguardo." })}>
-          <span className={`bl-badge-crest crest-${i % 5}`} aria-hidden="true">{earned ? badgeEmblems[i] : <LockKeyhole size={19}/>}</span>
-          <strong>{m.name}</strong>
-          <small>{earned ? "Sbloccato!" : `${Math.min(m.value,m.target)} / ${m.target} ${m.unit}`}</small>
-          {!earned && <span className="bl-badge-progress"><i style={{width:`${Math.min(100,(m.value/m.target)*100)}%`}} /></span>}
-        </button>;
-      })}
-    </div>}
-    {selectedBadge && <div className="bl-badge-dialog-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) setSelectedBadge(null); }}>
+    {open && <div className="bl-profile-badges-grid">{milestones.map((m, i) => {
+      const earned = m.value >= m.target;
+      const Icon = m.icon;
+      return <button type="button" key={m.name} className={`bl-profile-badge ${earned ? "earned" : "locked"}`} aria-label={`Dettagli traguardo ${m.name}`} aria-haspopup="dialog" onClick={() => setSelectedBadge({ ...m, earned, index:i })}>
+        <GlassOrb Icon={Icon} tint={ORB_TINTS[i % 5]} locked={!earned} delay={(i % 5) * 0.7} />
+        <strong>{m.name}</strong><small>{earned ? "Sbloccato!" : `${Math.min(m.value,m.target)} / ${m.target} ${m.unit}`}</small>
+        {!earned && <span className="bl-badge-progress"><i style={{width:`${Math.min(100,(m.value/m.target)*100)}%`}} /></span>}
+      </button>;
+    })}</div>}
+    {selectedBadge && <div className="bl-badge-dialog-backdrop" onMouseDown={e => { if (e.target === e.currentTarget) close(); }}>
       <section className="bl-badge-dialog" role="dialog" aria-modal="true" aria-labelledby="bl-badge-dialog-title">
-        <button type="button" className="bl-badge-dialog-close" aria-label="Chiudi dettagli badge" onClick={() => setSelectedBadge(null)}>×</button>
-        <span className={`bl-badge-dialog-crest crest-${milestones.findIndex(m => m.name === selectedBadge.name) % 5}`} aria-hidden="true">{selectedBadge.earned ? selectedBadge.emblem : <LockKeyhole size={25}/>}</span>
-        <span className="bl-profile-badges-kicker">{selectedBadge.earned ? "TRAGUARDO CONQUISTATO" : "PROSSIMO TRAGUARDO"}</span>
+        <button type="button" className="bl-badge-dialog-close" aria-label="Chiudi dettagli traguardo" onClick={close}>×</button>
+        <div className="bl-badge-dialog-orbwrap"><GlassOrb Icon={selectedBadge.icon} tint={ORB_TINTS[selectedBadge.index % 5]} locked={!selectedBadge.earned} size={108} strokeWidth={2} /></div>
+        <span className="bl-profile-badges-kicker">{selectedBadge.earned ? "TRAGUARDO CONQUISTATO" : "IL TUO PROSSIMO OBIETTIVO"}</span>
         <h4 id="bl-badge-dialog-title">{selectedBadge.name}</h4>
-        <p>{selectedBadge.earned ? selectedBadge.explanation : `Non hai ancora sbloccato questo badge. ${selectedBadge.explanation}`}</p>
+        <div className="bl-badge-dialog-section"><strong>Come ottenerlo</strong><span>{explanations[selectedBadge.name]} {selectedBadge.earned ? "Obiettivo completato!" : `Ti mancano ${Math.max(0,selectedBadge.target-selectedBadge.value)} ${selectedBadge.unit}.`}</span></div>
         <div className="bl-badge-dialog-progress-label"><strong>{Math.min(selectedBadge.value, selectedBadge.target)} / {selectedBadge.target} {selectedBadge.unit}</strong><span>{Math.min(100, Math.round(selectedBadge.value / selectedBadge.target * 100))}%</span></div>
         <div className="bl-badge-dialog-progress"><i style={{width:`${Math.min(100,(selectedBadge.value/selectedBadge.target)*100)}%`}} /></div>
-        <button type="button" className="bl-badge-dialog-action" onClick={() => setSelectedBadge(null)}>Ho capito</button>
+        <div className="bl-badge-dialog-section"><strong>Cosa ottieni</strong><span>{rewardFor(selectedBadge.name)}</span></div>
+        <button type="button" className="bl-badge-dialog-action" onClick={close}>{selectedBadge.earned ? "Fantastico!" : "Ci proverò!"}</button>
       </section>
     </div>}
   </section>;
 }
 
-function StatsView({ entries, me, onCreate, onNotify, onOpenBubble }) {
+function StatsView({ entries, me, onCreate, onOpenBubble }) {
   const stats = useMemo(() => {
     const totals = REACTIONS.map((r) => ({ ...r, count: entries.reduce((s, e) => s + Math.max(0, Number(e[r.key]) || 0), 0) }));
     const reactions = totals.reduce((s, r) => s + r.count, 0);
@@ -2673,7 +2879,6 @@ function StatsView({ entries, me, onCreate, onNotify, onOpenBubble }) {
   }, [entries]);
   const opens = me?.opens_total ?? entries.reduce((s, e) => s + e.opensCount, 0);
   const count = me?.bubbles_count ?? entries.length;
-  const milestones = buildMilestones(entries, me); // la notifica di sblocco parte dal controllo globale in App
   return <div className="bl-insights">
     <div className="bl-insights-hero"><h3>{opens === 0 ? "Il bello deve ancora cominciare." : `Hai acceso ${opens} ${opens === 1 ? "momento" : "momenti"} di curiosità.`}</h3><p>Ogni apertura è una persona che ha scelto di scoprire una tua storia.</p></div>
     <div className="bl-insights-metrics" aria-label="Le tue statistiche">
@@ -2761,7 +2966,6 @@ function GiftView({ entries, onCreate, onNotify }) {
 
 
 /* ====================== Gestione Gruppi e Chat ====================== */
-const CHAT_GROUP_PREFIX = "[[bolla:group|";
 // Sfondo fisico indipendente dalle bolle cliccabili e dal limite Admin.
 function ChaoticBubbleBackground() {
   const canvasRef = useRef(null);
@@ -2799,7 +3003,7 @@ function ChaoticBubbleBackground() {
           color:palette[i % palette.length], squash:0, phase:random(0, 7)});
       }
     };
-    const draw = (b, t) => {
+    const draw = (b) => {
       const [red,green,blue] = b.color;
       const stretch = b.squash;
       const angle = Math.atan2(b.vy, b.vx);
@@ -2860,7 +3064,7 @@ function ChaoticBubbleBackground() {
         }
       }
       ctx.clearRect(0,0,w,h);
-      for(const b of particles) draw(b,time);
+      for(const b of particles) draw(b);
     };
     resize();
     const onVisibility = () => {
@@ -2888,7 +3092,7 @@ function depthLayer(id, starter) {
   return DEPTH_LAYERS[k < 4 ? 0 : k < 8 ? 1 : 2];
 }
 
-function BubbleView({ bubble, bursting, locked, showDistance, onPop, isFavorite, onToggleFavorite, avatar, countryCode, onShare, isRare, isSecret, kindHint }) {
+function BubbleView({ bubble, bursting, locked, showDistance, onPop, countryCode, isRare, isSecret, kindHint }) {
   const slotRef = useRef(null);
   const motion = useRef(null);
   const dragging = useRef(null);
@@ -2989,9 +3193,6 @@ function BubbleView({ bubble, bursting, locked, showDistance, onPop, isFavorite,
 
 
 
-function GiphyPicker(props) {
-  return <KlipyPicker initialSource="both" {...props} />;
-}
 
 
 /* Inoltra una bolla: WhatsApp, link/altre app oppure un altro utente di Bolle (via chat). */
@@ -3380,7 +3581,7 @@ function BubbleFan({ out, bonus, locked, onTap, onPick }) {
    sottosmorzata che parte dal pulsante, arriva al suo posto con un rimbalzo (a cascata) e al
    ritorno rientra nel pulsante. Il contenitore si gonfia come una bolla dal punto del pulsante. */
 const radiusLabel = (r) => (r < 1 ? `${Math.round(r * 1000)} m` : `${r} km`);
-function RadiusFan({ open, radii, value, active, originRef, onPick, onClosed }) {
+function RadiusFan({ open, radii, value, active, originRef, onPick, onClosed, lockedAbove = null }) {
   const [mounted, setMounted] = useState(open);
   const rootRef = useRef(null), chipRefs = useRef([]), sim = useRef(null), raf = useRef(0);
   const openRef = useRef(open); openRef.current = open;
@@ -3432,7 +3633,7 @@ function RadiusFan({ open, radii, value, active, originRef, onPick, onClosed }) 
   }, [mounted]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!mounted) return null;
   return <div ref={rootRef} className="bl-radius bl-radius-fan" role="group" aria-label="Distanza massima" style={{ opacity: 0, pointerEvents: open ? "auto" : "none" }}>
-    {radii.map((r, i) => <button key={r} ref={(el) => { chipRefs.current[i] = el; }} type="button" data-radius={r} className={`${value === r ? "on" : ""} ${active === r ? "is-act" : ""}`} style={{ opacity: 0 }} onClick={() => onPick(r)} aria-pressed={value === r}>{radiusLabel(r)}</button>)}
+    {radii.map((r, i) => <button key={r} ref={(el) => { chipRefs.current[i] = el; }} type="button" data-radius={r} className={`${value === r ? "on" : ""} ${active === r ? "is-act" : ""} ${lockedAbove != null && r > lockedAbove ? "is-locked" : ""}`} style={{ opacity: 0 }} onClick={() => onPick(r)} aria-pressed={value === r}>{lockedAbove != null && r > lockedAbove ? "🔒 " : ""}{radiusLabel(r)}</button>)}
   </div>;
 }
 
@@ -3748,9 +3949,15 @@ async function downscaleImage(file, maxSide = 1600, quality = 0.82) {
   } catch { return file; }
 }
 
-function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, initial = null }) {
-  const [step, setStep] = useState(initial?.mode ? "edit" : "home"); // home: scegli cosa pubblicare · edit: crea e pubblica
-  const [captionPos, setCaptionPos] = useState("bot"); // (vecchio testo singolo: resta solo per le bolle già pubblicate)
+function Composer({ uid, onClose, onDone, chainRootId = null, initial = null }) {
+  const unlocks = useUnlocks();
+  const tagsOk = unlocks.isUnlocked("tags"), stickersOk = unlocks.isUnlocked("stickers"), chainOk = unlocks.isUnlocked("chain"), capsuleOk = unlocks.isUnlocked("capsule");
+  // Tipo di bolla chiesto dal ventaglio ma ancora bloccato: si parte dalla schermata iniziale con il motivo.
+  const lockedInitialFeature = initial?.mode ? MODE_FEATURE[initial.mode] : null;
+  const initialLocked = Boolean(lockedInitialFeature && !unlocks.isUnlocked(lockedInitialFeature));
+  const startMode = initial?.mode && !initialLocked ? initial.mode : null;
+  const [step, setStep] = useState(startMode ? "edit" : "home"); // home: scegli cosa pubblicare · edit: crea e pubblica
+  const [, setCaptionPos] = useState("bot"); // (vecchio testo singolo: resta solo per le bolle già pubblicate)
   const [overlays, setOverlays] = useState([]); // testi liberi sopra foto/video: posizione, zoom, rotazione
   const [ovSel, setOvSel] = useState(null);
   const [edit, setEdit] = useState(defaultEdit); // filtro, regolazioni, ritaglio (foto) · filtro, taglio, muto (video)
@@ -3789,9 +3996,9 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
   // utenti taggati (max 3)
   const [file, setFile] = useState(initial?.file || null);
   const [startChain, setStartChain] = useState(false);
-  const [mode, setMode] = useState(initial?.mode || "photo");
+  const [mode, setMode] = useState(startMode || "photo");
   const [text, setText] = useState("");
-  const [caption, setCaption] = useState("");
+  const [, setCaption] = useState("");
   const [giphySelection, setGiphySelection] = useState(null);
   const [klipySelection, setKlipySelection] = useState(null);
   const [pollA, setPollA] = useState("");
@@ -3804,10 +4011,11 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
     }).catch(() => {});
     return () => { active = false; };
   }, []);
-  const [markSecret, setMarkSecret] = useState(false);
-  const [secretRadius, setSecretRadius] = useState(500);
+  const [markSecret] = useState(false);
+  const [secretRadius] = useState(500);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => { if (initialLocked) showLocked(lockedInitialFeature); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const preview = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
   useEffect(() => () => preview && URL.revokeObjectURL(preview), [preview]);
   const [capsuleMinutes, setCapsuleMinutes] = useState(0); // 0 = pubblica subito
@@ -3850,7 +4058,7 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
     setMode(nextMode); setError(""); setText(""); setQFile(null); setMemeBottom(""); setDuoMode(false); setDuoA(null); setDuoB(null);
     setDailyUsed(false); setKlipySelection(null); setGiphySelection(null); setFile(null); setEdit(defaultEdit()); setStickers([]); setStickerSel(null); setCaption(""); setCaptionPos("bot"); setPollA(""); setPollB("");
   }
-  const chooseMode = (id) => { resetFields(id); setStep("edit"); };
+  const chooseMode = (id) => { const feature = MODE_FEATURE[id]; if (feature && !unlocks.isUnlocked(feature)) { showLocked(feature); return; } resetFields(id); setStep("edit"); };
   const backToHome = () => { if (sending) return; resetFields("photo"); setStep("home"); };
   // Scelta del file dalla schermata iniziale: se è valido si passa subito alla modifica.
   function pickMain(e) {
@@ -3897,7 +4105,7 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
     if (up.error) { setSending(false); return setError(errorText(up.error)); }
     const { data: createdBubbleId, error: rpcError } = await supabase.rpc("create_bubble", {
       p_media_path: path, p_media_type: uploadFile.type.startsWith("video/") ? "video" : "image",
-      p_caption: "", p_lat: place?.lat ?? null, p_lng: place?.lng ?? null,
+      p_caption: mode === "gif" ? text.trim().slice(0, 140) : "", p_lat: place?.lat ?? null, p_lng: place?.lng ?? null,
     });
     if (rpcError) {
       await supabase.storage.from(BUCKET).remove([path]);
@@ -3922,7 +4130,7 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
     if (["photo", "meme", "gif"].includes(mode) && uploadFile) {
       blurFromFile(uploadFile).then(uri => uri ? seqApi.setPreview(createdBubbleId, uri) : null).then(r => { if (r?.error) console.warn("Anteprima sfocata non salvata:", r.error.message); }).catch(e => console.warn("Anteprima sfocata non salvata:", e)); // mai bloccante
     }
-    if (tags.length) {
+    if (tagsOk && tags.length) {
       try {
         const { data: tagRes, error: tagError } = await supabase.rpc("bolle_set_bubble_tags", { p_bubble_id: createdBubbleId, p_usernames: tags });
         if (tagError) console.warn("Tag non salvati:", tagError.message);
@@ -3930,7 +4138,7 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
       } catch (tagErr) { console.warn("Tag non salvati:", tagErr); }
     }
     // Capsula del tempo: subito dopo la pubblicazione, per ridurre al minimo il tempo in cui la bolla è visibile.
-    if (capsuleMinutes > 0) {
+    if (capsuleOk && capsuleMinutes > 0) {
       const { error: capsuleError } = await supabase.rpc("bolle_set_bubble_opens_at", { p_bubble_id: createdBubbleId, p_delay_minutes: capsuleMinutes });
       if (capsuleError) { await rollbackBubble(createdBubbleId); setSending(false); setError("Bolla non pubblicata: la capsula del tempo non si è attivata. " + detail(capsuleError)); return; }
     }
@@ -3987,8 +4195,9 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
       }
     }
     // Crea una nuova catena oppure collega questa bolla alla catena esistente.
-    if (startChain || chainRootId) {
-      const chainResult = startChain
+    const wantsNewChain = startChain && chainOk; // partecipare a una catena altrui resta libero
+    if (wantsNewChain || chainRootId) {
+      const chainResult = wantsNewChain
         ? await supabase.rpc("bolle_chain_create_root", { p_bubble_id: createdBubbleId })
         : await supabase.rpc("bolle_chain_join", { p_root_bubble_id: chainRootId, p_bubble_id: createdBubbleId });
       if (chainResult.error) {
@@ -4015,10 +4224,13 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
   const optionsBlock = (
       <details className="bl-cmp-options">
         <summary>Altre opzioni</summary>
-        {!chainRootId && <label className="bl-check bl-chain-toggle"><input type="checkbox" checked={startChain} onChange={e => setStartChain(e.target.checked)} /><span><strong>🫧 Bolla a catena</strong><small>Chi la scopre potrà aggiungere il proprio contributo.</small></span></label>}
-        <label className="bl-field-label bl-capsule">⏳ Capsula del tempo<select value={capsuleMinutes} onChange={e => setCapsuleMinutes(Number(e.target.value))} aria-label="Quando si apre la bolla"><option value={0}>Subito</option><option value={10}>Si apre tra 10 minuti</option><option value={30}>Si apre tra 30 minuti</option><option value={60}>Si apre tra 1 ora</option><option value={360}>Si apre tra 6 ore</option><option value={1440}>Si apre tra 24 ore</option><option value={2880}>Si apre tra 48 ore</option></select><small>Il contenuto resta nascosto, con il conto alla rovescia, finché non scade.</small></label>
+        {!chainRootId && !chainOk && <LockedNote feature="chain" />}
+        {!chainRootId && chainOk && <label className="bl-check bl-chain-toggle"><input type="checkbox" checked={startChain} onChange={e => setStartChain(e.target.checked)} /><span><strong>🫧 Bolla a catena</strong><small>Chi la scopre potrà aggiungere il proprio contributo.</small></span></label>}
+        {!capsuleOk && <LockedNote feature="capsule" />}
+        {capsuleOk && <label className="bl-field-label bl-capsule">⏳ Capsula del tempo<select value={capsuleMinutes} onChange={e => setCapsuleMinutes(Number(e.target.value))} aria-label="Quando si apre la bolla"><option value={0}>Subito</option><option value={10}>Si apre tra 10 minuti</option><option value={30}>Si apre tra 30 minuti</option><option value={60}>Si apre tra 1 ora</option><option value={360}>Si apre tra 6 ore</option><option value={1440}>Si apre tra 24 ore</option><option value={2880}>Si apre tra 48 ore</option></select><small>Il contenuto resta nascosto, con il conto alla rovescia, finché non scade.</small></label>}
       </details>
   );
+  const tagsField = tagsOk ? <TagAutocomplete tags={tags} onChange={setTags} disabled={sending} suggestions={tagSuggestions} onSearch={searchTagUsers} /> : <LockedNote feature="tags" />;
   const publishBtn = <button type="button" className="bl-cmp-publish" onClick={submit} disabled={cannotPublish}>{sending ? "Pubblico…" : "Pubblica"}</button>;
   const chainNotice = chainRootId && <div className="bl-chain-compose"><span>🫧</span><div><strong>Stai continuando una catena</strong><small>La tua bolla verrà collegata alla catena originale.</small></div></div>;
   return <Sheet className="bl-sheet-composer" label="Nuova bolla" title={step === "home" ? "Cosa vuoi pubblicare?" : `${modeInfo[1]} ${modeInfo[2]}`} onClose={() => !sending && onClose()} onBack={step === "edit" ? backToHome : undefined}>
@@ -4027,11 +4239,12 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
       <p className="bl-cmp-lead">Tocca una bolla per prepararla prima di pubblicarla.</p>
       <div className="bl-cmp-grid" role="group" aria-label="Tipi di bolla">
         {CMP_BUBBLES.map(([id, icon, label, hint, c1, c2, size], i) => {
-          const orb = <><span className="bl-cmpb-orb" aria-hidden="true"><span className="bl-cmpb-icon">{icon}</span></span><span className="bl-cmpb-label"><strong>{label}</strong><small>{hint}</small></span></>;
+          const lockReq = MODE_FEATURE[id] && !unlocks.isUnlocked(MODE_FEATURE[id]) ? unlocks.requirement(MODE_FEATURE[id]) : null;
+          const orb = <><span className="bl-cmpb-orb" aria-hidden="true"><span className="bl-cmpb-icon">{lockReq ? "🔒" : icon}</span></span><span className="bl-cmpb-label"><strong>{label}</strong><small>{lockReq ? (lockReq.target ? `Sblocca: ${lockReq.value}/${lockReq.target} ${lockReq.unit}` : "Da sbloccare") : hint}</small></span></>;
           const st = { "--c1": c1, "--c2": c2, "--sz": `${size}px`, "--dl": `${-(i * 0.9)}s`, "--dur": `${5 + (i % 4) * 0.7}s` };
           return id === "photo"
             ? <label key={id} className="bl-cmpb" style={st}>{orb}<input type="file" accept="image/*,video/*" onChange={pickMain} aria-label="Scegli una foto o un video" /></label>
-            : <button key={id} type="button" className="bl-cmpb" style={st} onClick={() => chooseMode(id)}>{orb}</button>;
+            : <button key={id} type="button" className={`bl-cmpb ${lockReq ? "is-locked" : ""}`} style={st} onClick={() => chooseMode(id)} aria-disabled={lockReq ? "true" : undefined}>{orb}</button>;
         })}
       </div>
       {error && <p className="bl-error" role="alert">{error}</p>}
@@ -4040,11 +4253,11 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
       {fullEdit && <MediaEditor file={file} preview={preview} edit={edit} setEdit={setEdit} stickers={stickers} setStickers={setStickers} stickerSel={stickerSel} setStickerSel={setStickerSel} disabled={sending} onBackgroundDown={() => setOvSel(null)}
         onBack={backToHome} onClose={() => !sending && onClose()} error={error} footer={publishBtn}
         changePhoto={<label className="bl-me-top-btn bl-me-top-pill" aria-label="Cambia foto">🔄 Cambia<input type="file" accept="image/*,video/*" onChange={e => { pick(e); e.target.value = ""; }} /></label>}
-        more={<>{chainNotice}<TagAutocomplete tags={tags} onChange={setTags} disabled={sending} suggestions={tagSuggestions} onSearch={searchTagUsers} />{optionsBlock}</>}
+        more={<>{chainNotice}{tagsField}{optionsBlock}</>}
         renderStage={() => <OverlayStage overlays={overlays} onChange={setOverlays} sel={ovSel} setSel={(v) => { setOvSel(v); if (v != null) setStickerSel(null); }} disabled={sending} hideEmptyHint passThrough />}
-        renderRail={({ openStickers, stickersOpen, toolButtons }) => <OverlayRail overlays={overlays} onChange={setOverlays} sel={ovSel} setSel={setOvSel} disabled={sending} onStickers={openStickers} stickersOpen={stickersOpen}>{toolButtons}</OverlayRail>} />}
+        renderRail={({ openStickers, stickersOpen, toolButtons }) => <OverlayRail overlays={overlays} onChange={setOverlays} sel={ovSel} setSel={setOvSel} disabled={sending} onStickers={openStickers ? (stickersOk ? openStickers : () => showLocked("stickers")) : null} stickersOpen={stickersOk && stickersOpen}>{toolButtons}</OverlayRail>} />}
       {mode === "photo" && !file && <label className="bl-cmp-ghost bl-cmp-pickphoto">📸 Scegli una foto o un video<input type="file" accept="image/*,video/*" onChange={e => { pick(e); e.target.value = ""; }} /></label>}
-      {mode === "gif" && <><p className="bl-muted">Cerca una GIF animata o un meme:</p><KlipyPicker selectedUrl={klipySelection?.url} onPick={(item) => { setKlipySelection(item); setGiphySelection(null); }} />{klipySelection && <div className="bl-giphy-selected"><img src={klipySelection.url} alt={klipySelection.title || "GIF selezionata"} /><button type="button" onClick={() => setKlipySelection(null)}>Rimuovi selezione</button></div>}</>}
+      {mode === "gif" && <GifSimplePicker selectedUrl={klipySelection?.url} onPick={(item) => { setKlipySelection(item); setGiphySelection(null); }} caption={text} onCaption={setText} disabled={sending} />}
       {mode === "truth" && <div className="bl-poll-compose bl-truth-compose"><p className="bl-muted">Scrivi 3 frasi su di te: due vere e una falsa. Tocca il cerchio della bugia: chi apre la bolla dovrà scovarla.</p>{[0, 1, 2].map(i => <label key={i} className="bl-truth-row"><input type="radio" name="bl-lie" checked={lieIdx === i} onChange={() => setLieIdx(i)} aria-label={`La frase ${i + 1} è la bugia`} /><input maxLength={120} value={truthTexts[i]} onChange={e => setTruthTexts(prev => prev.map((t, j) => j === i ? e.target.value : t))} placeholder={`Frase ${i + 1}`} /><span>{lieIdx === i ? "🤥 bugia" : "✅ vera"}</span></label>)}</div>}
       {mode === "choice" && <div className="bl-poll-compose bl-cmp-poll">
         {!duoMode && <>
@@ -4067,7 +4280,7 @@ function Composer({ uid, bonus, onClose, onDone, daily, chainRootId = null, init
         </div>}
       </>}
       {!fullEdit && <>
-        <TagAutocomplete tags={tags} onChange={setTags} disabled={sending} suggestions={tagSuggestions} onSearch={searchTagUsers} />
+        {mode !== "gif" && tagsField}
         {error && <p className="bl-error" role="alert">{error}</p>}
         {optionsBlock}
         {publishBtn}
@@ -4088,11 +4301,70 @@ function track(event, props = {}) {
   if (!sb) return;
   try { Promise.resolve(sb.rpc("bolle_log_event", { p_event: event, p_props: props })).catch(() => {}); } catch { /* mai bloccare l'app */ }
 }
+/* ---- Sessioni (ospiti / registrati) e click sul link dell'app ---- */
+const BOLLE_LINK_HOST = "bolle-beta.vercel.app";
+const SESSION_PING_MS = 60 * 1000; // heartbeat: la dashboard considera "online" chi ha un ping negli ultimi 5 minuti
+function bolleUuid() {
+  try { if (crypto?.randomUUID) return crypto.randomUUID(); } catch { /* fallback sotto */ }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (ch) => { const r = (Math.random() * 16) | 0; return (ch === "x" ? r : (r & 3) | 8).toString(16); });
+}
+function storedId(storage, key) {
+  try { let v = storage.getItem(key); if (!v) { v = bolleUuid(); storage.setItem(key, v); } return v; } catch { return bolleUuid(); }
+}
+function linkSource() {
+  try {
+    const q = new URLSearchParams(window.location.search).get("src");
+    if (q) return q.toLowerCase().replace(/[^a-z0-9_.-]/g, "").slice(0, 40);
+  } catch { /* ignora */ }
+  return "";
+}
+function useSessionTracking({ known, isGuest }) {
+  const ids = useRef(null);
+  if (!ids.current) ids.current = { session: storedId(sessionStorage, "bolle-sid"), device: storedId(localStorage, "bolle-did") };
+  const guestRef = useRef(isGuest);
+  guestRef.current = isGuest;
+  const ping = useCallback(() => {
+    if (!sb || document.visibilityState === "hidden") return;
+    try { Promise.resolve(sb.rpc("bolle_session_ping", { p_session: ids.current.session, p_device: ids.current.device, p_is_guest: guestRef.current, p_src: linkSource() || null })).catch(() => {}); } catch { /* mai bloccare l'app */ }
+  }, []);
+  // Ping all'avvio, quando cambia lo stato ospite/registrato (è qui che si rileva la conversione) e ogni minuto finché la scheda è visibile.
+  useEffect(() => {
+    if (!known) return undefined;
+    ping();
+    const id = setInterval(ping, SESSION_PING_MS);
+    const onVis = () => { if (document.visibilityState === "visible") ping(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
+  }, [known, isGuest, ping]);
+  // Click sul link: arrivo sull'app da un link esterno (con ?src=...) e click su link verso bolle-beta.vercel.app dentro l'app.
+  useEffect(() => {
+    const logLink = (kind, src, target) => {
+      if (!sb) return;
+      let ref = ""; try { ref = document.referrer ? new URL(document.referrer).host : ""; } catch { /* ignora */ }
+      try { Promise.resolve(sb.rpc("bolle_log_link_click", { p_kind: kind, p_src: src || null, p_referrer: ref || null, p_target: target || null, p_session: ids.current.session })).catch(() => {}); } catch { /* ignora */ }
+    };
+    const src = linkSource();
+    let arrivedExternally = false;
+    try { arrivedExternally = !document.referrer || new URL(document.referrer).host !== window.location.host; } catch { arrivedExternally = true; }
+    let already = false; try { already = sessionStorage.getItem("bolle-landing-logged") === "1"; } catch { /* ignora */ }
+    if (!already && (src || arrivedExternally)) {
+      logLink("landing", src, window.location.origin + window.location.pathname);
+      try { sessionStorage.setItem("bolle-landing-logged", "1"); } catch { /* ignora */ }
+    }
+    const onClick = (e) => {
+      const a = e.target?.closest?.("a[href]");
+      if (!a) return;
+      let u; try { u = new URL(a.href, window.location.href); } catch { return; }
+      if (u.host === BOLLE_LINK_HOST) logLink("click", u.searchParams.get("src") || "", u.origin + u.pathname);
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
+}
 function trackError(where, err) {
   const msg = String(err?.message || err || "unknown").replace(/[^\s@]+@[^\s@]+/g, "[email]").slice(0, 80);
   track("error", { where, code: msg });
 }
-function trackPerf(metric, ms) { track("perf", { metric, ms: Math.max(0, Math.round(ms)) }); }
 function installGlobalErrorTracking() {
   let sent = 0;
   // Errori innocui (es. ResizeObserver alla rotazione dello schermo, risorse non caricate, rete momentanea) non meritano una segnalazione.
@@ -4108,12 +4380,6 @@ function installGlobalErrorTracking() {
   return () => { window.removeEventListener("error", onErr); window.removeEventListener("unhandledrejection", onErr); };
 }
 
-/* ====================== Validazione e messaggi ====================== */
-const PRIVACY_CONTROLLER = "[Inserisci qui nome o ragione sociale del titolare]"; // DA COMPILARE
-const PRIVACY_EMAIL = "privacy@tuodominio.it";                                    // DA COMPILARE
-const MIN_AGE = 14;
-const SEX_OPTIONS = [["F", "Donna"], ["M", "Uomo"], ["X", "Altro"], ["N", "Preferisco non dirlo"]];
-
 /* ====================== Selettori: nazionalità, città, data di nascita ====================== */
 const COUNTRY_CODES = "AD AE AF AG AI AL AM AO AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GT GU GW GY HK HN HR HT HU ID IE IL IM IN IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW".split(" ");
 let countryListCache = null;
@@ -4124,21 +4390,4 @@ function countryList() {
   const list = names ? COUNTRY_CODES.map(code => ({ code, name: names.of(code) })).filter(c => c.name && c.name !== c.code).sort((a, b) => a.name.localeCompare(b.name, "it")) : BOLLE_COUNTRIES;
   countryListCache = list;
   return list;
-}
-const normalizeSearch = (v) => String(v || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-const MONTHS_IT = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-function ageFromBirthDate(iso) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || "")) return null;
-  const [y, m, d] = iso.split("-").map(Number);
-  const now = new Date();
-  let age = now.getFullYear() - y;
-  if (now.getMonth() + 1 < m || (now.getMonth() + 1 === m && now.getDate() < d)) age -= 1;
-  return age;
-}
-function birthDateProblem(iso) {
-  const age = ageFromBirthDate(iso);
-  if (age === null) return "Seleziona la tua data di nascita.";
-  if (age < MIN_AGE) return `Devi avere almeno ${MIN_AGE} anni.`;
-  if (age > 120) return "Controlla la data di nascita.";
-  return "";
 }

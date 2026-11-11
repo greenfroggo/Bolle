@@ -1,0 +1,19 @@
+/* Interruttore anonimato + scheda identità + alone di accuratezza GPS sulla mappa. */
+.bl-id-card{display:flex;flex-direction:column;gap:14px;margin:0 0 16px}
+.bl-id-switch{padding:14px;border-radius:18px;border:1px solid rgba(150,130,210,.42);background:rgba(130,110,190,.16);color:inherit}
+.bl-id-switch-row{display:flex;align-items:center;gap:14px}
+.bl-id-switch-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.bl-id-switch-text strong{display:flex;align-items:center;gap:6px;font-size:16px}
+.bl-id-switch-text small{font-size:13px;line-height:1.4;opacity:.82}
+.bl-id-toggle{appearance:none;flex:none;position:relative;width:58px;height:34px;min-height:34px;padding:0;border-radius:99px;border:1px solid rgba(255,255,255,.4);background:rgba(120,110,150,.55);cursor:pointer;transition:background .2s ease;touch-action:manipulation}
+.bl-id-toggle i{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 30% 26%,#fff 0 28%,#e9e3ff 70%);box-shadow:0 2px 7px rgba(20,10,60,.4);transition:transform .22s cubic-bezier(.3,1.5,.5,1)}
+.bl-id-toggle[aria-checked="true"]{background:linear-gradient(135deg,#8274ed,#b46bf0);border-color:rgba(255,255,255,.6)}
+.bl-id-toggle[aria-checked="true"] i{transform:translateX(24px)}
+.bl-id-toggle:focus-visible{outline:3px solid #b9a8ff;outline-offset:2px}
+.bl-id-toggle:disabled{opacity:.55}
+.bl-id-preview{margin:10px 0 0;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.bl-id-preview b{font-weight:800}
+.bl-id-warn{margin:8px 0 0;padding:8px 10px;border-radius:12px;font-size:12px;line-height:1.4;background:rgba(255,190,90,.16);border:1px solid rgba(255,190,90,.45)}
+.bl-id-biz{display:flex;flex-direction:column;gap:8px}
+.bl-map-acc{fill:rgba(61,139,255,.14);stroke:rgba(61,139,255,.5);stroke-width:1}
+@media(prefers-reduced-motion:reduce){.bl-id-toggle,.bl-id-toggle i{transition:none}}
