@@ -78,17 +78,17 @@ function PollHalves({ x, confirmed, idle = false }) {
    Non cattura i tocchi (pointer-events: none) e sparisce non appena l'utente inizia lo swipe o ha votato. */
 function PollSwipeGesture() {
   return (
-    <div className="bl-poll-gesture" aria-hidden="true">
+    <div className="bl-pollcue" aria-hidden="true">
       <style>{`
-        .bl-poll-gesture{position:absolute;inset:0;z-index:6;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden}
-        .bl-poll-gesture__stage{position:relative;width:260px;height:80px;display:flex;align-items:center;justify-content:center}
-        .bl-poll-gesture__chev{position:absolute;top:50%;margin-top:-16px;font-size:30px;line-height:32px;font-weight:300;color:rgba(255,255,255,.55);text-shadow:0 0 10px rgba(0,0,0,.35);animation:blPgChev 4.4s ease-in-out infinite}
-        .bl-poll-gesture__chev--l{left:0}
-        .bl-poll-gesture__chev--r{right:0;animation-delay:2.2s}
-        .bl-poll-gesture__trail{position:absolute;top:50%;height:26px;margin-top:-13px;width:96px;border-radius:13px;opacity:0;transform:scaleX(0)}
-        .bl-poll-gesture__trail--l{right:50%;transform-origin:right center;background:linear-gradient(to left,rgba(255,255,255,.32),rgba(255,255,255,0));animation:blPgTrailL 4.4s ease-in-out infinite}
-        .bl-poll-gesture__trail--r{left:50%;transform-origin:left center;background:linear-gradient(to right,rgba(255,255,255,.32),rgba(255,255,255,0));animation:blPgTrailR 4.4s ease-in-out infinite}
-        .bl-poll-gesture__dot{position:absolute;top:50%;left:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;opacity:0;
+        .bl-pollcue{position:absolute;inset:0;z-index:6;pointer-events:none;display:flex;align-items:center;justify-content:center;overflow:hidden}
+        .bl-pollcue__stage{position:relative;width:260px;height:80px;display:flex;align-items:center;justify-content:center}
+        .bl-pollcue__chev{position:absolute;top:50%;margin-top:-16px;font-size:30px;line-height:32px;font-weight:300;color:rgba(255,255,255,.55);text-shadow:0 0 10px rgba(0,0,0,.35);animation:blPgChev 4.4s ease-in-out infinite}
+        .bl-pollcue__chev--l{left:0}
+        .bl-pollcue__chev--r{right:0;animation-delay:2.2s}
+        .bl-pollcue__trail{position:absolute;top:50%;height:26px;margin-top:-13px;width:96px;border-radius:13px;opacity:0;transform:scaleX(0)}
+        .bl-pollcue__trail--l{right:50%;transform-origin:right center;background:linear-gradient(to left,rgba(255,255,255,.32),rgba(255,255,255,0));animation:blPgTrailL 4.4s ease-in-out infinite}
+        .bl-pollcue__trail--r{left:50%;transform-origin:left center;background:linear-gradient(to right,rgba(255,255,255,.32),rgba(255,255,255,0));animation:blPgTrailR 4.4s ease-in-out infinite}
+        .bl-pollcue__dot{position:absolute;top:50%;left:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;opacity:0;
           background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.55) 0%,rgba(255,255,255,.28) 55%,rgba(255,255,255,.1) 100%);
           border:1.5px solid rgba(255,255,255,.55);box-shadow:0 0 18px rgba(255,255,255,.25);animation:blPgDot 4.4s ease-in-out infinite}
         @keyframes blPgDot{
@@ -108,16 +108,16 @@ function PollSwipeGesture() {
         @keyframes blPgTrailR{0%,60%{opacity:0;transform:scaleX(0)}64%{opacity:1}80%{opacity:1;transform:scaleX(1)}88%,100%{opacity:0;transform:scaleX(1)}}
         @keyframes blPgChev{0%,100%{opacity:.15}20%{opacity:.7}45%{opacity:.15}}
         @media (prefers-reduced-motion: reduce){
-          .bl-poll-gesture__dot,.bl-poll-gesture__trail{animation:none;opacity:0}
-          .bl-poll-gesture__chev{animation:none;opacity:.5}
+          .bl-pollcue__dot,.bl-pollcue__trail{animation:none;opacity:0}
+          .bl-pollcue__chev{animation:none;opacity:.5}
         }
       `}</style>
-      <div className="bl-poll-gesture__stage">
-        <span className="bl-poll-gesture__chev bl-poll-gesture__chev--l">‹</span>
-        <span className="bl-poll-gesture__trail bl-poll-gesture__trail--l" />
-        <span className="bl-poll-gesture__trail bl-poll-gesture__trail--r" />
-        <span className="bl-poll-gesture__dot" />
-        <span className="bl-poll-gesture__chev bl-poll-gesture__chev--r">›</span>
+      <div className="bl-pollcue__stage">
+        <span className="bl-pollcue__chev bl-pollcue__chev--l">‹</span>
+        <span className="bl-pollcue__trail bl-pollcue__trail--l" />
+        <span className="bl-pollcue__trail bl-pollcue__trail--r" />
+        <span className="bl-pollcue__dot" />
+        <span className="bl-pollcue__chev bl-pollcue__chev--r">›</span>
       </div>
     </div>
   );
@@ -142,7 +142,7 @@ function PollSwipeNote() {
    Gli stili vivono qui perché sono legati solo a questa schermata. */
 function PollStoryStyles() {
   return <style>{`
-    .bl-story--poll{--bl-poll-size:min(96vw,calc(100dvh - 290px),640px)}
+    .bl-story--poll{--bl-poll-size:min(calc(100vw - 24px),456px,calc(100dvh - 290px))}
     .bl-story--poll .bl-story-card{display:flex;flex-direction:column}
     .bl-story--poll .bl-story-media{position:relative;flex:1 1 auto;min-height:calc(var(--bl-poll-size) + 44px);display:flex;align-items:center;justify-content:center;
       overflow:visible!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
@@ -152,7 +152,7 @@ function PollStoryStyles() {
       overflow:visible!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important}
     .bl-story--poll .bl-story-frame>img{width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain;
       border-radius:0!important;box-shadow:none!important;background:transparent!important;clip-path:none!important;-webkit-mask:none!important;mask:none!important}
-    .bl-story--poll .bl-story-bar{margin-top:auto;padding-bottom:calc(var(--bl-foot-gap,0px) + env(safe-area-inset-bottom,0px) + 8px)!important}
+    .bl-story--poll .bl-story-bar{margin-top:auto}
     .bl-poll-idle{animation:blPollSway 3.2s ease-in-out infinite;will-change:transform}
     @keyframes blPollSway{
       0%{transform:translateX(0) rotate(0deg) scale(1)}
@@ -232,22 +232,6 @@ export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact,
   const pollSwipeStart = useRef(null);
   const [pollSwipeX, setPollSwipeX] = useState(0);
   const pollStage = Boolean(poll && !poll.my_vote && !viewer.isAuthor); // bolla "questo o quello" ancora da votare
-  const [footGap, setFootGap] = useState(0);
-  // La barra del messaggio resta in basso ma sopra la bottom bar: se questa è visibile sopra la schermata, ne misuro l'ingombro.
-  useEffect(() => {
-    if (!pollStage) { setFootGap(0); return undefined; }
-    const measure = () => {
-      const nav = document.querySelector(".bl-footbar");
-      if (!nav) { setFootGap(0); return; }
-      const r = nav.getBoundingClientRect();
-      const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-      setFootGap(top && nav.contains(top) ? Math.max(0, Math.round(window.innerHeight - r.top)) : 0);
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    const t = setTimeout(measure, 350); // dopo l'animazione di apertura
-    return () => { window.removeEventListener("resize", measure); clearTimeout(t); };
-  }, [pollStage, viewer.id]);
   const [pollSwipeFlying, setPollSwipeFlying] = useState(false);
   const pollIdle = pollStage && !pollSwipeFlying && Math.abs(pollSwipeX) <= 24;
   const [pollGlassVisible, setPollGlassVisible] = useState(false);
@@ -529,7 +513,7 @@ export default function Viewer({ viewer, onClose, onGiftBack, onReport, onReact,
   }
   if (storyMode) {
     const swipeable = poll && !poll.my_vote && !viewer.isAuthor;
-    return <div className={`bl-story ${swipeable ? "bl-story--poll" : ""} ${interactive ? "is-interactive" : ""} ${dissolving ? "dissolving" : ""} ${swipeClosing ? "swipe-closing" : ""} ${isDragging ? "is-dragging" : ""} ${springing ? "is-springing" : ""} ${settled ? "is-settled" : ""} ${navOut ? (navOut > 0 ? "is-nav-out-up" : "is-nav-out-down") : ""}`} style={{ "--bl-drag-y": `${dragY}px`, "--bl-drag-scale": String(dragScale), "--bl-foot-gap": `${footGap}px` }} role="dialog" aria-modal="true" aria-label="Contenuto della bolla" onPointerDown={onHandlePointerDown} onPointerMove={onHandlePointerMove} onPointerUp={onHandlePointerEnd} onPointerCancel={onHandlePointerCancel} onClick={onBackdropClick}>
+    return <div className={`bl-story ${swipeable ? "bl-story--poll" : ""} ${interactive ? "is-interactive" : ""} ${dissolving ? "dissolving" : ""} ${swipeClosing ? "swipe-closing" : ""} ${isDragging ? "is-dragging" : ""} ${springing ? "is-springing" : ""} ${settled ? "is-settled" : ""} ${navOut ? (navOut > 0 ? "is-nav-out-up" : "is-nav-out-down") : ""}`} style={{ "--bl-drag-y": `${dragY}px`, "--bl-drag-scale": String(dragScale) }} role="dialog" aria-modal="true" aria-label="Contenuto della bolla" onPointerDown={onHandlePointerDown} onPointerMove={onHandlePointerMove} onPointerUp={onHandlePointerEnd} onPointerCancel={onHandlePointerCancel} onClick={onBackdropClick}>
       {swipeable && <PollStoryStyles />}
       {scrollMode && <span className={`bl-nav-film ${navOut ? "bl-nav-film--out" : ""}`} key={navOut ? "film-out" : `film-${viewer.id}`} aria-hidden="true" />}
       <div className={`bl-story-card ${scrollMode ? `bl-story-card--nav-${scrollDir}` : ""}`} key={`card-${viewer.id}`}>
