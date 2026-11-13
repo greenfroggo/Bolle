@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { Archive, ArchiveRestore, Trash2, Users } from "lucide-react";
+import { Archive, ArchiveRestore, Trash2, Users, UserPlus, Search, Plus, Send, ChevronLeft, X, LogOut } from "lucide-react";
 import { supabase, avatarFor, errorText } from "../../lib/bolleCore.jsx";
 import AvatarImage from "../../components/AvatarImage.jsx";
 import { openUserProfile } from "../../components/UserLinkText.jsx";
@@ -20,8 +20,40 @@ import {
   mapGroupRow,
   mapGroupMsg,
   parseGroupMsgBody,
-  groupErrorText
+  groupErrorText,
+  dayKey,
+  formatDayLabel,
+  formatThreadTime
 } from "./chatUtils.js";
+
+/* ───────── Schermata intera «molla liquida» ─────────
+   Ricordo l'ultimo tocco: la schermata nasce da lì e si espande come una goccia che si assesta.
+   Larghezza e altezza seguono due molle leggermente diverse (x più rigida, y in ritardo): è questo
+   a dare l'effetto gelatina invece di un semplice zoom. */
+let lastTap = null;
+if (typeof window !== "undefined") {
+  window.addEventListener("pointerdown", (e) => { lastTap = { x: e.clientX, y: e.clientY, t: performance.now() }; }, { capture: true, passive: true });
+}
+function tapOrigin() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  if (lastTap && performance.now() - lastTap.t < 2500) return { x: lastTap.x, y: lastTap.y };
+  return { x: vw - 56, y: 44 }; // di riserva: l'icona messaggi nella barra in alto a destra
+}
+function liquidOpenFrames() {
+  const N = 56, from = 0.05, frames = [];
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const ty = Math.max(0, t - 0.035);
+    const px = 1 - Math.exp(-6.4 * t) * Math.cos(9.2 * t);   // overshoot ≈ 11 %
+    const py = 1 - Math.exp(-5.6 * ty) * Math.cos(8.2 * ty); // in ritardo e più morbida
+    const sx = from + (1 - from) * px, sy = from + (1 - from) * py;
+    const r = Math.min(50, Math.max(0, 50 * (1 - Math.min(px, py) * 1.12)));
+    frames.push({ offset: t, opacity: Math.min(1, t * 10), transform: `scale(${sx.toFixed(4)}, ${sy.toFixed(4)})`, borderRadius: `${r.toFixed(2)}%` });
+  }
+  frames[N] = { offset: 1, opacity: 1, transform: "scale(1, 1)", borderRadius: "0%" };
+  return frames;
+}
+const reducedMotion = () => Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 
 function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOwnBubble, onExit, avatarMap = {}, activeChat, onActiveChatChange, groupModalOpen, onGroupModalOpenChange }) {
   const unlocks = useUnlocks();
@@ -38,8 +70,12 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
   const [confirmDeleteKey, setConfirmDeleteKey] = useState(null); // chat in attesa di conferma di eliminazione
   const [deletingKey, setDeletingKey] = useState(null);
   const [swipeOpenKey, setSwipeOpenKey] = useState(null); // riga con le azioni aperte
+  const [leaveConfirm, setLeaveConfirm] = useState(false); // conferma «abbandona gruppo» nella testata della chat
+  const [localManageOpen, setLocalManageOpen] = useState(false); // gestione gruppo: funziona anche se il genitore non controlla la modale
   const hideStoreKey = `bolle-hidden-chats-v1-${String(me?.id || me?.username || "me").toLowerCase()}`;
   const [hiddenMap, setHiddenMap] = useState(() => readHiddenChats(hideStoreKey));
+  const [query, setQuery] = useState(""); // ricerca nell'elenco chat
+  const [filter, setFilter] = useState("all"); // all | unread | groups
   const [archiveOpen, setArchiveOpen] = useState(false); // vista «Archivio» con le chat nascoste
   const [menu, setMenu] = useState(null); // menu rapido (pressione prolungata): { key, t, rect, hidden, closing }
   const itemEls = useRef(new Map());
@@ -72,6 +108,7 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
     return () => { setActiveChatKey(null); };
   }, [active]);
   useEffect(() => () => clearTimeout(hlTimer.current), []);
+  useEffect(() => { setLeaveConfirm(false); setLocalManageOpen(false); }, [active?.id, active?.username]);
   useEffect(() => { setHiddenMap(readHiddenChats(hideStoreKey)); }, [hideStoreKey]);
 
   // Sincronizzazione con activeChat dall'esterno (es. back button dell'header di Sheet)
@@ -104,7 +141,9 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
     const { data, error: err } = await supabase.rpc("my_bubbles_media_dashboard");
     const row = !err && Array.isArray(data) ? data.find(r => String(r.bubble_id) === String(bubble.id)) : null;
     if (!row?.media_path) { onNotify?.("Questa bolla non è più disponibile."); return; }
-    await onOpenOwnBubble?.({ ...row, chat_username: active?.username, chat_avatar: active?.avatar });
+    setSuspended(true);
+    try { await onOpenOwnBubble?.({ ...row, chat_username: active?.username, chat_avatar: active?.avatar }); }
+    catch (e) { setSuspended(false); throw e; }
   }
 
   const loadThreads = useCallback(async (quiet = false) => {
@@ -356,6 +395,8 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
     if (!active || !active.isGroup) return;
     const { error: gErr } = await supabase.rpc("bolle_group_leave", { p_group: active.id });
     if (gErr) { onNotify?.(groupErrorText(gErr)); return; }
+    setLeaveConfirm(false);
+    setLocalManageOpen(false);
     setActive(null);
     onNotify?.("Hai abbandonato il gruppo.");
     void loadThreads(true);
@@ -508,10 +549,15 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
     return () => window.removeEventListener("keydown", onKey);
   }, [menu]);
 
+  // il tasto invia non deve rubare il focus alla cella di scrittura: così la tastiera non si chiude
+  const keepKeyboard = (e) => e.preventDefault();
+
   async function sendMessage(event, forcedBody) {
     event?.preventDefault();
     const text = forcedBody ? "" : draft.trim();
     if ((!text && !forcedBody) || !active || sending) return;
+    // la tastiera resta aperta: il focus torna subito alla cella (sincrono, dentro il gesto dell'utente, come richiede iOS)
+    if (!forcedBody) inputRef.current?.focus({ preventScroll: true });
     const body = forcedBody || `${replyTo ? makeQuoteMark(replyTo) : ""}${text}`.slice(0, CHAT_MAX_BODY);
     setSending(true);
     setError("");
@@ -556,16 +602,232 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
     void loadThreads(true);
   }
 
+  // ───────── Schermata intera ─────────
+  const layerRef = useRef(null);
+  const originRef = useRef({ x: 0, y: 0 });
+  const closingRef = useRef(false);
+  const [suspended, setSuspended] = useState(false); // nascosta mentre è aperto il visualizzatore di una bolla
+  const [profileOpen, setProfileOpen] = useState(false); // nascosta mentre è aperto un profilo
+  const [kbOpen, setKbOpen] = useState(false);           // tastiera a schermo aperta
+
+  useLayoutEffect(() => {
+    const el = layerRef.current;
+    if (!el) return undefined;
+    const o = tapOrigin();
+    originRef.current = o;
+    el.style.transformOrigin = `${o.x}px ${o.y}px`;
+    if (reducedMotion() || typeof el.animate !== "function") return undefined;
+    const anim = el.animate(liquidOpenFrames(), { duration: 950, easing: "linear" });
+    return () => anim.cancel();
+  }, [me?.registered]);
+
+  // niente scorrimento della pagina dietro; con la tastiera la schermata segue l'area visibile
+  useEffect(() => {
+    if (!me?.registered) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const vv = window.visualViewport;
+    const fit = () => {
+      const el = layerRef.current;
+      if (!el || !vv) return;
+      // Pagina zoomata (es. zoom automatico di iOS su un campo): vv.height è l'area ingrandita, non lo schermo.
+      // Seguirla ridimensionava la schermata e tagliava la barra di scrittura: in quel caso non si tocca nulla.
+      if (vv.scale > 1.02) { el.style.top = ""; el.style.height = ""; return; }
+      el.style.top = `${Math.round(vv.offsetTop)}px`;
+      el.style.height = `${Math.round(vv.height)}px`;
+      setKbOpen(window.innerHeight - vv.height > 120);
+    };
+    // iOS comunica la nuova altezza a tastiera già animata: si ricalcola più volte dopo ogni focus/blur
+    let timers = [];
+    const refit = () => {
+      timers.forEach(clearTimeout);
+      fit();
+      timers = [60, 180, 380, 700].map(ms => window.setTimeout(() => {
+        fit();
+        if (window.scrollY || window.scrollX) window.scrollTo(0, 0);   // iOS può spostare la pagina per mostrare il campo
+      }, ms));
+    };
+    fit();
+    vv?.addEventListener("resize", fit);
+    vv?.addEventListener("scroll", fit);
+    document.addEventListener("focusin", refit);
+    document.addEventListener("focusout", refit);
+    return () => {
+      document.body.style.overflow = prev;
+      timers.forEach(clearTimeout);
+      vv?.removeEventListener("resize", fit); vv?.removeEventListener("scroll", fit);
+      document.removeEventListener("focusin", refit); document.removeEventListener("focusout", refit);
+    };
+  }, [me?.registered]);
+
+  // con la tastiera aperta (o chiusa) l'ultimo messaggio resta in vista
+  useEffect(() => {
+    const h = historyRef.current;
+    if (!h || !active) return;
+    const id = window.setTimeout(() => { h.scrollTop = h.scrollHeight; }, 120);
+    return () => window.clearTimeout(id);
+  }, [kbOpen, active]);
+
+  // La cella di scrittura cresce con il testo (fino a 120px) invece di mostrare una sola riga tagliata
+  useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+  }, [draft, active, replyTo]);
+
+  // Il profilo si apre in un livello SOTTO questa schermata (z-index 120): mentre è aperto la nascondo, poi la ritrovo com'era
+  useEffect(() => {
+    const on = () => setProfileOpen(true), off = () => setProfileOpen(false);
+    window.addEventListener("bolle:profile-opened", on);
+    window.addEventListener("bolle:profile-closed", off);
+    return () => { window.removeEventListener("bolle:profile-opened", on); window.removeEventListener("bolle:profile-closed", off); };
+  }, []);
+
+  useEffect(() => {
+    if (!suspended) return undefined;
+    const root = document.querySelector(".bl-root") || document.body;
+    let seen = false;
+    const check = () => { if (root.querySelector(".bl-viewer")) seen = true; else if (seen) setSuspended(false); };
+    const mo = new MutationObserver(check);
+    mo.observe(root, { childList: true, subtree: true });
+    const t = window.setTimeout(() => { if (!seen) setSuspended(false); }, 4000);
+    check();
+    return () => { mo.disconnect(); window.clearTimeout(t); };
+  }, [suspended]);
+
+  // Chiusura: la schermata si ritrae verso il punto da cui è nata, poi avvisa il genitore.
+  function closeScreen() {
+    if (closingRef.current) return;
+    closingRef.current = true;
+    const el = layerRef.current;
+    const finish = () => {
+      onExit?.();
+      // rete di sicurezza: se il genitore non ci smonta, la schermata torna visibile invece di restare bloccata
+      window.setTimeout(() => {
+        if (layerRef.current && layerRef.current.isConnected) {
+          layerRef.current.getAnimations?.().forEach(a => a.cancel());
+          closingRef.current = false;
+        }
+      }, 700);
+    };
+    if (!el || reducedMotion() || typeof el.animate !== "function") { finish(); return; }
+    const a = el.animate([
+      { transform: "scale(1, 1)", borderRadius: "0%", opacity: 1, offset: 0, easing: "cubic-bezier(.3,.7,.4,1)" },
+      { transform: "scale(1.035, .965)", borderRadius: "6%", opacity: 1, offset: .22, easing: "cubic-bezier(.55,0,.85,.4)" },
+      { transform: "scale(.05, .05)", borderRadius: "50%", opacity: 0, offset: 1 }
+    ], { duration: 420, easing: "linear", fill: "forwards" });
+    a.finished.then(finish, finish);
+  }
+  function goBack() {
+    if (active) {
+      if (openedDirect.current) { closeScreen(); return; }
+      setActive(null);
+      setMessages([]);
+      setReplyTo(null);
+      latestId.current = null;
+      void loadThreads(true);
+      return;
+    }
+    closeScreen();
+  }
+  useEffect(() => {
+    if (!me?.registered) return undefined;
+    const onKey = (e) => { if (e.key === "Escape" && !menu && !groupModalOpen && !newGroupOpen && !replyTo) goBack(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   if (!me?.registered) return <p className="bl-muted">Accedi per usare i messaggi.</p>;
-  return (
-    <div className="bl-messages">
+
+  const peerTitle = active ? (active.isGroup ? active.name : `@${active.username}`) : "Messaggi";
+  const meLower = String(me?.username || "").toLowerCase();
+  const memberNames = active?.isGroup ? (active.members || []).filter(Boolean).map(m => (String(m).toLowerCase() === meLower ? "Tu" : `@${String(m).replace(/^@/, "")}`)) : [];
+  const peerSub = !active ? "" : active.isGroup
+    ? (memberNames.length ? `${memberNames.length} ${memberNames.length === 1 ? "membro" : "membri"} · ${memberNames.join(", ")}` : "Tocca per vedere i membri")
+    : "Tocca per aprire il profilo";
+  const manageOpen = Boolean(groupModalOpen || localManageOpen);
+  const openManage = () => { setLeaveConfirm(false); setLocalManageOpen(true); onGroupModalOpenChange?.(true); };
+  const closeManage = () => { setLocalManageOpen(false); onGroupModalOpenChange?.(false); };
+  const screen = (
+    <div className={`bl-messages bl-msgs-screen ${suspended ? "is-suspended" : ""} ${profileOpen ? "is-peek" : ""} ${kbOpen ? "is-kb" : ""}`} ref={layerRef} role="dialog" aria-modal="true" aria-label="Messaggi">
+      {/* Nella conversazione la testata dello sheet è nascosta (vedi chat.css): la schermata ha la sua,
+          con indietro, nome utente / gruppo, membri e uscita dal gruppo. */}
+      {!active ? (
+        <header className="bl-msgs-top is-list">
+          <button type="button" className="bl-msgs-hbtn" onClick={goBack} aria-label="Esci dai messaggi" title="Indietro">
+            <ChevronLeft size={24} strokeWidth={2} aria-hidden="true" />
+          </button>
+          <div className="bl-msgs-title"><h2>Messaggi</h2></div>
+          <button type="button" className="bl-msgs-hbtn bl-msgs-close" onClick={closeScreen} aria-label="Chiudi i messaggi" title="Chiudi">
+            <X size={22} strokeWidth={2} aria-hidden="true" />
+          </button>
+        </header>
+      ) : (
+        <>
+          <header className="bl-msgs-top is-chat" aria-label={`Conversazione con ${peerTitle}`}>
+            <button type="button" className="bl-msgs-hbtn" onClick={goBack} aria-label="Torna indietro" title="Indietro">
+              <ChevronLeft size={24} strokeWidth={2} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="bl-msgs-peer"
+              onClick={active.isGroup ? openManage : () => openUserProfile?.(active.username)}
+              aria-label={active.isGroup ? `Membri del gruppo ${active.name}` : `Apri il profilo di @${active.username}`}
+            >
+              <span className={`bl-msgs-peer-avatar ${active.isGroup ? "is-group" : ""}`}>
+                {active.isGroup ? <Users size={20} strokeWidth={1.9} aria-hidden="true" /> : <AvatarImage avatar={active.avatar} />}
+              </span>
+              <span className="bl-msgs-peer-copy">
+                <strong>{peerTitle}</strong>
+                <small>{peerSub}</small>
+              </span>
+            </button>
+            <div className="bl-msgs-actions">
+              <button
+                type="button"
+                className="bl-msgs-hbtn"
+                onClick={openManage}
+                aria-label={active.isGroup ? "Impostazioni e membri del gruppo" : "Aggiungi persone: crea un gruppo"}
+                title={active.isGroup ? "Impostazioni e membri" : "Aggiungi persone"}
+              >
+                {active.isGroup ? <Users size={21} strokeWidth={1.9} aria-hidden="true" /> : <UserPlus size={21} strokeWidth={1.9} aria-hidden="true" />}
+              </button>
+              {active.isGroup && (
+                <button
+                  type="button"
+                  className={`bl-msgs-hbtn is-danger ${leaveConfirm ? "on" : ""}`}
+                  onClick={() => setLeaveConfirm(v => !v)}
+                  aria-expanded={leaveConfirm}
+                  aria-label="Esci dal gruppo"
+                  title="Esci dal gruppo"
+                >
+                  <LogOut size={20} strokeWidth={1.9} aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          </header>
+          {active.isGroup && leaveConfirm && (
+            <div className="bl-msgs-leave" role="group" aria-label="Conferma uscita dal gruppo">
+              <span>Abbandonare il gruppo?</span>
+              <button type="button" className="is-yes" onClick={() => void handleLeaveGroup()}>Abbandona</button>
+              <button type="button" onClick={() => setLeaveConfirm(false)}>Annulla</button>
+            </div>
+          )}
+        </>
+      )}
+      <div className={`bl-msgs-pane ${active ? "is-chat" : "is-list"}`} key={active ? "chat" : "list"}>
       {active ? (
         <>
+          {error && <p className="bl-error bl-msgs-error" role="alert">{error}</p>}
           <div className="bl-message-history" aria-live="polite" ref={historyRef}>
             {messages.length ? (
-              messages.map(m => (
+              messages.map((m, i) => (
+                <React.Fragment key={m.id}>
+                  {(i === 0 || dayKey(messages[i - 1].created_at) !== dayKey(m.created_at)) && (
+                    <div className="bl-day-sep"><span>{formatDayLabel(m.created_at)}</span></div>
+                  )}
                 <ChatMessage
-                  key={m.id}
                   m={m}
                   highlighted={highlightId === String(m.id)}
                   meName={me?.username}
@@ -576,6 +838,7 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
                   isGroup={active.isGroup}
                   avatar={avatarFor(m.mine ? me?.username : (m.sender || active.username), avatarMap) || (!m.mine && !active.isGroup ? active.avatar : null) || "🫧"}
                 />
+                </React.Fragment>
               ))
             ) : (
               <p className="bl-muted">
@@ -595,34 +858,58 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
               <button type="button" onClick={() => setReplyTo(null)} aria-label="Annulla risposta">✕</button>
             </div>
           )}
-          <form className="bl-message-compose" onSubmit={sendMessage} style={{display:"flex",alignItems:"flex-end",gap:10,padding:"10px 12px",borderRadius:26,background:"var(--bl-panel, #20232d)",border:"1px solid var(--bl-line, #ffffff20)",position:"relative",width:"100%",boxSizing:"border-box"}}>
-            <div className="bl-message-input-wrap" style={{position:"relative",display:"flex",alignItems:"flex-end",gap:8,flex:1,minWidth:0}}>
-              <textarea ref={inputRef} value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === "Escape" && replyTo) { setReplyTo(null); return; } if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (draft.trim() && !sending) e.currentTarget.form?.requestSubmit(); } }} maxLength={CHAT_MAX_BODY - (replyTo ? makeQuoteMark(replyTo).length : 0)} rows={1} placeholder={replyTo ? "Scrivi la tua risposta…" : active.isGroup ? "Scrivi nel gruppo…" : "Scrivi un messaggio…"} aria-label="Scrivi un messaggio" style={{flex:1,minWidth:0,resize:"none",border:0,outline:"none",background:"transparent",color:"inherit",font:"inherit",fontSize:16,lineHeight:1.4,padding:"8px 2px",maxHeight:120,overflowY:"auto"}} />
+          <form className="bl-message-compose bl-wa-compose" onSubmit={sendMessage}>
+            <div className="bl-wa-input">
+              <textarea ref={inputRef} value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === "Escape" && replyTo) { setReplyTo(null); return; } if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); if (draft.trim() && !sending) e.currentTarget.form?.requestSubmit(); } }} maxLength={CHAT_MAX_BODY - (replyTo ? makeQuoteMark(replyTo).length : 0)} rows={1} placeholder={replyTo ? "Scrivi la tua risposta…" : active.isGroup ? "Scrivi nel gruppo…" : "Scrivi un messaggio…"} aria-label="Scrivi un messaggio" enterKeyHint="send" autoCapitalize="sentences" className="bl-wa-textarea" />
             </div>
-            <button type="submit" aria-label="Invia messaggio" title="Invia messaggio" disabled={!draft.trim() || sending} style={{flex:"0 0 42px",width:42,height:42,border:0,borderRadius:"50%",background:"var(--bl-accent, #20b8a5)",color:"#fff",display:"grid",placeItems:"center",fontSize:21,cursor:draft.trim()&&!sending?"pointer":"default",opacity:draft.trim()&&!sending?1:.5,boxShadow:"0 2px 8px #0003"}}>{sending ? "…" : "➤"}</button>
+            <button type="submit" className="bl-wa-send" aria-label="Invia messaggio" title="Invia messaggio" disabled={!draft.trim() || sending}
+              onPointerDown={keepKeyboard} onMouseDown={keepKeyboard}>
+              {sending ? "…" : <Send size={18} strokeWidth={2} aria-hidden="true" />}
+            </button>
           </form>
-          <small style={{display:"block",textAlign:"center",opacity:.55,fontSize:11,marginTop:5}}>Invio per spedire · Shift + Invio per andare a capo</small>
         </>
       ) : (
-        <>
-          <div className="bl-threads-header">
-            {archiveOpen ? (
-              <>
-                <button type="button" className="bl-archive-back" onClick={() => { setArchiveOpen(false); setSwipeOpenKey(null); }}>‹ Chat</button>
-                <p className="bl-muted">Archivio: chat nascoste su questo dispositivo.</p>
-              </>
-            ) : <p className="bl-muted">Le tue conversazioni, tutte in un unico posto.</p>}
-            <span className="bl-threads-tools">
-              <button ref={archiveBtnRef} type="button" className={`bl-archive-btn ${archiveOpen ? "on" : ""}`} onClick={() => { setArchiveOpen(v => !v); setSwipeOpenKey(null); }} aria-pressed={archiveOpen} aria-label={`Archivio chat nascoste (${threads.filter(isThreadHidden).length})`} title="Archivio chat nascoste">
-                <Archive size={17} aria-hidden="true" />
-                {threads.filter(isThreadHidden).length > 0 && <i>{threads.filter(isThreadHidden).length}</i>}
-              </button>
-              {!archiveOpen && (
-                <button type="button" className={`bl-new-group-btn ${groupsOk ? "" : "is-locked"}`} aria-disabled={groupsOk ? undefined : "true"} onClick={() => { if (!groupsOk) { showLocked("groups"); return; } setNewGroupOpen(true); }} title={groupsOk ? "Crea un nuovo gruppo" : unlocks.message("groups")}>
-                  {groupsOk ? <Users size={15} /> : <span aria-hidden="true">🔒</span>} Nuovo gruppo
+        <div className="bl-msgs-scroll">
+          <div className="bl-threads-header bl-wa-head">
+            {archiveOpen && (
+              <div className="bl-wa-archive-head">
+                <button type="button" className="bl-wa-back" onClick={() => { setArchiveOpen(false); setSwipeOpenKey(null); }}><ChevronLeft size={18} aria-hidden="true" /> Chat</button>
+                
+              </div>
+            )}
+            <div className="bl-wa-searchrow">
+              <label className="bl-wa-search">
+                <Search size={16} strokeWidth={2} aria-hidden="true" />
+                <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cerca" aria-label="Cerca nelle chat" autoComplete="off" autoCapitalize="none" spellCheck={false} />
+              </label>
+              <span className="bl-threads-tools">
+                <button ref={archiveBtnRef} type="button" className={`bl-archive-btn bl-wa-iconbtn ${archiveOpen ? "on" : ""}`} onClick={() => { setArchiveOpen(v => !v); setSwipeOpenKey(null); }} aria-pressed={archiveOpen} aria-label={`Archivio chat nascoste (${threads.filter(isThreadHidden).length})`} title="Archivio chat nascoste">
+                  <Archive size={18} strokeWidth={1.75} aria-hidden="true" />
+                  {threads.filter(isThreadHidden).length > 0 && <i>{threads.filter(isThreadHidden).length}</i>}
                 </button>
-              )}
-            </span>
+                {!archiveOpen && (
+                  <button type="button" className={`bl-new-group-btn bl-wa-iconbtn is-primary ${groupsOk ? "" : "is-locked"}`} aria-disabled={groupsOk ? undefined : "true"} aria-label="Nuovo gruppo" onClick={() => { if (!groupsOk) { showLocked("groups"); return; } setNewGroupOpen(true); }} title={groupsOk ? "Crea un nuovo gruppo" : unlocks.message("groups")}>
+                    {groupsOk ? <Users size={21} strokeWidth={2.1} aria-hidden="true" /> : <span aria-hidden="true">🔒</span>}
+                    <span>Nuovo gruppo</span>
+                  </button>
+                )}
+              </span>
+            </div>
+            {!archiveOpen && (() => {
+              const vis = threads.filter(t => !isThreadHidden(t));
+              const nUnread = vis.filter(t => t.unread > 0).length;
+              const nGroups = vis.filter(t => t.isGroup).length;
+              const chips = [["all", "Tutte", vis.length], ["unread", "Da leggere", nUnread], ["groups", "Gruppi", nGroups]];
+              return (
+                <div className="bl-wa-chips" role="group" aria-label="Filtra le chat">
+                  {chips.map(([k, label, n]) => (
+                    <button key={k} type="button" className={`bl-wa-chip ${filter === k ? "on" : ""}`} aria-pressed={filter === k} onClick={() => { setFilter(k); setSwipeOpenKey(null); }}>
+                      {label} <small>({n})</small>
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
           {loading ? (
             <p className="bl-muted">Caricamento conversazioni…</p>
@@ -633,7 +920,10 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
               {(() => {
                 const hiddenThreads = threads.filter(isThreadHidden);
                 const visibleThreads = threads.filter(t => !isThreadHidden(t));
-                const shown = archiveOpen ? hiddenThreads : visibleThreads;
+                const q = query.trim().replace(/^@/, "").toLowerCase();
+                const shown = (archiveOpen ? hiddenThreads : visibleThreads).filter(t =>
+                  (archiveOpen || filter === "all" || (filter === "unread" ? t.unread > 0 : t.isGroup)) &&
+                  (!q || String(t.isGroup ? t.name : t.username).toLowerCase().includes(q) || chatPreview(t.lastBody).toLowerCase().includes(q)));
                 const renderThread = (t, hidden) => {
                   const key = threadKey(t);
                   const confirming = confirmDeleteKey === key;
@@ -656,22 +946,24 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
                     >
                       <button
                         type="button"
-                        className={`bl-thread-row ${t.isGroup ? "is-group" : ""}`}
+                        className={`bl-thread-row ${t.isGroup ? "is-group" : ""} ${t.unread > 0 ? "has-unread" : ""}`}
                         onClick={() => void loadConversation(t)}
                       >
                         <span className={`bl-thread-avatar ${t.isGroup ? "bl-thread-group-avatar" : ""}`}>
-                          {t.isGroup ? <Users size={20} /> : <AvatarImage avatar={t.avatar} />}
+                          {t.isGroup ? <Users size={22} strokeWidth={1.75} /> : <AvatarImage avatar={t.avatar} />}
                         </span>
                         <span className="bl-thread-copy">
-                          <strong>
-                            {t.isGroup ? t.name : `@${t.username}`}
-                            {t.isGroup && <span className="bl-thread-group-badge">{t.members?.length || 2} membri</span>}
-                          </strong>
-                          <small>{t.lastMine ? "Tu: " : ""}{chatPreview(t.lastBody)}</small>
-                        </span>
-                        <span className="bl-thread-meta">
-                          <small>{t.lastAt ? new Date(t.lastAt).toLocaleDateString("it-IT") : ""}</small>
-                          {t.unread > 0 && <i>{t.unread}</i>}
+                          <span className="bl-thread-top">
+                            <strong>{t.isGroup ? t.name : `@${t.username}`}</strong>
+                            <small className="bl-thread-time">{formatThreadTime(t.lastAt)}</small>
+                          </span>
+                          <span className="bl-thread-bottom">
+                            <small className="bl-thread-preview">
+                              {t.lastMine && !t.isGroup && <span className="bl-thread-tick" aria-label="Inviato">✓ </span>}
+                              {t.lastMine && t.isGroup ? "Tu: " : ""}{chatPreview(t.lastBody)}
+                            </small>
+                            {t.unread > 0 && <i aria-label={`${t.unread} non letti`}>{t.unread}</i>}
+                          </span>
                         </span>
                       </button>
                     </SwipeRow>
@@ -686,6 +978,7 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
                   );
                 };
                 if (shown.length) return shown.map(t => renderThread(t, archiveOpen));
+                if (q || (!archiveOpen && filter !== "all")) return <p className="bl-muted bl-wa-nomatch">Nessuna chat trovata.</p>;
                 return archiveOpen
                   ? <div className="bl-insights-empty"><span>🗄️</span><h3>Archivio vuoto</h3><p>Le chat che nascondi finiscono qui. Tornano nell'elenco anche da sole quando ricevi un nuovo messaggio.</p></div>
                   : <p className="bl-muted">Tutte le chat sono nascoste: aprile dall'icona archivio.</p>;
@@ -698,9 +991,9 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
               <p>Apri una bolla e tocca “Messaggio” per iniziare una chat, oppure crea un nuovo gruppo.</p>
             </div>
           )}
-        </>
+        </div>
       )}
-      {error && active && <p className="bl-error" role="alert">{error}</p>}
+      </div>
 
       {menu && createPortal((() => {
         const W = 232, vw = window.innerWidth, vh = window.innerHeight;
@@ -724,12 +1017,12 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
         );
       })(), document.querySelector(".bl-root") || document.body)}
 
-      {groupModalOpen && active && (
+      {manageOpen && active && (
         <GroupManageModal
           group={active}
           me={me}
           avatarMap={avatarMap}
-          onClose={() => onGroupModalOpenChange?.(false)}
+          onClose={closeManage}
           onAddMember={handleAddMember}
           onRemoveMember={handleRemoveMember}
           onLeaveGroup={handleLeaveGroup}
@@ -748,6 +1041,7 @@ function MessagesView({ me, initialChat, onNotify, onUnreadCountChange, onOpenOw
       )}
     </div>
   );
+  return screen;
 }
 
 

@@ -15,7 +15,7 @@ export default function InfoSheet({ me, onClose, onTutorial }) {
     [<Orbit key="orbit" />, "Magnetismo delle Bolle", "Le bolle si muovono e si attraggono come piccoli corpi magnetici. Attiva «Vicino a me» per esplorare quelle pubblicate nei tuoi dintorni: più bolle ci sono nella zona, più incontri e sorprese puoi scoprire. La posizione esatta non viene mostrata agli altri."],
     [<Circle key="circle" />, `${daily} scoppi al giorno`, "Ogni giorno hai a disposizione un numero di bolle da aprire. Una bolla scoppiata non si riapre."],
     [<Plus key="plus" />, `Pubblica e ottieni +${bonus}`, `Quando finiscono, crea una tua bolla: ogni pubblicazione ti regala ${bonus} scoppi extra.`],
-    [<VenetianMask key="mask" />, "Tutto anonimo", "Gli altri vedono solo il tuo username generato automaticamente, mai i tuoi dati."],
+    [<VenetianMask key="mask" />, "Anonimato a tua scelta", "Di base gli altri vedono solo il tuo username, generato automaticamente. Dalle Impostazioni puoi scegliere di mostrare il tuo nome e cognome oppure, se ne hai una, il nome della tua attività."],
     [<Trophy key="trophy" />, "Classifiche", "Più aperture ricevono le tue bolle, più sali in classifica. Le trovi nella home."],
     [<span key="heart">💜</span>, "Reazioni Segrete", "Puoi reagire alle bolle con un'emozione. L'autore riceve una notifica senza conoscere l'identità di chi ha reagito."],
     [<span key="pin">📍</span>, "Vicino a me", "Scegli una distanza per scoprire le bolle disponibili nei dintorni. La posizione non è mostrata agli altri."],
@@ -45,7 +45,7 @@ export default function InfoSheet({ me, onClose, onTutorial }) {
           </li>
         ))}
       </ul>
-      <ReportProblemButton context="Come funziona: problema segnalato dall'utente" label="Qualcosa non funziona? Segnala agli sviluppatori" />
+      <ReportProblemButton context="Come funziona: problema segnalato dall'utente" label="Segnala un problema" />
       <button type="button" className="bl-cta" onClick={onClose}>
         Ho capito
       </button>

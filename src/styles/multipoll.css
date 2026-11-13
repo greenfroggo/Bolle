@@ -1,0 +1,111 @@
+/* ---------- Sondaggio a più opzioni (3-5) · pensato per smartphone ---------- */
+
+/* mentre scrivi, spazio sotto il form: i campi si possono portare sopra la tastiera */
+.bl-root .bl-cmp-edit:has(.bl-mp-compose input:focus, .bl-mp-compose textarea:focus) { padding-bottom: 45dvh; }
+/* la colonna della griglia non deve mai superare la larghezza dello schermo */
+.bl-root .bl-cmp-edit:has(.bl-mp-compose) { grid-template-columns: minmax(0, 1fr); }
+/* «Pubblica» sempre raggiungibile in fondo alla schermata */
+.bl-root .bl-cmp-edit:has(.bl-mp-compose) > .bl-cmp-publish {
+  position: sticky; bottom: 0; z-index: 3; width: 100%; min-height: 52px; font-size: 17px;
+  margin-top: 6px; box-shadow: 0 -10px 18px -8px rgba(0, 0, 0, .35), 0 10px 24px color-mix(in srgb, var(--c2, #5a4bd6) 40%, transparent);
+}
+
+/* il contenitore del composer è una griglia: senza min-width:0 i suggerimenti allargano tutto oltre lo schermo */
+.bl-mp-compose { display: flex; flex-direction: column; gap: 14px; min-width: 0; max-width: 100%; box-sizing: border-box; }
+.bl-mp-compose > * { min-width: 0; max-width: 100%; box-sizing: border-box; }
+.bl-mp-compose .bl-cmp-presets { flex-wrap: wrap; overflow: visible; }
+.bl-mp-compose .bl-cmp-presets button { max-width: 100%; }
+.bl-mp-compose label.bl-field-label { margin: 0; }
+.bl-mp-compose textarea.bl-cmp-input { min-height: 96px; font-size: 18px; scroll-margin: 90px; }
+.bl-mp-edit { display: flex; flex-direction: column; gap: 10px; }
+.bl-mp-edit-head { display: flex; align-items: baseline; justify-content: space-between; font-weight: 800; font-size: 15px; }
+.bl-mp-edit-head small { font-weight: 600; opacity: .75; font-size: 13px; }
+.bl-mp-edit-row { display: flex; align-items: center; gap: 10px; }
+.bl-mp-edit-row b {
+  flex: 0 0 30px; height: 30px; display: grid; place-items: center; border-radius: 50%;
+  font-size: 14px; color: #fff; background: linear-gradient(135deg, #0ea5a4, #3b82f6);
+}
+/* 18px: sotto i 16px iOS ingrandisce la pagina quando tocchi il campo */
+.bl-mp-edit-row input.bl-cmp-input {
+  flex: 1 1 auto; min-width: 0; min-height: 52px; padding: 0 14px; font-size: 18px; line-height: 1.2; scroll-margin: 90px;
+}
+.bl-mp-remove {
+  flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 22px; line-height: 1;
+  border: 1px solid color-mix(in srgb, currentColor 24%, transparent); background: transparent; color: inherit;
+}
+.bl-mp-add { width: 100%; min-height: 50px; font-size: 16px; }
+
+/* Toggle «Risposte multiple»: tutta la riga è toccabile */
+.bl-mp-toggle {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; min-height: 64px;
+  padding: 12px 14px; border-radius: 16px; text-align: left; font: inherit; color: inherit; cursor: pointer;
+  border: 1.5px solid color-mix(in srgb, currentColor 18%, transparent);
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  -webkit-tap-highlight-color: transparent;
+}
+.bl-mp-toggle.on { border-color: #3fd6c0; background: rgba(63, 214, 192, .12); }
+.bl-mp-toggle-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.bl-mp-toggle-text strong { font-size: 16px; }
+.bl-mp-toggle-text small { opacity: .75; font-size: 13px; line-height: 1.3; }
+.bl-switch {
+  position: relative; flex: 0 0 auto; width: 56px; height: 32px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  background: color-mix(in srgb, currentColor 18%, transparent); transition: background .18s ease;
+}
+.bl-switch i {
+  position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .35); transition: transform .18s ease;
+}
+.bl-mp-toggle.on .bl-switch { background: linear-gradient(110deg, #0ea5a4, #3b82f6); border-color: transparent; }
+.bl-mp-toggle.on .bl-switch i { transform: translateX(24px); }
+.bl-mp-toggle:focus-visible { outline: 2px solid #7ee8c7; outline-offset: 2px; }
+.bl-mp-toggle:disabled { opacity: .55; cursor: default; }
+
+/* Viewer: l'immagine-carta è solo un'anteprima, lo spazio serve alle opzioni */
+.bl-root .bl-story--mp .bl-story-media { flex: 0 0 auto !important; min-height: 0 !important; }
+.bl-root .bl-story--mp .bl-story-frame img { max-height: 24dvh !important; width: auto; margin: 0 auto; }
+
+/* Viewer: votazione */
+.bl-mp-panel { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.bl-mp-panel > strong { font-size: 18px; line-height: 1.25; overflow-wrap: anywhere; }
+.bl-mp-hint { opacity: .8; font-size: 13px; }
+.bl-mp-options { display: flex; flex-direction: column; gap: 8px; }
+.bl-mp-option {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; text-align: left; cursor: pointer;
+  padding: 10px 14px; border-radius: 16px; font: inherit; font-size: 16px; color: inherit;
+  border: 1.5px solid color-mix(in srgb, currentColor 22%, transparent);
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color .15s ease, background .15s ease, transform .1s ease;
+}
+.bl-mp-option:active { transform: scale(.985); }
+.bl-mp-option.on { border-color: #3fd6c0; background: rgba(63, 214, 192, .16); }
+.bl-mp-mark {
+  flex: 0 0 26px; height: 26px; display: grid; place-items: center; font-size: 15px; font-weight: 900; color: #06302b;
+  border-radius: 50%; border: 2px solid color-mix(in srgb, currentColor 40%, transparent);
+}
+.bl-mp-option.is-multi .bl-mp-mark { border-radius: 8px; }   /* quadrato = più risposte, tondo = una sola */
+.bl-mp-option.on .bl-mp-mark { background: #3fd6c0; border-color: #3fd6c0; }
+.bl-mp-text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; font-weight: 700; }
+/* «Invia» resta visibile in fondo al pannello anche con 5 opzioni */
+.bl-mp-send {
+  position: sticky; bottom: 0; z-index: 2; min-height: 52px; border: 0; border-radius: 999px; font: inherit; font-size: 17px; font-weight: 800; cursor: pointer; color: #fff;
+  background: linear-gradient(110deg, #0ea5a4, #3b82f6); box-shadow: 0 8px 22px rgba(14, 165, 164, .35);
+}
+.bl-mp-send:disabled { opacity: .45; cursor: default; box-shadow: none; }
+
+/* Viewer: risultati */
+.bl-mp-results { display: flex; flex-direction: column; gap: 12px; }
+.bl-mp-result-top { display: flex; justify-content: space-between; gap: 10px; font-weight: 700; font-size: 16px; }
+.bl-mp-result-top span { min-width: 0; overflow-wrap: anywhere; }
+.bl-mp-result-top em { margin-left: 8px; font-style: normal; font-size: 11px; padding: 2px 8px; border-radius: 999px; background: rgba(63, 214, 192, .25); white-space: nowrap; }
+.bl-mp-track { height: 12px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, currentColor 14%, transparent); margin: 5px 0 3px; }
+.bl-mp-track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #0ea5a4, #3b82f6); transition: width .5s ease; }
+.bl-mp-result.mine .bl-mp-track i { background: linear-gradient(90deg, #3fd6c0, #7ee8c7); }
+.bl-mp-result small, .bl-mp-foot { opacity: .75; font-size: 12px; }
+
+@media (max-width: 360px) {
+  .bl-mp-toggle-text small { display: none; }
+  .bl-mp-edit-row b { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .bl-mp-track i, .bl-switch, .bl-switch i, .bl-mp-option { transition: none; } }

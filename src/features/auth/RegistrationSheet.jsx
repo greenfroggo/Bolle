@@ -4,9 +4,8 @@ import { USER_CATEGORIES } from "../../lib/bolleCore.jsx";
 import { ageFromBirthDate, MIN_AGE } from "../../lib/geo.js";
 import { track } from "../../lib/tracking.js";
 import { NationalityPicker, CityPicker, BirthDatePicker, SEX_OPTIONS } from "../../components/pickers/FormPickers.jsx";
-import { validateProfile, pinProblem, friendlyError, normalizePhone, PRIVACY_CONTROLLER, PRIVACY_EMAIL } from "./authValidation.js";
+import { validateProfile, pinProblem, friendlyError, normalizePhone, PRIVACY_CONTROLLER, PRIVACY_EMAIL, businessNameProblem, cleanBusinessName } from "./authRules.js";
 import ReportProblemButton from "./ReportProblemButton.jsx";
-import { businessNameProblem, cleanBusinessName } from "./identity.js";
 
 /* Registrazione in 5 schermate (4 con Google/«data»: niente PIN):
    1 Chi sei · 2 Contatti · 3 Su di te · 4 Privacy e consensi · 5 Username e PIN.

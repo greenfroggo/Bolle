@@ -5,14 +5,14 @@
 
    /* Chip mostrati nel pannello. «Questo o quello» corrisponde al kind "poll" (così lo chiama SequentialFeed). */
    export const SEARCH_CHIPS = [
-     { id: "photo",      label: "Foto e video",      icon: "📷", kinds: ["photo", "video"] },
-     { id: "gif",        label: "GIF e meme",        icon: "🎞️", kinds: ["gif", "meme"] },
-     { id: "poll",       label: "Questo o quello",   icon: "⚖️", kinds: ["poll"] },
-     { id: "question",   label: "Domande",           icon: "❓", kinds: ["question"] },
-     { id: "rating",     label: "Voto",              icon: "⭐", kinds: ["rating"] },
-     { id: "thought",    label: "Pensieri",          icon: "💭", kinds: ["thought"] },
-     { id: "confession", label: "Confessioni",       icon: "💜", kinds: ["confession"] },
-     { id: "truth",      label: "2 verità, 1 bugia", icon: "🕵️", kinds: ["truth"] },
+     { id: "photo",      label: "Foto e video",      kinds: ["photo", "video"] },
+     { id: "gif",        label: "GIF e meme",        kinds: ["gif", "meme"] },
+     { id: "poll",       label: "Questo o quello",   kinds: ["poll"] },
+     { id: "question",   label: "Domande",           kinds: ["question"] },
+     { id: "rating",     label: "Voto",              kinds: ["rating"] },
+     { id: "thought",    label: "Pensieri",          kinds: ["thought"] },
+     { id: "confession", label: "Confessioni",       kinds: ["confession"] },
+     { id: "truth",      label: "2 verità, 1 bugia", kinds: ["truth"] },
    ];
    
    /* Parole che l'utente può digitare per ogni chip (già normalizzate: senza accenti, minuscole). */

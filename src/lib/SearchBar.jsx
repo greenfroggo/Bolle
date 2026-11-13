@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Search, X, ChevronRight } from "lucide-react";
+import { Search, X, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { SEARCH_CHIPS, chipsFromQuery } from "./bubbleSearch.js";
 
 /* Barra di ricerca della home: pill compatta al centro dell'header che si apre in un pannello con
@@ -119,7 +119,7 @@ export default function SearchBar({ activeChips = [], onChipsChange, authors = [
         <div className="bl-search-chips" role="group" aria-label="Tipo di bolla">
           {SEARCH_CHIPS.map((c) => (
             <button key={c.id} type="button" className={activeChips.includes(c.id) ? "on" : ""} aria-pressed={activeChips.includes(c.id)} onClick={() => toggleChip(c.id)}>
-              <span aria-hidden="true">{c.icon}</span>{c.label}
+              {c.label}
             </button>
           ))}
         </div>
@@ -139,7 +139,7 @@ export default function SearchBar({ activeChips = [], onChipsChange, authors = [
           {term && chipMatches.length > 0 && <p className="bl-search-title">Tipi di bolla</p>}
           {term && chipMatches.map((c, i) => (
             <button key={c.id} id={`bl-search-row-${i}`} type="button" role="option" aria-selected={hi === i} className={`bl-search-row ${hi === i ? "is-hi" : ""}`} onClick={() => activate({ type: "chip", chip: c })}>
-              <span className="bl-search-ava" aria-hidden="true">{c.icon}</span><span className="bl-search-name">{c.label}</span>
+              <span className="bl-search-ava" aria-hidden="true"><SlidersHorizontal size={16} /></span><span className="bl-search-name">{c.label}</span>
               <em>{activeChips.includes(c.id) ? "Attivo" : "Filtra"}</em>
             </button>
           ))}

@@ -5,10 +5,10 @@
    Il modulo non dipende da React né da Supabase. */
 
    export const SYSTEM_CATEGORIES = {
-    curiosita:   { id: "curiosita",   label: "Curiosità",   icon: "💡" },
-    aforisma:    { id: "aforisma",    label: "Aforisma",    icon: "📜" },
-    motivazione: { id: "motivazione", label: "Motivazione", icon: "🔥" },
-    notizia:     { id: "notizia",     label: "Notizia",     icon: "📰" },
+    curiosita:   { id: "curiosita",   label: "Curiosità",   icon: "" },
+    aforisma:    { id: "aforisma",    label: "Aforisma",    icon: "" },
+    motivazione: { id: "motivazione", label: "Motivazione", icon: "" },
+    notizia:     { id: "notizia",     label: "Notizia",     icon: "" },
   };
   
   /* Quante bolle di sistema compaiono ogni giorno per categoria. */

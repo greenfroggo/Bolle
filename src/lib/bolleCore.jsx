@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Capacitor } from "@capacitor/core";
 import { Geolocation } from "@capacitor/geolocation";
 import { Heart, Smile, HeartHandshake, Frown } from "lucide-react";
+import { getCaptchaToken } from "./captcha.js";
 
 /* BOLLE V2 — home immersiva, aperture con bonus, username anonimi, classifiche, profilo come hub. */
 export const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY, {
@@ -168,7 +169,8 @@ function ensureSession() {
     authPromise = (async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) return data.session;
-      const { data: created, error } = await supabase.auth.signInAnonymously();
+      const captchaToken = await getCaptchaToken();
+      const { data: created, error } = await supabase.auth.signInAnonymously(captchaToken ? { options: { captchaToken } } : undefined);
       if (error) throw error;
       return created.session;
     })().catch((e) => { authPromise = null; throw e; });
@@ -327,4 +329,4 @@ export const KLIPY_API_KEY = import.meta.env.VITE_KLIPY_API_KEY || "";
 export const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY || "u6Z3iuUoSGTPbFAfPkFulENlurgQEADu";
 
 export { getCtx, warmAudio, soundOn, BUCKET, MAX_UPLOAD_MB, RADII, BOLLE_COUNTRIES, countryFlag, STARTER_COUNT, MINI_THRESHOLD, miniStyle, AVATARS, avatarFor, shareBubbleWhatsApp, bubbleShareUrl, REACTIONS, ReactionIcon, PALETTES, cleanCaption, captionPosition, SURPRISES, STARTERS, readStarterPops, setSoundOn, playPop, playDust, ensureSession, setAuthSession, hash, bubbleLook, getPosition, positionErrorText, errorText, formatDistance, subscribeFrame };
-export const BOLLE_THEMES = [{"id": "halloween", "label": "🎃 Halloween"}, {"id": "natale", "label": "🎄 Natale"}, {"id": "pasqua", "label": "🐣 Pasqua"}, {"id": "capodanno", "label": "🎆 Capodanno"}, {"id": "estate", "label": "☀️ Estate"}, {"id": "primavera", "label": "🌷 Primavera"}, {"id": "autunno", "label": "🍂 Autunno"}, {"id": "inverno", "label": "❄️ Inverno"}, {"id": "caldo", "label": "🔥 Caldo"}, {"id": "freddo", "label": "🧊 Freddo"}, {"id": "orientale", "label": "🏮 Orientale"}, {"id": "universo", "label": "🌌 Universo"}, {"id": "bolle", "label": "🫧 Bolle"}, {"id": "natura", "label": "🌿 Natura"}];
+export const BOLLE_THEMES = [{"id": "halloween", "label": "Halloween"}, {"id": "natale", "label": "Natale"}, {"id": "pasqua", "label": "Pasqua"}, {"id": "capodanno", "label": "Capodanno"}, {"id": "estate", "label": "Estate"}, {"id": "primavera", "label": "Primavera"}, {"id": "autunno", "label": "Autunno"}, {"id": "inverno", "label": "Inverno"}, {"id": "caldo", "label": "Caldo"}, {"id": "freddo", "label": "Freddo"}, {"id": "orientale", "label": "Orientale"}, {"id": "universo", "label": "Universo"}, {"id": "bolle", "label": "Bolle"}, {"id": "natura", "label": "Natura"}];

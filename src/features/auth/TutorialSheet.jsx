@@ -10,9 +10,20 @@ const TUTORIAL_STEPS = [
   { icon: "📍", target: '[data-foot="near"]', title: "Vicino a te", text: "Tocca «Vicino a me» nella barra in basso per esplorare le bolle nei dintorni. La tua posizione esatta non viene mostrata." },
   { icon: "✨", target: ".bl-fab", title: "Crea la tua bolla", text: "Con il pulsante + condividi pensieri, immagini, GIF, domande e sondaggi. Tieni premuto e scorri tra le bolle per selezionare più velocemente la tua scelta." },
   { icon: "🏆", target: '[data-foot="rank"]', title: "Classifiche", text: "Apri Classifiche dalla barra in basso per scoprire le posizioni e confrontare i risultati della community." },
-  { icon: "🌟", target: ".bl-profile-achievements", title: "I tuoi traguardi", text: "Apri il tuo profilo e visita la sezione Traguardi. Completando alcuni obiettivi puoi sbloccare funzioni e ricompense dell'app." },
+  { icon: "🌟", view: "menu", target: ".bl-profile-achievements", title: "I tuoi traguardi", text: "Apri il tuo profilo e visita la sezione Traguardi. Completando alcuni obiettivi puoi sbloccare funzioni e ricompense dell'app." },
+  { icon: "📊", view: "menu", target: ".bl-profile-activity", title: "Le tue statistiche", text: "Qui vedi il tuo andamento: scoppi rimasti, aperture della settimana e bolle pubblicate. Tocca «Apri statistiche» per i dettagli." },
+  { icon: "🫧", view: "menu", target: '[data-profile-menu="bubbles"]', title: "Le tue bolle", text: "In «Le mie bolle» ritrovi tutto ciò che hai pubblicato: puoi riaprirlo, vedere come sta andando o eliminarlo." },
+  { icon: "✏️", view: "personal", target: ".bl-profile-type-chips", scroll: true, title: "Modifica profilo e tipo di profilo", text: "Da «Modifica profilo» aggiorni i tuoi dati e scegli il tipo di profilo: la sua icona compare sulle bolle che pubblichi da quel momento. Se hai un’attività puoi indicarne anche il nome." },
+  { icon: "🌌", view: "settings", target: ".bl-theme-controls", title: "Aspetto della galassia", text: "In Impostazioni scegli chiaro, dark o automatico e il tema delle tue bolle." },
+  { icon: "🎭", view: "settings", target: ".bl-identity-section", scroll: true, title: "Identità e anonimato", text: "Il tuo username resta sempre visibile. Con l’anonimato attivo gli altri non vedono altro; spegnilo per mostrare il tuo nome e cognome o il nome della tua attività." },
   { icon: "💜", title: "Tutto pronto!", text: "Reagisci, rispondi e segui i tuoi autori preferiti. Puoi riaprire questa guida da «Come funziona»." },
 ];
+
+/* Stessi font della registrazione: DM Sans per testi e pulsanti, Outfit per il titolo (come i titoli delle sheet). */
+const FONT_CSS = `
+.bl-tour .bl-tour-card,.bl-tour .bl-tour-card :is(p,span,small,button,div){font-family:'DM Sans',sans-serif!important}
+.bl-tour .bl-tour-card h3{font-family:Outfit,sans-serif!important;letter-spacing:-.04em}
+`;
 
 function findTarget(selector) {
   if (!selector) return null;
@@ -43,10 +54,17 @@ export default function TutorialSheet({ onClose, onStepChange }) {
   const current = TUTORIAL_STEPS[step];
   const last = step === TUTORIAL_STEPS.length - 1;
 
-  useEffect(() => { onStepChange?.(step, current); }, [step, current, onStepChange]);
+  const stepCb = useRef(onStepChange);
+  stepCb.current = onStepChange;
+  useEffect(() => { stepCb.current?.(step, current); }, [step, current]);
 
   const measure = useCallback(() => {
-    const el = findTarget(current.target);
+    let el = findTarget(current.target);
+    if (!el && current.scroll && current.target) {
+      // Elemento presente ma fuori schermo (schermata lunga): lo porta in vista.
+      const any = document.querySelector(current.target);
+      if (any) { any.scrollIntoView({ block: "center" }); el = findTarget(current.target); }
+    }
     if (!el) { setAnchor(null); return; }
     const r = el.getBoundingClientRect();
     setAnchor({ x: r.left + r.width / 2, y: r.top + r.height / 2, left: r.left, top: r.top, width: r.width, height: r.height });
@@ -55,12 +73,13 @@ export default function TutorialSheet({ onClose, onStepChange }) {
   useLayoutEffect(() => {
     // Aspetta un frame perché il feed abbia completato il layout dopo l'apertura del tutorial.
     const raf = requestAnimationFrame(measure);
-    const timer = window.setTimeout(measure, 180);
+    // La schermata del profilo si apre e carica i dati: si riprova qualche volta.
+    const timers = [180, 500, 1000, 1800].map((ms) => window.setTimeout(measure, ms));
     window.addEventListener("resize", measure);
     window.addEventListener("scroll", measure, true);
     return () => {
       cancelAnimationFrame(raf);
-      clearTimeout(timer);
+      timers.forEach(clearTimeout);
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", measure, true);
     };
@@ -78,7 +97,6 @@ export default function TutorialSheet({ onClose, onStepChange }) {
 
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
   const vw = typeof window !== "undefined" ? window.innerWidth : 400;
-  const appFont = typeof document !== "undefined" ? window.getComputedStyle(document.querySelector(".bl-root") || document.body).fontFamily : "inherit";
 
   // Misura il fumetto e lo colloca sempre fuori dall'area dell'elemento spiegato.
   useLayoutEffect(() => {
@@ -107,6 +125,7 @@ export default function TutorialSheet({ onClose, onStepChange }) {
 
   const content = (
     <div className="bl-tour" role="dialog" aria-modal="false" aria-label="Tutorial Bolle" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <style>{FONT_CSS}</style>
       {anchor && <div className="bl-tour-spot" aria-hidden="true" style={{ left: anchor.left - 7, top: anchor.top - 7, width: anchor.width + 14, height: anchor.height + 14 }} />}
       {anchor && placement && (
         <svg className="bl-tour-arrow" viewBox={`0 0 ${vw} ${vh}`} aria-hidden="true">
@@ -123,7 +142,7 @@ export default function TutorialSheet({ onClose, onStepChange }) {
           <circle cx={anchor.x} cy={placement.putAbove ? anchor.top - 5 : anchor.top + anchor.height + 5} r="4" className="bl-tour-arrow-tip" />
         </svg>
       )}
-      <section ref={cardRef} key={step} className="bl-tour-card" style={{ top: `${placement?.top ?? Math.max(88, vh * .35)}px`, left: `${placement?.left ?? vw / 2}px`, fontFamily: appFont }} aria-live="polite">
+      <section ref={cardRef} key={step} className="bl-tour-card" style={{ top: `${placement?.top ?? Math.max(88, vh * .35)}px`, left: `${placement?.left ?? vw / 2}px` }} aria-live="polite">
         <span className="bl-tour-count">PASSO {step + 1} DI {TUTORIAL_STEPS.length}</span>
         <div className="bl-tour-icon" aria-hidden="true">{current.icon}</div>
         <h3>{current.title}</h3>
@@ -132,7 +151,12 @@ export default function TutorialSheet({ onClose, onStepChange }) {
           {TUTORIAL_STEPS.map((_, i) => <button type="button" key={i} className={i === step ? "active" : ""} aria-label={`Vai al passo ${i + 1}`} aria-current={i === step ? "step" : undefined} onClick={() => go(i)} />)}
         </div>
         <div className="bl-tour-actions">
-          <button type="button" className="bl-tour-ghost" onClick={step > 0 ? () => go(step - 1) : onClose}>{step > 0 ? "‹ Indietro" : "Salta"}</button>
+          {step > 0 && (
+            <button type="button" className="bl-tour-ghost" onClick={() => go(step - 1)}>‹ Indietro</button>
+          )}
+          {!last && (
+            <button type="button" className="bl-tour-ghost" onClick={onClose}>Salta</button>
+          )}
           <button type="button" className="bl-tour-next" onClick={last ? onClose : () => go(step + 1)}>{last ? "Inizia a esplorare 🫧" : "Avanti ›"}</button>
         </div>
       </section>

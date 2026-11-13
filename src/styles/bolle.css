@@ -3187,3 +3187,47 @@ html.bl-eco .bl-galaxy canvas,html.bl-eco .bl-galaxy-glints i{animation:none}
    .bl-ov-suggest-label{flex:0 0 100%;font-size:11px;opacity:.75}
    .bl-ov-suggest button{min-height:38px;padding:0 13px;border-radius:999px;border:1px dashed rgba(146,118,216,.75);background:rgba(146,118,216,.15);color:inherit;font:700 13px system-ui;cursor:pointer;touch-action:manipulation}
    .bl-ov-suggest button:disabled{opacity:.5}
+
+/* ───────── Classifiche: immagine profilo e podio fluorescente ───────── */
+.bl-lb-avatar{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#b7a3f4,#f0b6d8);font-size:21px;line-height:1}
+.bl-lb-avatar .bl-avatar-photo{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.bl-lb-avatar.bl-lb-podium-1{--lb-ring:#ffd21f;--lb-glow:rgba(255,205,20,.95)}
+.bl-lb-avatar.bl-lb-podium-2{--lb-ring:#cdd8ff;--lb-glow:rgba(135,168,255,.95)}
+.bl-lb-avatar.bl-lb-podium-3{--lb-ring:#ff9440;--lb-glow:rgba(255,115,30,.95)}
+.bl-lb-avatar[class*="bl-lb-podium-"]{width:46px;height:46px;margin:0 4px;box-shadow:0 0 0 3px var(--lb-ring),0 0 9px 3px var(--lb-glow),0 0 18px 5px var(--lb-glow);animation:blLbNeon 2.8s ease-in-out infinite}
+@keyframes blLbNeon{0%,100%{box-shadow:0 0 0 3px var(--lb-ring),0 0 7px 2px var(--lb-glow),0 0 14px 3px var(--lb-glow)}50%{box-shadow:0 0 0 3px var(--lb-ring),0 0 12px 4px var(--lb-glow),0 0 24px 7px var(--lb-glow)}}
+.bl-lb-podium-1 .bl-lb-pos svg{filter:drop-shadow(0 0 3px rgba(255,205,20,.95)) drop-shadow(0 0 8px rgba(255,205,20,.75))!important}
+.bl-lb-podium-2 .bl-lb-pos svg{filter:drop-shadow(0 0 3px rgba(135,168,255,.95)) drop-shadow(0 0 8px rgba(135,168,255,.75))!important}
+.bl-lb-podium-3 .bl-lb-pos svg{filter:drop-shadow(0 0 3px rgba(255,115,30,.95)) drop-shadow(0 0 8px rgba(255,115,30,.75))!important}
+.bl-lb-detail-head .bl-lb-avatar{width:52px;height:52px;font-size:26px}
+@media (prefers-reduced-motion:reduce){.bl-lb-avatar[class*="bl-lb-podium-"]{animation:none}}
+
+
+/* ───────── Performance: KPI nel profilo e nel portale admin ───────── */
+.bl-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;margin:10px 0 8px}
+.bl-kpi{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:13px 13px 15px;border-radius:18px;background:rgba(128,112,190,.13);border:1px solid rgba(128,112,190,.22);overflow:hidden}
+.bl-kpi-icon{font-size:20px;line-height:1}
+.bl-kpi strong{font:800 26px/1.1 Outfit,sans-serif;letter-spacing:-.01em;margin-top:4px}
+.bl-kpi b{font-size:12.5px;font-weight:800}
+.bl-kpi small{font-size:11px;line-height:1.35;opacity:.75}
+.bl-kpi-bar{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(128,112,190,.16)}
+.bl-kpi-bar>span{display:block;height:100%;border-radius:0 4px 4px 0;background:linear-gradient(90deg,#8bd9e9,#a99af5)}
+.bl-ad-ukpis{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.bl-ad-ukpi{display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border-radius:99px;background:var(--ad-raise);border:1px solid var(--ad-line-2);font-size:11px;font-weight:600;color:var(--ad-muted);white-space:nowrap}
+.bl-ad-ukpi b{color:inherit;font-variant-numeric:tabular-nums}
+/* ───── Temi speciali: icone illustrate al posto delle emoji ───── */
+.bl-ticon{display:block;width:1em;height:1em;overflow:visible;pointer-events:none}
+.bl-root .bl-theme-ornament{opacity:.86;filter:drop-shadow(0 6px 10px #08051a55) drop-shadow(0 0 14px #ffffff22)}
+.bl-root .bl-theme-ornament .bl-ticon{transform-origin:50% 60%;animation:bl-ticon-sway 6.5s ease-in-out infinite alternate;animation-delay:calc(var(--ord) * -.9s)}
+@keyframes bl-ticon-sway{from{transform:rotate(-4deg) scale(.98)}to{transform:rotate(4deg) scale(1.03)}}
+.bl-root.bl-special-theme.bl-theme-universo .bl-theme-ornament{filter:drop-shadow(0 0 14px #b8a7ff99)}
+.bl-root.bl-special-theme.bl-theme-natale .bl-theme-ornament{filter:drop-shadow(0 0 10px #ffe8b888)}
+.bl-root.bl-special-theme.bl-theme-bolle .bl-theme-ornament{opacity:.8;filter:drop-shadow(0 0 12px #bfe9ff88)}
+.bl-root.bl-special-theme.bl-theme-halloween .bl-theme-ornament{filter:drop-shadow(0 0 12px #ff8a1f66)}
+.bl-root.bl-special-theme.bl-theme-caldo .bl-theme-ornament{filter:drop-shadow(0 0 12px #ff7a1a77)}
+.bl-root.bl-special-theme.bl-theme-freddo .bl-theme-ornament,.bl-root.bl-special-theme.bl-theme-inverno .bl-theme-ornament{filter:drop-shadow(0 0 12px #9fdcff88)}
+.bl-tm-special{display:inline-flex;align-items:center;justify-content:center;gap:.4em}
+.bl-tm-special .bl-tm-icon{display:inline-block;width:1.45em;height:1.45em;flex:none;filter:drop-shadow(0 1px 2px #0003)}
+@media(max-width:480px){.bl-root .bl-theme-ornament{opacity:.7}}
+@media(prefers-reduced-motion:reduce){.bl-root .bl-theme-ornament .bl-ticon{animation:none!important}}
+.bl-eco .bl-theme-ornament .bl-ticon{animation:none!important}

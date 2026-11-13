@@ -1,0 +1,169 @@
+/* ===== screens — file accorpato ===== */
+
+/* ---------- composer-extras (Questo o quello, GIF) ---------- */
+/* «Questo o quello» e «Posta GIF» (importare DOPO bolle.css e bolle-polish.css) */
+.bl-ch{display:flex;flex-direction:column;gap:16px}
+.bl-ch textarea{width:100%;box-sizing:border-box;resize:none;font:inherit}
+.bl-ch-count{align-self:flex-end}
+.bl-ch-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
+.bl-ch-opt{position:relative;display:flex;flex-direction:column;gap:10px;padding:14px 12px 12px;border-radius:20px;border:1px solid rgba(150,130,210,.42);background:rgba(130,110,190,.12);min-width:0}
+.bl-ch-b{border-color:rgba(255,170,130,.5);background:rgba(255,170,130,.1)}
+.bl-ch-badge{position:absolute;top:-10px;left:12px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff;background:linear-gradient(135deg,#8274ed,#b46bf0)}
+.bl-ch-b .bl-ch-badge{background:linear-gradient(135deg,#ff9a6b,#f06b9a)}
+.bl-ch-vs{align-self:center;font-weight:800;font-size:15px;opacity:.7}
+.bl-ch-opt input{width:100%;box-sizing:border-box}
+@media(max-width:380px){.bl-ch-grid{grid-template-columns:1fr}.bl-ch-vs{justify-self:center}}
+
+.bl-gf{display:flex;flex-direction:column;gap:14px}
+.bl-gf-search{display:flex;align-items:center;gap:8px;height:48px;padding:0 14px;border-radius:99px;border:1px solid rgba(150,130,210,.5);background:rgba(130,110,190,.14)}
+.bl-gf-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font-family:inherit;font-size:16px;font-weight:600;line-height:1.2}
+.bl-gf-title{margin:0 0 8px;font-size:13px;letter-spacing:.04em}
+.bl-gf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-height:34vh;overflow-y:auto;overscroll-behavior:contain;border-radius:16px}
+.bl-gf-grid button{appearance:none;padding:0;border:2px solid transparent;border-radius:14px;overflow:hidden;aspect-ratio:1;background:rgba(130,110,190,.2);cursor:pointer;transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.bl-gf-grid button:active{transform:scale(.95)}
+.bl-gf-grid button.on{border-color:#b46bf0;transform:scale(.96);box-shadow:0 0 14px rgba(180,107,240,.55)}
+.bl-gf-grid img{width:100%;height:100%;object-fit:cover;display:block}
+.bl-gf-more{align-self:flex-start;border:0;background:transparent;color:inherit;font-family:inherit;font-size:14px;font-weight:700;line-height:1.2;padding:10px 4px;min-height:44px;cursor:pointer;opacity:.85}
+.bl-gf-options{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:18px;border:1px solid rgba(150,130,210,.35);background:rgba(130,110,190,.1)}
+
+/* ---------- identity-geo (anonimato) ---------- */
+/* Interruttore anonimato + scheda identità + alone di accuratezza GPS sulla mappa. */
+.bl-id-card{display:flex;flex-direction:column;gap:14px;margin:0 0 16px}
+.bl-id-switch{padding:14px;border-radius:18px;border:1px solid rgba(150,130,210,.42);background:rgba(130,110,190,.16);color:inherit}
+.bl-id-switch-row{display:flex;align-items:center;gap:14px}
+.bl-id-switch-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.bl-id-switch-text strong{display:flex;align-items:center;gap:6px;font-size:16px}
+.bl-id-switch-text small{font-size:13px;line-height:1.4;opacity:.82}
+.bl-id-toggle{appearance:none;flex:none;position:relative;width:58px;height:34px;min-height:34px;padding:0;border-radius:99px;border:1px solid rgba(255,255,255,.4);background:rgba(120,110,150,.55);cursor:pointer;transition:background .2s ease;touch-action:manipulation}
+.bl-id-toggle i{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 30% 26%,#fff 0 28%,#e9e3ff 70%);box-shadow:0 2px 7px rgba(20,10,60,.4);transition:transform .22s cubic-bezier(.3,1.5,.5,1)}
+.bl-id-toggle[aria-checked="true"]{background:linear-gradient(135deg,#8274ed,#b46bf0);border-color:rgba(255,255,255,.6)}
+.bl-id-toggle[aria-checked="true"] i{transform:translateX(24px)}
+.bl-id-toggle:focus-visible{outline:3px solid #b9a8ff;outline-offset:2px}
+.bl-id-toggle:disabled{opacity:.55}
+.bl-id-preview{margin:10px 0 0;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.bl-id-preview b{font-weight:800}
+.bl-id-warn{margin:8px 0 0;padding:8px 10px;border-radius:12px;font-size:12px;line-height:1.4;background:rgba(255,190,90,.16);border:1px solid rgba(255,190,90,.45)}
+.bl-id-biz{display:flex;flex-direction:column;gap:8px}
+.bl-map-acc{fill:rgba(61,139,255,.14);stroke:rgba(61,139,255,.5);stroke-width:1}
+@media(prefers-reduced-motion:reduce){.bl-id-toggle,.bl-id-toggle i{transition:none}}
+
+/* ---------- welcome ---------- */
+/* Welcome v5 — palette del logo Bolle. Importare DOPO bolle.css e bolle-polish.css.
+   Animazioni solo su transform/opacity. Pulsanti: gradiente colorato + vetro (riflesso, bordo luminoso, ombra colorata). */
+   .bl-wl{position:fixed;inset:0;z-index:100;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:20px;overflow-x:hidden;overflow-y:auto;padding:calc(38px + env(safe-area-inset-top)) 22px calc(24px + env(safe-area-inset-bottom));color:#fff;font-family:inherit;
+    background:linear-gradient(175deg,#1c2fd2 0%,#3a2fd2 38%,#6a3ad8 70%,#b44fde 100%)}
+  .bl-wl>*{position:relative;z-index:1}
+  
+  /* ---- sfondo: aurora + bollicine che salgono ---- */
+  .bl-wl5-bg{position:absolute!important;inset:0;z-index:0!important;overflow:hidden;pointer-events:none}
+  .bl-wl5-aurora{position:absolute;display:block;border-radius:50%;will-change:transform}
+  .bl-wl5-aurora.a1{width:130vmax;height:70vmax;left:-45vmax;top:-34vmax;background:radial-gradient(closest-side,rgba(70,190,255,.6),transparent 72%);animation:bl-wl5-sway 16s ease-in-out infinite alternate}
+  .bl-wl5-aurora.a2{width:110vmax;height:70vmax;right:-50vmax;bottom:-26vmax;background:radial-gradient(closest-side,rgba(255,106,214,.62),transparent 72%);animation:bl-wl5-sway 19s ease-in-out -6s infinite alternate-reverse}
+  .bl-wl5-aurora.a3{width:80vmax;height:50vmax;left:-30vmax;top:36%;background:radial-gradient(closest-side,rgba(130,90,255,.5),transparent 72%);animation:bl-wl5-sway 22s ease-in-out -11s infinite alternate}
+  .bl-wl5-riser{position:absolute;left:var(--x);bottom:calc(var(--s) * -2);width:var(--s);height:var(--s);border-radius:50%;opacity:0;
+    border:1px solid rgba(255,255,255,.55);
+    background:radial-gradient(circle at 30% 26%,rgba(255,255,255,.85) 0 9%,rgba(255,255,255,.12) 26%,transparent 52%),conic-gradient(from 210deg,rgba(111,220,245,.28),rgba(205,165,255,.34),rgba(255,176,140,.28),rgba(111,220,245,.28));
+    box-shadow:inset 0 0 8px rgba(255,255,255,.25);animation:bl-wl5-rise var(--d) linear var(--dl) infinite;will-change:transform,opacity}
+  
+  /* ---- hero ---- */
+  .bl-wl5-hero{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;width:min(100%,390px)}
+  .bl-wl5-logo{appearance:none;border:0;background:transparent;padding:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;animation:bl-wl5-float 6.5s ease-in-out infinite alternate;will-change:transform}
+  .bl-wl5-logo:focus-visible{outline:3px solid #fff;outline-offset:6px;border-radius:24px}
+  .bl-wl5-wordmark{display:block;width:min(62vw,262px);height:auto;overflow:visible;filter:drop-shadow(0 8px 20px rgba(18,14,120,.5)) drop-shadow(0 0 28px rgba(255,255,255,.3))}
+  .bl-wl5-logo.is-squish{animation:bl-wl5-spring .9s cubic-bezier(.2,1,.3,1) both,bl-wl5-float 6.5s ease-in-out .9s infinite alternate}
+  .bl-wl5-title{margin:6px 0 0;font-size:clamp(20px,5.6vw,25px);line-height:1.25;font-weight:780;letter-spacing:-.02em;max-width:20ch;text-shadow:0 2px 14px rgba(18,14,120,.4)}
+  .bl-wl5-sub{margin:0;font-size:clamp(14px,3.8vw,15.5px);line-height:1.5;color:rgba(255,255,255,.88);max-width:31ch;text-shadow:0 1px 8px rgba(18,14,120,.35)}
+  .bl-wl5-chips{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+  .bl-wl5-chips li{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:99px;font-size:12.5px;font-weight:700;
+    background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.1));border:1px solid rgba(255,255,255,.42);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  
+  /* ---- pulsanti in colonna ---- */
+  .bl-wl5-actions{width:min(100%,390px);display:flex;flex-direction:column;gap:12px}
+  .bl-wb{--c1:255 255 255;--c2:255 255 255;--glow:20 10 90;position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;gap:14px;width:100%;min-height:70px;padding:9px 16px 9px 11px;border-radius:30px;text-align:left;
+    font:inherit;color:#fff;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+    border:1px solid rgba(255,255,255,.55);
+    background:linear-gradient(135deg,rgb(var(--c1)/.94),rgb(var(--c2)/.94));
+    box-shadow:inset 0 1.5px 0 rgba(255,255,255,.7),inset 0 -2px 6px rgba(20,10,90,.18),0 12px 28px rgb(var(--glow)/.42),0 3px 8px rgba(14,8,86,.22);
+    transition:transform .3s cubic-bezier(.3,1.6,.5,1),box-shadow .2s ease;
+    animation:bl-wb-in .75s cubic-bezier(.22,1.2,.36,1) both;animation-delay:calc(.1s * var(--i) + .15s)}
+  .bl-wb::before{content:"";position:absolute;z-index:-1;left:4px;right:4px;top:3px;height:50%;border-radius:27px 27px 70% 70%/27px 27px 18px 18px;background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.02));pointer-events:none}
+  .bl-wb:active{transform:scale(.97);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.5),0 5px 14px rgb(var(--glow)/.4)}
+  .bl-wb:focus-visible{outline:3px solid #fff;outline-offset:3px}
+  .bl-wb-ico{flex:none;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 30% 24%,rgba(255,255,255,.6),rgba(255,255,255,.2) 60%),rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(14,8,86,.25)}
+  .bl-wb-ico svg{display:block}
+  .bl-wb-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .bl-wb-txt strong{font-size:17px;font-weight:800;letter-spacing:-.01em;line-height:1.15;text-shadow:0 1px 3px rgba(18,10,90,.35)}
+  .bl-wb-txt small{font-size:12.5px;line-height:1.25;font-weight:600;opacity:.9;text-shadow:0 1px 2px rgba(18,10,90,.3)}
+  .bl-wb-go{flex:none;opacity:.85}
+  
+  /* colori tematici (dal logo) */
+  .bl-wb--create{--c1:255 84 205;--c2:128 76 255;--glow:200 60 210;min-height:78px}      /* magenta → viola: crea */
+  .bl-wb--google{--glow:20 10 90;color:#1b1d2e;background:linear-gradient(180deg,#fff,#eef0fb);border-color:#fff}
+  .bl-wb--google::before{background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,0))}
+  .bl-wb--google .bl-wb-ico{background:#fff;border-color:rgba(60,70,140,.16);box-shadow:0 2px 6px rgba(20,20,80,.18)}
+  .bl-wb--google .bl-wb-txt strong,.bl-wb--google .bl-wb-txt small{text-shadow:none}
+  .bl-wb--google .bl-wb-txt small{color:#5b5f78;opacity:1}
+  .bl-wb--login{--c1:48 190 255;--c2:58 92 255;--glow:40 110 255}                       /* ciano → blu elettrico: accedi */
+  .bl-wb--explore{--c1:255 214 112;--c2:255 138 110;--glow:255 150 80;color:#2b1300}     /* oro → corallo: scopri */
+  .bl-wb--explore .bl-wb-txt strong,.bl-wb--explore .bl-wb-txt small{text-shadow:none}
+  .bl-wb--explore .bl-wb-ico{background:radial-gradient(circle at 30% 24%,rgba(255,255,255,.75),rgba(255,255,255,.3) 60%),rgba(255,255,255,.2)}
+  
+  /* ---- animazioni ---- */
+  @keyframes bl-wb-in{from{opacity:0;transform:translate3d(0,34px,0) scale(.94)}60%{opacity:1;transform:translate3d(0,-4px,0) scale(1.01)}to{opacity:1;transform:none}}
+  @keyframes bl-wl5-float{from{transform:translate3d(0,5px,0) rotate(-.8deg)}to{transform:translate3d(0,-7px,0) rotate(.8deg)}}
+  @keyframes bl-wl5-spring{0%{transform:scale(1)}18%{transform:scale(1.14,.86)}38%{transform:scale(.92,1.09)}58%{transform:scale(1.05,.97)}78%{transform:scale(.99,1.01)}100%{transform:scale(1)}}
+  @keyframes bl-wl5-sway{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(7vmax,5vmax,0) scale(1.12)}}
+  @keyframes bl-wl5-rise{0%{opacity:0;transform:translate3d(0,0,0)}10%{opacity:.9}50%{transform:translate3d(16px,-58vh,0)}90%{opacity:.7}100%{opacity:0;transform:translate3d(-10px,-118vh,0)}}
+  
+  /* ---- schermi bassi ---- */
+  @media(max-height:760px){.bl-wl{gap:12px;padding-top:calc(22px + env(safe-area-inset-top))}.bl-wl5-chips{display:none}.bl-wb{min-height:60px}.bl-wb--create{min-height:66px}.bl-wb-ico{width:42px;height:42px}.bl-wl5-wordmark{width:min(52vw,214px)}}
+  @media(max-height:640px){.bl-wb-txt small{display:none}.bl-wb{min-height:52px}.bl-wb--create{min-height:56px}.bl-wl5-sub{display:none}}
+  @media(prefers-reduced-motion:reduce){.bl-wl5-aurora,.bl-wl5-logo,.bl-wl5-logo.is-squish,.bl-wb{animation:none}.bl-wl5-riser{display:none}.bl-wb{transition:none}}
+
+/* ---------- registration ---------- */
+/* Registrazione a schermate fluide (importare DOPO bolle.css, bolle-polish.css e gli altri CSS). Solo transform/opacity. */
+.bl-reg-dots{display:flex;justify-content:center;gap:7px;margin:2px 0 14px}
+.bl-reg-dots i{width:8px;height:8px;border-radius:99px;background:rgba(150,130,210,.4);transition:width .45s cubic-bezier(.22,1.4,.36,1),background .25s ease}
+.bl-reg-dots i.done{background:rgba(150,130,210,.85)}
+.bl-reg-dots i.now{width:26px;background:linear-gradient(90deg,#8274ed,#b46bf0)}
+.bl-reg-form{display:flex;flex-direction:column;gap:14px;overflow-x:hidden}
+.bl-reg-pane{display:flex;flex-direction:column;gap:14px;will-change:transform}
+.bl-reg-fwd{animation:bl-reg-in-fwd .5s cubic-bezier(.22,1.15,.36,1) both}
+.bl-reg-back{animation:bl-reg-in-back .5s cubic-bezier(.22,1.15,.36,1) both}
+@keyframes bl-reg-in-fwd{from{opacity:0;transform:translate3d(42px,0,0) scale(.96)}60%{opacity:1;transform:translate3d(-5px,0,0) scale(1.006)}to{opacity:1;transform:none}}
+@keyframes bl-reg-in-back{from{opacity:0;transform:translate3d(-42px,0,0) scale(.96)}60%{opacity:1;transform:translate3d(5px,0,0) scale(1.006)}to{opacity:1;transform:none}}
+.bl-reg-orb{align-self:center;width:68px;height:68px;border-radius:50%;display:grid;place-items:center;font-size:30px;line-height:1;margin:0 0 2px;
+  border:1.5px solid rgba(197,230,255,.6);
+  background:radial-gradient(circle at 28% 22%,rgba(255,255,255,.6) 0 6%,rgba(255,255,255,.1) 16%,transparent 34%),conic-gradient(from 200deg,rgba(111,220,245,.2),rgba(205,165,255,.3),rgba(255,170,130,.2),rgba(111,220,245,.2));
+  box-shadow:inset 0 0 14px rgba(255,255,255,.18),0 8px 22px rgba(100,70,220,.28);animation:bl-reg-bob 4.2s ease-in-out infinite alternate}
+.bl-reg-orb span{display:block;animation:bl-reg-pop .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes bl-reg-bob{from{transform:translateY(3px)}to{transform:translateY(-4px)}}
+@keyframes bl-reg-pop{from{transform:scale(.3)}to{transform:scale(1)}}
+.bl-reg-note{margin:0;padding:9px 12px;border-radius:14px;font-size:13px;line-height:1.4;background:rgba(130,110,190,.18);border:1px solid rgba(150,130,210,.4)}
+.bl-reg-cats{display:flex;flex-wrap:wrap;gap:8px}
+.bl-reg-cats button{transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.bl-reg-cats button:active{transform:scale(.94)}
+.bl-reg-cats button.on{transform:scale(1.04)}
+.bl-reg-privacy{max-height:38vh;overflow-y:auto;overscroll-behavior:contain;padding:12px 14px;border-radius:16px;border:1px solid rgba(150,130,210,.35);background:rgba(130,110,190,.1)}
+.bl-reg-privacy ul{margin:0;padding-left:18px;display:grid;gap:8px;font-size:13px;line-height:1.45}
+.bl-check[data-invalid="true"],.bl-chips[data-invalid="true"]{outline:2px solid #ff6b6b;outline-offset:3px;border-radius:12px}
+@media(prefers-reduced-motion:reduce){.bl-reg-pane,.bl-reg-orb,.bl-reg-orb span{animation:none}.bl-reg-dots i{transition:none}}
+
+/* Schermate di registrazione a tutto schermo: via top bar, footbar, tasto + e banner ospite */
+body.bl-reg-open .bl-top,
+body.bl-reg-open .bl-footbar,
+body.bl-reg-open .bl-foot-swipezone,
+body.bl-reg-open .bl-bottom-actions,
+body.bl-reg-open .bl-guest-banner,
+body.bl-reg-open .bl-live-notification{visibility:hidden!important;opacity:0!important;pointer-events:none!important}
+
+/* ---- Niente zoom automatico al focus (iOS Safari zooma gli input con font-size < 16px) ----
+   Si mantiene la possibilità di zoom manuale (accessibilità): niente maximum-scale nel viewport. */
+body.bl-reg-open .bl-sheet :is(input,select,textarea){font-size:16px!important;touch-action:manipulation}
+body.bl-reg-open .bl-sheet :is(input,select,textarea)::placeholder{font-size:16px}
+
+/* ---- Intestazione: respiro tra titolo («Chi sei?») e sottotitolo («Passo 1 di 5 · …») ---- */
+body.bl-reg-open .bl-sheet-heading h2{margin:2px 0 8px;line-height:1.15}
+body.bl-reg-open .bl-sheet-heading p{line-height:1.45}

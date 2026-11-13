@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ShieldCheck } from "lucide-react";
-import { friendlyError } from "./authValidation.js";
+import { friendlyError } from "./authRules.js";
 
 /* Privacy: esporta ed elimina i dati */
 export default function PrivacySection({ onExport, onDelete }) {

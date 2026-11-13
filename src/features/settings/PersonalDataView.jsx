@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase, USER_CATEGORIES } from "../../lib/bolleCore.jsx";
 import { bolleCountryFromNationality, countryList, ageFromBirthDate, birthDateProblem } from "../../lib/geo.js";
 import { NationalityPicker, CityPicker, BirthDatePicker } from "../../components/pickers/FormPickers.jsx";
+import IdentityCard from "../auth/IdentityCard.jsx";
 
 export default function PersonalDataView({ me, onNotify }) {
   const [form, setForm] = useState(null);
@@ -9,6 +10,7 @@ export default function PersonalDataView({ me, onNotify }) {
   const [error, setError] = useState("");
   const [needsConsent, setNeedsConsent] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [savedTick, setSavedTick] = useState(0); // ricarica la scheda Identità dopo un salvataggio
 
   const readStoredCategory = () => {
     try {
@@ -118,6 +120,7 @@ export default function PersonalDataView({ me, onNotify }) {
       }
       setNeedsConsent(false);
       setPrivacyAccepted(false);
+      setSavedTick(t => t + 1);
       onNotify("Dati aggiornati.");
     } catch (err) {
       setError(err?.message || "Salvataggio non riuscito.");
@@ -132,6 +135,10 @@ export default function PersonalDataView({ me, onNotify }) {
         <h3>Il tuo account</h3>
         <p><strong>Username:</strong> @{me?.username || "–"}</p>
         <p className="bl-muted">Per sicurezza la password/PIN non è recuperabile né visualizzabile: è conservata come hash. Potrai cambiarla tramite una procedura di reset verificata.</p>
+      </section>
+      <section className="bl-insights-section">
+        <h3>Identità pubblica</h3>
+        <IdentityCard key={savedTick} username={me?.username} onNotify={onNotify} />
       </section>
       {error && <p className="bl-error" role="alert">{error}</p>}
       {!form ? (
@@ -197,8 +204,14 @@ export default function PersonalDataView({ me, onNotify }) {
                 <button
                   type="button"
                   key={c.id}
-                  className={category === c.id ? "on" : ""}
+                  className={category === c.id ? "on bl-profile-type-selected" : ""}
                   aria-pressed={category === c.id}
+                  style={category === c.id ? {
+                    backgroundColor: "#B9A7FF",
+                    color: "#21143D",
+                    borderColor: "#D8CCFF",
+                    boxShadow: "0 0 0 2px rgba(185, 167, 255, 0.35), 0 0 14px rgba(185, 167, 255, 0.75)",
+                  } : undefined}
                   onClick={() => setCategory(c.id)}
                 >
                   {c.icon} {c.label}

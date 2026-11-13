@@ -1,0 +1,310 @@
+/* ===== look — file accorpato ===== */
+
+/* ---------- bolle-orbs (stemmi traguardi) ---------- */
+/* =====================================================================
+   STEMMI DEI TRAGUARDI — bolle di vetro con icona fluttuante (componente GlassOrb)
+   Importare DOPO bolle.css / bolle-polish.css.
+   ===================================================================== */
+   .bl-orb{--orb:76px;position:relative;display:block;flex:0 0 var(--orb);width:var(--orb);height:var(--orb);border-radius:50%;isolation:isolate;
+    animation:bl-orb-bob 4.6s ease-in-out var(--d,0s) infinite;will-change:transform}
+  .bl-orb>i,.bl-orb>span{position:absolute;pointer-events:none}
+  .bl-orb>i{display:block}
+  
+  /* vetro: corpo quasi trasparente tinto, spessore, bordo netto */
+  .bl-orb-glass{inset:0;border-radius:50%;
+    background:
+      radial-gradient(closest-side,transparent 60%,rgba(20,28,90,.14) 80%,rgba(20,28,90,.26) 90%,rgba(255,255,255,.3) 95%,rgba(255,255,255,.7) 98%,rgba(255,255,255,.1) 100%),
+      radial-gradient(closest-side,rgb(var(--tint)/.06),rgb(var(--tint)/.26) 100%),
+      linear-gradient(165deg,rgba(255,255,255,.28),rgba(255,255,255,.05) 48%,rgba(120,150,255,.14) 100%);
+    box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.7),inset 0 0 0 3px rgb(var(--tint)/.5),
+      inset 6px 8px 12px -5px rgba(255,255,255,.4),inset -7px -9px 14px -5px rgba(110,170,255,.32),
+      0 0 12px rgb(var(--tint)/.35),0 calc(var(--orb) * .12) calc(var(--orb) * .22) rgba(20,24,70,.3)}
+  /* parete interna: dà profondità e l'aria tra icona e pellicola */
+  .bl-orb-wall{inset:9%;border-radius:50%;z-index:1;
+    background:radial-gradient(circle at 50% 38%,transparent 40%,rgb(var(--tint)/.16) 78%,rgba(20,20,80,.2) 100%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),inset 0 calc(var(--orb) * .04) calc(var(--orb) * .08) -2px rgba(255,255,255,.22)}
+  /* ombra dell'icona sulla parete in basso: opposta al movimento dell'icona (stessa durata e fase) */
+  .bl-orb-shadow{z-index:2;left:30%;width:40%;bottom:12%;height:8%;border-radius:50%;
+    background:radial-gradient(ellipse at center,rgba(24,14,84,.55),rgba(24,14,84,.2) 55%,transparent 75%);filter:blur(calc(var(--orb) * .02));
+    animation:bl-orb-shadow 5.3s ease-in-out var(--d,0s) infinite}
+  .bl-orb>.bl-orb-icon{display:grid;place-items:center;margin:0;padding:0;line-height:1;font-size:calc(var(--orb) * .42)}
+  .bl-orb-icon{z-index:3;inset:0;display:grid;place-items:center;color:rgb(var(--tint));
+    filter:drop-shadow(0 calc(var(--orb) * .05) calc(var(--orb) * .04) rgba(20,10,70,.38));
+    animation:bl-orb-float 5.3s ease-in-out var(--d,0s) infinite;will-change:transform}
+  .bl-orb-icon svg{display:block;stroke:currentColor;width:46%;height:46%;max-width:none;flex:none}
+  /* pellicola: anello interno, riflesso a finestra, arco opposto con dispersione */
+  .bl-orb-film{inset:5%;border-radius:50%;z-index:4;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),inset 0 3px 6px -2px rgba(255,255,255,.3),inset 0 -3px 6px -2px rgba(150,200,255,.24)}
+  .bl-orb-glint{z-index:5;top:14%;left:18%;width:30%;height:14%;transform:rotate(-34deg);border-radius:55% 45% 60% 40%/60% 50% 50% 40%;
+    background:linear-gradient(180deg,#fff,rgba(255,255,255,.7) 65%,rgba(255,255,255,.2));box-shadow:0 0 5px rgba(255,255,255,.7)}
+  .bl-orb-arc{z-index:5;inset:3%;border-radius:50%;
+    background:conic-gradient(from 105deg,rgba(255,255,255,0) 0deg,rgba(190,225,255,.7) 22deg,rgba(255,255,255,.85) 44deg,rgba(255,190,235,.45) 62deg,rgba(255,255,255,0) 84deg,transparent 360deg);
+    -webkit-mask-image:radial-gradient(closest-side,transparent 88%,#000 90.5%,#000 95%,transparent 97%);mask-image:radial-gradient(closest-side,transparent 88%,#000 90.5%,#000 95%,transparent 97%)}
+  
+  @keyframes bl-orb-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(calc(var(--orb) * -.03))}}
+  @keyframes bl-orb-float{0%,100%{transform:translateY(calc(var(--orb) * .035)) rotate(-3deg)}50%{transform:translateY(calc(var(--orb) * -.055)) rotate(3deg)}}
+  @keyframes bl-orb-shadow{0%,100%{transform:scale(.8,.8);opacity:.5}50%{transform:scale(1.15,1);opacity:.95}}
+  
+  /* traguardo non ancora ottenuto: vetro freddo, icona spenta e ferma, ombra statica */
+  .bl-orb.is-locked{filter:saturate(.7)}
+  .bl-orb.is-locked .bl-orb-icon{filter:grayscale(1) brightness(1.15) drop-shadow(0 2px 2px rgba(20,10,70,.25));opacity:.5;animation:none;transform:translateY(calc(var(--orb) * .02))}
+  .bl-orb.is-locked .bl-orb-shadow{animation:none;transform:scale(.9);opacity:.35}
+  .bl-orb.is-locked .bl-orb-glass{background:
+      radial-gradient(closest-side,transparent 60%,rgba(20,28,90,.12) 82%,rgba(255,255,255,.55) 97%,rgba(255,255,255,.08) 100%),
+      linear-gradient(165deg,rgba(255,255,255,.22),rgba(150,165,200,.12))}
+  
+  /* fuori schermo la griglia non viene dipinta (content-visibility): niente costo di rendering */
+  .bl-profile-badges-grid{content-visibility:auto;contain-intrinsic-size:auto 300px}
+  .bl-badge-dialog-orbwrap{display:grid;place-items:center;margin:0 auto 14px}
+  @media(prefers-reduced-motion:reduce){.bl-orb,.bl-orb-icon,.bl-orb-shadow{animation:none}}
+  
+  /* ---------- bolle-glass (bolle di vetro: togli questa sezione per tornare alle bolle di sapone) ---------- */
+  /* =====================================================================
+     BOLLE DI VETRO — ultimo livello (da importare DOPO bolle.css e bolle-polish.css)
+  
+     Sostituisce l'aspetto "bolla di sapone" delle bolle sparse (Vicino a me / Tutte)
+     con quello di una sfera di vetro trasparente:
+       • corpo quasi trasparente, appena freddo, con la tinta del tipo di bolla nel bordo
+       • bordo netto + spessore del vetro (anello interno più scuro/luminoso)
+       • luce che entra in alto a sinistra, rifrazione fredda in basso a destra
+       • riflessi duri (finestra + arco sul bordo), caustica che si raccoglie in basso
+       • dispersione cromatica sottilissima sul bordo (ciano / blu / rosa), non più "sapone"
+     Stessa struttura DOM, stessi tipi, stessa fisica: cambia solo l'aspetto.
+     Nessun backdrop-filter e nessun filter (costo minimo, niente differenze in modalità eco).
+     Le bolle rare (oro) restano come prima. Per tornare indietro basta togliere l'import.
+     ===================================================================== */
+  
+  /* --- corpo e bordo --- */
+  .bl-root .bl-slot > button.bl-bubble{
+    border:1px solid rgba(255,255,255,.5)!important;
+    background:
+      /* caustica: la luce attraversa la sfera e si concentra in basso */
+      radial-gradient(ellipse 60% 30% at 50% 93%,rgba(255,255,255,.55),rgba(190,225,255,.20) 55%,transparent 100%),
+      /* bordo spesso del vetro: si schiarisce verso l'esterno */
+      radial-gradient(closest-side,transparent 62%,rgba(20,28,90,.16) 82%,rgba(20,28,90,.30) 91%,rgba(255,255,255,.30) 95.5%,rgba(255,255,255,.60) 98%,rgba(255,255,255,.12) 100%),
+      /* vetro leggermente colorato dal tipo di bolla (foto, sondaggio, domanda…) */
+      radial-gradient(closest-side,rgb(var(--tint,255 255 255)/calc(.04*var(--tint-a,0))),rgb(var(--tint,255 255 255)/calc(.20*var(--tint-a,0))) 100%),
+      /* corpo: quasi trasparente, un po' più chiaro in alto, freddo in basso */
+      linear-gradient(165deg,rgba(255,255,255,.13),rgba(255,255,255,.02) 45%,rgba(120,150,255,.08) 100%)!important;
+  }
+  .bl-root .bl-slot > button.bl-bubble:not(.bl-bubble--rare){
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255,255,255,.62),                               /* bordo netto */
+      inset 0 0 0 3.5px rgb(var(--tint,255 255 255)/calc(.5*var(--tint-a,0))), /* il tipo si legge dal bordo */
+      inset 0 0 0 6px rgba(20,30,100,.16),                                    /* spessore del vetro */
+      inset 7px 9px 14px -5px rgba(255,255,255,.30),                          /* luce da sopra a sinistra */
+      inset -8px -10px 16px -5px rgba(110,170,255,.28),                       /* rifrazione fredda in basso a destra */
+      inset 0 0 14px 2px rgba(255,255,255,.14),
+      0 0 10px rgb(var(--tint,255 255 255)/calc(.28*var(--tint-a,0))),
+      0 9px 18px rgba(6,4,36,.38),                                            /* ombra: dà volume alla sfera */
+      var(--outer,0 0 0 0 transparent)!important;
+  }
+  
+  /* --- anello interno (seconda superficie del vetro) --- */
+  .bl-root .bl-slot > button.bl-bubble:before{
+    inset:5%;border:0;border-radius:50%;z-index:2;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),inset 0 3px 6px -2px rgba(255,255,255,.28),inset 0 -3px 6px -2px rgba(150,200,255,.22);
+    /* film interno: stesse macchie morbide, più tenui */
+    background:
+      radial-gradient(ellipse 46% 34% at 80% 26%, rgba(255,120,205,0.3) 0%, rgba(255,120,205,0.2) 22%, rgba(255,120,205,0.09) 44%, rgba(255,120,205,0.04) 66%, rgba(255,120,205,.02) 84%, rgba(255,120,205,0) 100%),
+      radial-gradient(ellipse 44% 36% at 20% 32%, rgba(80,190,255,0.3) 0%, rgba(80,190,255,0.2) 22%, rgba(80,190,255,0.09) 44%, rgba(80,190,255,0.04) 66%, rgba(80,190,255,.02) 84%, rgba(80,190,255,0) 100%),
+      radial-gradient(ellipse 48% 32% at 50% 92%, rgba(70,235,190,0.24) 0%, rgba(70,235,190,0.18) 22%, rgba(70,235,190,0.08) 44%, rgba(70,235,190,0.03) 66%, rgba(70,235,190,.02) 84%, rgba(70,235,190,0) 100%),
+      radial-gradient(ellipse 34% 40% at 94% 70%, rgba(190,120,255,0.26) 0%, rgba(190,120,255,0.16) 22%, rgba(190,120,255,0.06) 44%, rgba(190,120,255,0.02) 66%, rgba(190,120,255,.02) 84%, rgba(190,120,255,0) 100%);
+    -webkit-mask-image:radial-gradient(closest-side,transparent 70%,rgba(0,0,0,.3) 80%,rgba(0,0,0,.8) 89%,rgba(0,0,0,.5) 95%,transparent 100%);
+    mask-image:radial-gradient(closest-side,transparent 70%,rgba(0,0,0,.3) 80%,rgba(0,0,0,.8) 89%,rgba(0,0,0,.5) 95%,transparent 100%);
+    will-change:auto;
+  }
+  
+  /* --- arco di luce sul bordo in alto a sinistra --- */
+  .bl-root .bl-slot > button.bl-bubble:after{
+    content:"";position:absolute;top:2.5%;left:2.5%;right:2.5%;bottom:2.5%;width:auto;height:auto;border-radius:50%;transform:none;z-index:4;
+    filter:none!important;pointer-events:none;
+    background:conic-gradient(from 285deg,rgba(255,255,255,0) 0deg,rgba(255,255,255,1) 26deg,rgba(255,255,255,.7) 50deg,rgba(255,255,255,0) 78deg,transparent 360deg);
+    -webkit-mask-image:radial-gradient(closest-side,transparent 83%,#000 86%,#000 96%,transparent 98.5%);
+    mask-image:radial-gradient(closest-side,transparent 83%,#000 86%,#000 96%,transparent 98.5%);
+  }
+  
+  /* --- riflesso "finestra": duro e netto, come sul vetro (non sfumato come sul sapone) --- */
+  .bl-root .bl-slot > button.bl-bubble > .bl-bubble-glint{
+    top:15%!important;left:19%!important;right:auto!important;bottom:auto!important;width:30%!important;height:14%!important;z-index:5;
+    transform:rotate(-34deg)!important;border-radius:55% 45% 60% 40% / 60% 50% 50% 40%!important;
+    background:linear-gradient(180deg,#fff,rgba(255,255,255,.7) 65%,rgba(255,255,255,.2))!important;
+    box-shadow:0 0 6px rgba(255,255,255,.7)!important;
+  }
+  
+  /* --- arco opposto in basso a destra, con riflessi freddo/caldo --- */
+  .bl-root .bl-slot > button.bl-bubble > .bl-bubble-reflection{
+    top:2.5%!important;left:2.5%!important;right:2.5%!important;bottom:2.5%!important;width:auto!important;height:auto!important;
+    transform:none!important;border-radius:50%!important;z-index:4;
+    background:conic-gradient(from 105deg,rgba(255,255,255,0) 0deg,rgba(190,225,255,.7) 22deg,rgba(255,255,255,.85) 44deg,rgba(255,190,235,.45) 62deg,rgba(255,255,255,0) 84deg,transparent 360deg)!important;
+    -webkit-mask-image:radial-gradient(closest-side,transparent 88%,#000 90.5%,#000 95%,transparent 97%);
+    mask-image:radial-gradient(closest-side,transparent 88%,#000 90.5%,#000 95%,transparent 97%);
+  }
+  .bl-root .bl-slot > button.bl-bubble > .bl-bubble-reflection::before{display:none}
+  
+  /* --- pellicola: dispersione cromatica fluida sul bordo ---
+     Macchie di colore morbide (nessun conic-gradient a bande, nessun bordo netto nella maschera,
+     nessun will-change): ruotando non scalina e non si pixelizza. */
+  .bl-root .bl-slot > button.bl-bubble > .bl-liquid-film{
+    background:
+      radial-gradient(ellipse 48% 36% at 17% 28%, rgba(90,215,255,0.4) 0%, rgba(90,215,255,0.3) 22%, rgba(90,215,255,0.17) 44%, rgba(90,215,255,0.07) 66%, rgba(90,215,255,.02) 84%, rgba(90,215,255,0) 100%),
+      radial-gradient(ellipse 44% 34% at 84% 22%, rgba(150,140,255,0.38) 0%, rgba(150,140,255,0.28) 22%, rgba(150,140,255,0.15) 44%, rgba(150,140,255,0.06) 66%, rgba(150,140,255,.02) 84%, rgba(150,140,255,0) 100%),
+      radial-gradient(ellipse 40% 42% at 92% 66%, rgba(255,135,215,0.36) 0%, rgba(255,135,215,0.26) 22%, rgba(255,135,215,0.14) 44%, rgba(255,135,215,0.06) 66%, rgba(255,135,215,.02) 84%, rgba(255,135,215,0) 100%),
+      radial-gradient(ellipse 46% 32% at 52% 94%, rgba(255,232,150,0.3) 0%, rgba(255,232,150,0.22) 22%, rgba(255,232,150,0.12) 44%, rgba(255,232,150,0.05) 66%, rgba(255,232,150,.02) 84%, rgba(255,232,150,0) 100%),
+      radial-gradient(ellipse 34% 40% at 7% 70%, rgba(110,170,255,0.32) 0%, rgba(110,170,255,0.22) 22%, rgba(110,170,255,0.11) 44%, rgba(110,170,255,0.04) 66%, rgba(110,170,255,.02) 84%, rgba(110,170,255,0) 100%)!important;
+    box-shadow:none!important;
+    -webkit-mask:radial-gradient(circle farthest-side at 50% 50%,transparent 56%,rgba(0,0,0,.06) 62%,rgba(0,0,0,.2) 70%,rgba(0,0,0,.45) 79%,rgba(0,0,0,.72) 87%,rgba(0,0,0,.82) 92%,rgba(0,0,0,.5) 96.5%,rgba(0,0,0,.12) 99%,transparent 100%)!important;
+    mask:radial-gradient(circle farthest-side at 50% 50%,transparent 56%,rgba(0,0,0,.06) 62%,rgba(0,0,0,.2) 70%,rgba(0,0,0,.45) 79%,rgba(0,0,0,.72) 87%,rgba(0,0,0,.82) 92%,rgba(0,0,0,.5) 96.5%,rgba(0,0,0,.12) 99%,transparent 100%)!important;
+    will-change:auto!important;backface-visibility:hidden;
+  }
+  
+  /* --- etichette in vetro: distanza e bandierina --- */
+  .bl-root .bl-bubble .bl-dist{
+    background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,.12));
+    border:1px solid rgba(255,255,255,.5);color:#fff;text-shadow:0 1px 3px rgba(10,8,50,.55);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 10px rgba(8,6,40,.3);
+  }
+  .bl-root .bl-slot .bl-country-flag{
+    background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.65);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 3px 10px rgba(8,6,40,.4);
+  }
+  /* testo leggibile anche su vetro chiaro */
+  .bl-root .bl-slot > .bl-bubble > .bl-bubble-username{text-shadow:0 1px 3px rgba(12,8,50,.8),0 0 9px rgba(12,8,50,.55)}
+  
+  /* ---------- bolle-dark (dopo glass) ---------- */
+  /* =====================================================================
+     BOLLE — TEMA SCURO PIÙ PROFONDO (da importare per ULTIMO)
+     Vale solo per l'aspetto «scuro» standard (.bl-appearance-dark): i temi speciali (.bl-theme-*) non cambiano.
+     Perché lo sfondo era chiaro: la base #080718 era coperta dai tre blob .bl-ambient (viola .35, arancio .2, viola .28)
+     e da GalaxyBackdrop. Qui: base quasi nera, blob ridotti, stelle attenuate, vignetta; le bolle di vetro restano
+     il punto più luminoso della schermata (bordo e corpo leggermente più marcati).
+     ===================================================================== */
+  .bl-root.bl-appearance-dark{
+    --bl-bg-deep:#03020a;
+    color-scheme:dark;
+    background-color:var(--bl-bg-deep)!important;
+    background-image:
+      radial-gradient(ellipse 85% 46% at 50% -4%,rgba(58,36,126,.26),transparent 70%),
+      radial-gradient(ellipse 70% 40% at 50% 108%,rgba(40,22,96,.2),transparent 70%),
+      linear-gradient(180deg,#05040f 0%,#03020a 55%,#020208 100%)!important}
+  .bl-root.bl-appearance-dark .bl-ambient-a{background:#4a1d66;opacity:.12}
+  .bl-root.bl-appearance-dark .bl-ambient-b{background:#7a3a20;opacity:.05}
+  .bl-root.bl-appearance-dark .bl-ambient-c{background:#2c1d78;opacity:.1}
+  .bl-root.bl-appearance-dark.bl-has-galaxy .bl-galaxy,.bl-root.bl-appearance-dark.bl-has-galaxy canvas{opacity:.55}
+  /* vignetta: porta i bordi verso il nero e dà profondità al centro */
+  .bl-root.bl-appearance-dark::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(ellipse 120% 90% at 50% 45%,transparent 55%,rgba(0,0,0,.5) 100%)}
+  
+  /* Bolle di vetro: su sfondo scuro il corpo quasi trasparente si perde, quindi più materia e un bordo più netto */
+  .bl-root.bl-appearance-dark .bl-slot>button.bl-bubble:not(.bl-bubble--rare){
+    box-shadow:
+      inset 0 0 0 1.5px rgba(255,255,255,.72),
+      inset 0 0 0 3.5px rgb(var(--tint,255 255 255)/calc(.6*var(--tint-a,0))),
+      inset 0 0 0 6px rgba(20,30,100,.22),
+      inset 7px 9px 14px -5px rgba(255,255,255,.34),
+      inset -8px -10px 16px -5px rgba(110,170,255,.3),
+      0 0 14px rgb(var(--tint,255 255 255)/calc(.38*var(--tint-a,0))),
+      0 10px 22px rgba(0,0,0,.6),
+      var(--outer,0 0 0 0 transparent)!important}
+  .bl-root.bl-appearance-dark .bl-seq .bl-seq-face.bl-seq-face.bl-bubble{background-color:transparent}
+  
+  /* Testo sulle bolle: velo scuro dietro il copy per mantenere un contrasto AA (≥ 4.5:1) anche sopra anteprime chiare */
+  .bl-root.bl-appearance-dark .bl-seq-copy.has-text{background:radial-gradient(ellipse 80% 70% at 50% 50%,rgba(4,3,18,.38),transparent 80%)}
+  
+  /* Header, footbar e filtri: vetro scuro con bordo chiaro sottile, per non sembrare «bagnati» sul nero */
+  .bl-root.bl-appearance-dark .bl-footbar{background:rgba(10,8,30,.72)!important;border-color:rgba(200,186,255,.22)!important}
+  .bl-root.bl-appearance-dark .bl-search-pill{background:rgba(255,255,255,.1)}
+  
+  /* ---------- no-autozoom (sempre per ultimo) ---------- */
+  /* ==========================================================================
+     Niente zoom automatico (iPhone / iPad)
+     Safari ingrandisce la pagina quando si tocca un campo di testo con carattere
+     inferiore a 16px. Qui ogni campo di testo ha almeno 16px, ovunque nell'app
+     (anche nei pannelli fuori da .bl-root). Importare per ULTIMO.
+     Su computer (mouse) non cambia nulla.
+     ========================================================================== */
+  @media (hover: none) and (pointer: coarse) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="image"]),
+    textarea,
+    select,
+    [contenteditable="true"],
+    [contenteditable=""] {
+      font-size: 16px !important;
+    }
+  }
+  
+  /* il telefono non deve rimpicciolire o ingrandire il testo da solo */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+  /* ---------- pellicola morbida: movimento (sostituisce i keyframe di bolle.css e bolle-polish.css) ---------- */
+  @keyframes bl-real-film{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(1.025)}100%{transform:rotate(360deg) scale(1)}}
+  @keyframes bl-film-swirl{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(.985)}100%{transform:rotate(360deg) scale(1)}}
+
+  /* ---------- Modifica tema: dentro il box del profilo, a destra di avatar e nome utente ---------- */
+  .bl-root.bl-root .bl-profile-hub .bl-profile-identity{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap}
+  .bl-profile-id-main{display:flex;align-items:center;gap:14px;min-width:0;flex:1 1 auto}
+  .bl-profile-id-main .bl-profile-identity-copy{min-width:0}
+  .bl-profile-theme{flex:0 1 auto;display:flex;flex-direction:column;align-items:flex-end;gap:5px;max-width:52%}
+  .bl-profile-theme h4{margin:0;font:700 11px/1 inherit;font-family:inherit;opacity:.72;letter-spacing:0;text-transform:none}
+  .bl-theme-mini{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
+  .bl-theme-mini button{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;min-height:24px;font-size:11px;font-weight:700;line-height:1;font-family:inherit;
+    border-radius:999px;border:1px solid color-mix(in srgb,currentColor 24%,transparent);background:transparent;color:inherit;cursor:pointer;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis}
+  .bl-theme-mini button.on{background:linear-gradient(110deg,#f58a38,#a75ad7);color:#fff;border-color:transparent}
+  .bl-theme-mini button.is-locked{opacity:.7}
+  @media (max-width:640px){
+    .bl-profile-id-main{gap:10px}
+    .bl-profile-theme{max-width:50%}
+    .bl-theme-mini .bl-tm-txt{display:none}
+    .bl-theme-mini button{padding:4px 7px}
+  }
+  /* ---------- Profilo: riga 1 avatar+nome, riga 2 tema ---------- */
+.bl-root.bl-root .bl-profile-hub .bl-profile-identity {
+  flex-wrap: wrap !important;
+  align-items: center;
+  gap: 12px 10px;
+}
+
+/* riga 1: avatar + nome + "Modifica profilo", tutta la larghezza */
+.bl-root.bl-root .bl-profile-hub .bl-profile-id-main {
+  flex: 1 1 100%;
+  min-width: 0;
+  overflow: visible;
+}
+.bl-root.bl-root .bl-profile-hub .bl-profile-id-main .bl-profile-identity-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: visible;
+}
+
+/* nome utente un po' più piccolo, senza tagli */
+.bl-root.bl-root .bl-profile-hub .bl-profile-identity-copy h3 {
+  font-size: clamp(19px, 5.4vw, 23px) !important;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.bl-root.bl-root .bl-profile-hub .bl-profile-identity-copy h3 .bl-user-link {
+  display: inline;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* riga 2: "Modifica tema" a sinistra, pulsanti a destra */
+.bl-root.bl-root .bl-profile-hub .bl-profile-theme {
+  flex: 1 1 100%;
+  max-width: 100%;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+}
+.bl-root.bl-root .bl-profile-hub .bl-profile-theme h4 {
+  font-size: 13px;
+  opacity: .8;
+}
+.bl-root.bl-root .bl-profile-hub .bl-theme-mini {
+  justify-content: flex-end;
+}

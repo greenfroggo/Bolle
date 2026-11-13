@@ -328,7 +328,8 @@ export const OVERLAY_CSS = `
 .bl-ov-tools{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .bl-ov-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .bl-ov-row button.on{outline:2px solid #6a5fb0;outline-offset:2px}
-.bl-ov-text,.bl-ov-tag-input{min-height:40px;padding:0 12px;border-radius:12px;border:1px solid rgba(106,95,176,.35);background:rgba(255,255,255,.85);color:#2b2150;font:600 15px system-ui}
+.bl-ov-text,.bl-ov-tag-input{min-height:40px;padding:0 12px;border-radius:12px;border:1px solid rgba(106,95,176,.35);background:rgba(255,255,255,.85);color:#2b2150;font:600 16px system-ui;outline:0;transition:border-color .15s ease,box-shadow .15s ease}
+.bl-ov-text:focus,.bl-ov-text:focus-visible,.bl-ov-tag-input:focus,.bl-ov-tag-input:focus-visible{outline:0;border-color:#8f7dff;box-shadow:0 0 0 3px rgba(143,125,255,.35),0 0 14px rgba(143,125,255,.4)}
 .bl-ov-text{width:100%;box-sizing:border-box}
 .bl-ov-del{min-width:40px;min-height:40px;border-radius:50%;border:1px solid rgba(106,95,176,.35);background:rgba(255,255,255,.85)}
 .bl-ov-chip{display:inline-flex;align-items:center;gap:4px;padding:6px 6px 6px 12px;border-radius:999px;background:#6a5fb0;color:#fff;font:700 13px system-ui}

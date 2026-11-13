@@ -23,6 +23,25 @@ export const DEFAULT_ADJ = { brightness: 0, contrast: 0, saturation: 0, warmth: 
 export const DEFAULT_CROP = { aspect: "orig", zoom: 1, x: 0, y: 0, angle: 0, rot: 0, flip: false };
 export const defaultEdit = () => ({ filter: "normal", strength: 1, adj: { ...DEFAULT_ADJ }, crop: { ...DEFAULT_CROP }, trim: null, muted: false });
 
+/* ---- Ritaglio dell'inquadratura del VIDEO (metadati, nessuna ricodifica) ----
+   crop = { aspect, zoom, x, y }: la «finestra» ha la proporzione scelta, il video la riempie (cover) × zoom,
+   x/y = spostamento in frazione della larghezza/altezza della finestra (indipendente dalle dimensioni a schermo). */
+const VIDEO_ASPECTS = { "1:1": 1, "4:5": 4 / 5, "9:16": 9 / 16, "16:9": 16 / 9 };
+export const videoCropActive = (c) => Boolean(c) && (c.aspect !== "orig" || (c.zoom || 1) > 1.001 || Math.abs(c.x || 0) > 0.001 || Math.abs(c.y || 0) > 0.001);
+export const videoWindowAspect = (crop, v) => VIDEO_ASPECTS[crop?.aspect] || (v > 0 ? v : 1);
+export function videoCropGeo(crop, v) {
+  const va = v > 0 ? v : 1, A = videoWindowAspect(crop, va), z = clamp(crop?.zoom || 1, 1, 4);
+  const wf = va >= A ? (z * va) / A : z;      // larghezza del video in unità di finestra
+  const hf = va >= A ? z : (z * A) / va;      // altezza del video in unità di finestra
+  const mx = (wf - 1) / 2, my = (hf - 1) / 2; // spostamento massimo senza lasciare bordi vuoti
+  return { A, wf, hf, mx, my, x: clamp(crop?.x || 0, -mx, mx), y: clamp(crop?.y || 0, -my, my) };
+}
+export function videoCropStyle(crop, v) {
+  const g = videoCropGeo(crop, v);
+  return { position: "absolute", margin: 0, maxWidth: "none", maxHeight: "none", objectFit: "fill",
+    width: `${g.wf * 100}%`, height: `${g.hf * 100}%`, left: `calc(50% + ${g.x * 100}%)`, top: `calc(50% + ${g.y * 100}%)`, transform: "translate(-50%, -50%)" };
+}
+
 /* Approssimazioni dei filtri più noti (b=luminosità c=contrasto s=saturazione sepia gray hue warm fade) */
 export const FILTERS = [
   { id: "normal", label: "Normale" },
@@ -366,9 +385,10 @@ export async function bakeImage(file, edit, stickers = [], maxSide = 1600, quali
 }
 /* Video: solo metadati. null = nessuna modifica da salvare. */
 export function videoEditPayload(edit) {
-  const dirty = (edit.filter !== "normal" && edit.strength > 0) || Object.values(edit.adj).some((v) => v !== 0) || edit.trim || edit.muted;
+  const dirty = (edit.filter !== "normal" && edit.strength > 0) || Object.values(edit.adj).some((v) => v !== 0) || edit.trim || edit.muted || videoCropActive(edit.crop);
   if (!dirty) return null;
-  return { v: 1, filter: edit.filter, strength: round2(edit.strength), adj: edit.adj, trim: edit.trim ? { start: round2(edit.trim.start), end: round2(edit.trim.end) } : null, muted: edit.muted === true };
+  return { v: 1, filter: edit.filter, strength: round2(edit.strength), adj: edit.adj, trim: edit.trim ? { start: round2(edit.trim.start), end: round2(edit.trim.end) } : null, muted: edit.muted === true,
+    crop: videoCropActive(edit.crop) ? (() => ({ aspect: edit.crop.aspect, zoom: round2(clamp(edit.crop.zoom || 1, 1, 4)), x: Math.round(edit.crop.x * 1000) / 1000, y: Math.round(edit.crop.y * 1000) / 1000 }))() : null };
 }
 export function sanitizeVideoEdit(raw) {
   if (!raw || typeof raw !== "object") return null;
@@ -378,15 +398,21 @@ export function sanitizeVideoEdit(raw) {
   e.strength = num(raw.strength, 0, 1, 1);
   for (const [k, , lo, hi] of ADJUSTMENTS) e.adj[k] = num(raw.adj?.[k], lo, hi, 0);
   if (raw.trim && Number(raw.trim.end) > Number(raw.trim.start) && Number.isFinite(Number(raw.trim.start))) e.trim = { start: Math.max(0, Number(raw.trim.start)), end: Number(raw.trim.end) };
+  if (raw.crop && typeof raw.crop === "object") {
+    const asp = Object.keys(VIDEO_ASPECTS).includes(raw.crop.aspect) ? raw.crop.aspect : "orig";
+    e.crop = { ...DEFAULT_CROP, aspect: asp, zoom: num(raw.crop.zoom, 1, 4, 1), x: num(raw.crop.x, -1, 1, 0), y: num(raw.crop.y, -1, 1, 0) };
+  }
   e.muted = raw.muted === true;
   return e;
 }
 
 /* ---------- Riproduzione di un video modificato (viewer): filtro CSS leggero, taglio e muto ---------- */
-export function EditedVideo({ src, edit }) {
+export function EditedVideo({ src, edit, onMeta }) {
   const ref = useRef(null);
+  const [vAsp, setVAsp] = useState(0);
   const fx = edit ? resolveFx(edit) : null;
   const trim = edit?.trim || null;
+  const cropOn = videoCropActive(edit?.crop);
   useEffect(() => {
     if (!trim) return undefined;
     const id = setInterval(() => {
@@ -395,12 +421,13 @@ export function EditedVideo({ src, edit }) {
     }, 80);
     return () => clearInterval(id);
   }, [trim?.start, trim?.end]); // eslint-disable-line react-hooks/exhaustive-deps
-  return <>
-    <video ref={ref} src={src} autoPlay playsInline loop controls={false} muted={edit?.muted === true}
-      style={fx ? { filter: fxCss(fx) } : undefined}
-      onLoadedMetadata={() => { if (trim && ref.current) ref.current.currentTime = trim.start; }} />
-    <FxLayers fx={fx} />
-  </>;
+  const style = { ...(fx ? { filter: fxCss(fx) } : null), ...(cropOn ? videoCropStyle(edit.crop, vAsp) : null), ...(cropOn && !vAsp ? { visibility: "hidden" } : null) };
+  const video = <video ref={ref} src={src} autoPlay playsInline loop controls={false} muted={edit?.muted === true}
+    style={Object.keys(style).length ? style : undefined}
+    onLoadedMetadata={(e) => { const v = e.currentTarget; if (v.videoWidth && v.videoHeight) setVAsp(v.videoWidth / v.videoHeight); if (trim) v.currentTime = trim.start; onMeta?.(Number.isFinite(v.duration) ? v.duration : 0); }}
+    onError={() => onMeta?.(0)} />;
+  if (!cropOn) return <>{video}<FxLayers fx={fx} /></>;
+  return <div className="bl-vcrop" style={{ "--a": videoWindowAspect(edit.crop, vAsp) }}>{video}<FxLayers fx={fx} /></div>;
 }
 
 /* ---------------------------- interfaccia ---------------------------- */
@@ -449,7 +476,7 @@ export default function MediaEditor({ file, preview, edit, setEdit, stickers, se
   const ptrs = useRef(new Map()), gesture = useRef(null);
   const fx = resolveFx(edit);
 
-  useEffect(() => { if ((tool === "crop" || tool === "stickers") && !canSticker) setTool(null); if (tool === "trim" && !isVideo) setTool(null); }, [tool, canSticker, isVideo]);
+  useEffect(() => { if (tool === "stickers" && !canSticker) setTool(null); if (tool === "crop" && !canSticker && !isVideo) setTool(null); if (tool === "trim" && !isVideo) setTool(null); }, [tool, canSticker, isVideo]);
 
   // Anteprima della foto: ritaglio + filtro sul canvas, una volta per fotogramma
   useEffect(() => {
@@ -512,10 +539,37 @@ export default function MediaEditor({ file, preview, edit, setEdit, stickers, se
   const adj = ADJUSTMENTS.find((a) => a[0] === adjKey);
   const trimStart = edit.trim?.start ?? 0, trimEnd = edit.trim?.end ?? dur, minLen = Math.min(1, dur || 1);
   const showOverlays = tool !== "crop";
+  // Ritaglio del video: un dito sposta l'inquadratura, due dita fanno zoom (dentro i limiti: niente bordi vuoti)
+  const vCropDown = (e) => {
+    if (disabled) return;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const pts = [...ptrs.current.values()], c = edit.crop;
+    if (pts.length === 1) gesture.current = { type: "pan", sx: e.clientX, sy: e.clientY, ox: c.x || 0, oy: c.y || 0 };
+    else { const [a, b] = pts; gesture.current = { type: "zoom", d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, z0: c.zoom || 1 }; }
+  };
+  const setVCrop = (p) => setEdit((e) => {
+    const next = { ...e.crop, ...p }, g = videoCropGeo(next, mediaAspect || 1);
+    return { ...e, crop: { ...next, x: g.x, y: g.y } };
+  });
+  const vCropMove = (e) => {
+    const g = gesture.current;
+    if (!g || !ptrs.current.has(e.pointerId)) return;
+    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const r = frameRef.current.getBoundingClientRect();
+    if (g.type === "pan") setVCrop({ x: g.ox + (e.clientX - g.sx) / r.width, y: g.oy + (e.clientY - g.sy) / r.height });
+    else { const [a, b] = [...ptrs.current.values()]; setVCrop({ zoom: clamp(g.z0 * (Math.hypot(a.x - b.x, a.y - b.y) / g.d0), 1, 4) }); }
+  };
+  const vCropUp = (e) => {
+    ptrs.current.delete(e.pointerId);
+    if (ptrs.current.size === 0) gesture.current = null;
+    else if (ptrs.current.size === 1) { const [p] = [...ptrs.current.values()], c = edit.crop; gesture.current = { type: "pan", sx: p.x, sy: p.y, ox: c.x || 0, oy: c.y || 0 }; }
+  };
+  const vCropOn = isVideo && videoCropActive(edit.crop);
   const toggleTool = (id) => setTool((t) => (t === id ? null : id));
 
   // Cornice della foto: la proporzione più grande che sta nello schermo intero
-  const aspect = canSticker ? (() => { const g = cropGeometry(src.sw, src.sh, edit.crop, 1000); return g.W / g.H; })() : (mediaAspect || 1);
+  const aspect = canSticker ? (() => { const g = cropGeometry(src.sw, src.sh, edit.crop, 1000); return g.W / g.H; })() : vCropOn ? videoWindowAspect(edit.crop, mediaAspect || 1) : (mediaAspect || 1);
   const fw = Math.min(box.w, box.h * aspect), fh = fw / aspect;
 
   const railBtn = (id, icon, label) => (
@@ -526,11 +580,11 @@ export default function MediaEditor({ file, preview, edit, setEdit, stickers, se
   const toolButtons = <>
     {canEdit && railBtn("filters", "✨", "Filtri")}
     {canEdit && railBtn("adjust", "◐", "Modifica")}
-    {canSticker && railBtn("crop", "⛶", "Ritaglia")}
-    {isVideo && railBtn("trim", "✂️", "Taglia")}
+    {(canSticker || (isVideo && canEdit)) && railBtn("crop", "⛶", "Ritaglia")}
+    {isVideo && railBtn("trim", "✂️", "Durata")}
     {more && railBtn("more", "🏷", "Tag")}
   </>;
-  const titles = { filters: "Filtri", adjust: "Modifica", crop: "Ritaglia", stickers: "Sticker", trim: "Taglia il video", more: "Tag e opzioni" };
+  const titles = { filters: "Filtri", adjust: "Modifica", crop: "Ritaglia", stickers: "Sticker", trim: "Durata del video", more: "Tag e opzioni" };
 
   return (
     <div className="bl-me-full" role="group" aria-label="Modifica la foto o il video">
@@ -540,11 +594,12 @@ export default function MediaEditor({ file, preview, edit, setEdit, stickers, se
           {src.status === "plain" && <img src={preview} alt="Anteprima" onLoad={(e) => { const i = e.currentTarget; if (i.naturalWidth) setMediaAspect(i.naturalWidth / i.naturalHeight); }} />}
           {canSticker && <canvas ref={canvasRef} className="bl-me-canvas" aria-label="Anteprima della foto modificata" />}
           {isVideo && <>
-            <video ref={vref} src={preview} muted playsInline loop autoPlay style={{ filter: fxCss(fx) }} onLoadedData={onVideoReady} onLoadedMetadata={(e) => { const v = e.currentTarget; setDur(v.duration || 0); if (v.videoWidth && v.videoHeight) setMediaAspect(v.videoWidth / v.videoHeight); }} />
+            <video ref={vref} src={preview} muted playsInline loop autoPlay style={{ filter: fxCss(fx), ...(vCropOn ? videoCropStyle(edit.crop, mediaAspect || 1) : null) }} onLoadedData={onVideoReady} onLoadedMetadata={(e) => { const v = e.currentTarget; setDur(v.duration || 0); if (v.videoWidth && v.videoHeight) setMediaAspect(v.videoWidth / v.videoHeight); }} />
             <FxLayers fx={fx} />
           </>}
           {canSticker && showOverlays && <StickerLayer stickers={stickers} onChange={setStickers} sel={stickerSel} setSel={setStickerSel} disabled={disabled} onBackgroundDown={onBackgroundDown} />}
           {canSticker && tool === "crop" && <div className="bl-me-cropgrid" style={{ position: "absolute", inset: 0, zIndex: 4, touchAction: "none", cursor: "grab" }} onPointerDown={cropDown} onPointerMove={cropMove} onPointerUp={cropUp} onPointerCancel={cropUp}><i /><i /><i /><i /></div>}
+          {isVideo && tool === "crop" && <div className="bl-me-cropgrid" style={{ position: "absolute", inset: 0, zIndex: 4, touchAction: "none", cursor: "grab" }} onPointerDown={vCropDown} onPointerMove={vCropMove} onPointerUp={vCropUp} onPointerCancel={vCropUp}><i /><i /><i /><i /></div>}
           {showOverlays && typeof renderStage === "function" && renderStage()}
         </div>
       </div>
@@ -590,6 +645,16 @@ export default function MediaEditor({ file, preview, edit, setEdit, stickers, se
               <input type="range" min={100} max={300} value={Math.round(edit.crop.zoom * 100)} disabled={disabled} onChange={(e) => setCrop({ zoom: Number(e.target.value) / 100 })} /></label>
             <small className="bl-muted">Trascina la foto per spostarla · pizzica per ingrandire</small>
             <button type="button" className="bl-me-link" disabled={disabled} onClick={() => setEdit((e) => ({ ...e, crop: { ...DEFAULT_CROP } }))}>Ripristina il ritaglio</button>
+          </>}
+
+          {tool === "crop" && isVideo && <>
+            <div className="bl-me-chips" role="group" aria-label="Proporzioni">
+              {ASPECTS.map(([id, label]) => <button key={id} type="button" className={edit.crop.aspect === id ? "on" : ""} aria-pressed={edit.crop.aspect === id} disabled={disabled} onClick={() => setVCrop({ aspect: id, x: 0, y: 0 })}>{label}</button>)}
+            </div>
+            <label className="bl-me-range"><span>Zoom <b>{Math.round((edit.crop.zoom || 1) * 100)}%</b></span>
+              <input type="range" min={100} max={300} value={Math.round((edit.crop.zoom || 1) * 100)} disabled={disabled} onChange={(e) => setVCrop({ zoom: Number(e.target.value) / 100 })} /></label>
+            <small className="bl-muted">Trascina il video per spostare l&apos;inquadratura · pizzica per ingrandire</small>
+            <button type="button" className="bl-me-link" disabled={disabled || !videoCropActive(edit.crop)} onClick={() => setEdit((e) => ({ ...e, crop: { ...DEFAULT_CROP } }))}>Ripristina l&apos;inquadratura</button>
           </>}
 
           {tool === "stickers" && canSticker && <>

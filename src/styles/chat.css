@@ -1,0 +1,775 @@
+/* ===== chat — file accorpato ===== */
+
+/* ---------- chat-whatsapp ---------- */
+/* ==========================================================================
+   Chat · design system
+   Da importare DOPO gli altri CSS della chat.
+   Griglia 4px · un solo carattere (quello dell'app) · 3 raggi · 1 accento
+   ========================================================================== */
+   .bl-messages,
+   .bl-group-modal-wrap {
+     /* colore */
+     --c-accent: var(--bl-accent-chat, #7c5cff);
+     --c-accent-press: #6a48f0;
+     --c-accent-soft: rgba(124, 92, 255, 0.16);
+     --c-bubble-out: #5a3fd1;
+     --c-bubble-in: rgba(255, 255, 255, 0.08);
+     --c-surface: rgba(255, 255, 255, 0.06);
+     --c-surface-hover: rgba(255, 255, 255, 0.1);
+     --c-line: rgba(255, 255, 255, 0.08);
+     --c-text: #fff;
+     --c-text-2: rgba(255, 255, 255, 0.66);
+     --c-text-3: rgba(255, 255, 255, 0.46);
+     --c-danger: #e5484d;
+     /* forma */
+     --r-sm: 8px;
+     --r-md: 14px;
+     --r-pill: 999px;
+     /* spazio (griglia 4) */
+     --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px;
+     /* controlli */
+     --ctl: 40px;
+     font-feature-settings: "tnum" 1; /* cifre allineate per orari e contatori */
+   }
+   
+   /* un solo carattere ovunque: bottoni e campi ereditano quello dell'app */
+   .bl-messages :is(button, input, textarea, select),
+   .bl-group-modal :is(button, input, textarea, select) {
+     font-family: inherit;
+     letter-spacing: inherit;
+   }
+   .bl-messages :is(button, a):focus-visible,
+   .bl-group-modal :is(button, a):focus-visible {
+     outline: 2px solid var(--c-accent);
+     outline-offset: 2px;
+   }
+   
+   /* ---------- Intestazione elenco ---------- */
+   .bl-messages .bl-wa-head { display: flex; flex-direction: column; gap: var(--s3); margin: 0 0 var(--s2); }
+   .bl-messages .bl-wa-searchrow { display: flex; align-items: center; gap: var(--s2); }
+   .bl-messages .bl-threads-tools { display: flex; align-items: center; gap: var(--s2); }
+   
+   .bl-messages .bl-wa-search {
+     flex: 1; min-width: 0; height: var(--ctl); box-sizing: border-box;
+     display: flex; align-items: center; gap: var(--s2); padding: 0 var(--s4);
+     border-radius: var(--r-pill); background: var(--c-surface); color: var(--c-text-3);
+     transition: background .15s, box-shadow .15s;
+   }
+   .bl-messages .bl-wa-search:focus-within { background: var(--c-surface-hover); box-shadow: 0 0 0 2px var(--c-accent-soft); color: var(--c-text-2); }
+   .bl-messages .bl-wa-search input {
+     all: unset; flex: 1; min-width: 0; font-size: 16px; line-height: 1.2; color: var(--c-text); /* 16px: niente zoom su iOS */
+   }
+   .bl-messages .bl-wa-search input::placeholder { color: var(--c-text-3); }
+   .bl-messages .bl-wa-search input::-webkit-search-cancel-button { display: none; }
+   
+   /* bottoni icona: stessa misura, stessa forma */
+   .bl-messages .bl-wa-iconbtn {
+     all: unset; box-sizing: border-box; position: relative; cursor: pointer;
+     width: var(--ctl); height: var(--ctl); flex: 0 0 var(--ctl); border-radius: 50%;
+     display: grid; place-items: center; color: var(--c-text-2);
+     background: var(--c-surface); transition: background .15s, color .15s, transform .1s;
+     -webkit-tap-highlight-color: transparent;
+   }
+   .bl-messages .bl-wa-iconbtn:hover { background: var(--c-surface-hover); color: var(--c-text); }
+   .bl-messages .bl-wa-iconbtn:active { transform: scale(.94); }
+   .bl-messages .bl-wa-iconbtn.on { background: var(--c-accent-soft); color: var(--c-accent); }
+   .bl-messages .bl-wa-iconbtn.is-primary { background: var(--c-accent); color: #fff; }
+   .bl-messages .bl-wa-iconbtn.is-primary:hover { background: var(--c-accent-press); }
+   .bl-messages .bl-wa-iconbtn.is-locked { opacity: .55; }
+   .bl-messages .bl-wa-iconbtn > i {
+     position: absolute; top: -3px; right: -3px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box;
+     display: grid; place-items: center; border-radius: var(--r-pill);
+     background: var(--c-accent); color: #fff; font: 700 11px/1 inherit; font-style: normal;
+   }
+   
+   /* filtri */
+   .bl-messages .bl-wa-chips { display: flex; gap: var(--s2); overflow-x: auto; scrollbar-width: none; padding: 1px 0; }
+   .bl-messages .bl-wa-chips::-webkit-scrollbar { display: none; }
+   .bl-messages .bl-wa-chip {
+     all: unset; box-sizing: border-box; flex: 0 0 auto; cursor: pointer;
+     height: 32px; padding: 0 var(--s3); display: inline-flex; align-items: center; gap: 6px;
+     border-radius: var(--r-pill); background: var(--c-surface); color: var(--c-text-2);
+     font-size: 14px; font-weight: 600; line-height: 1; transition: background .15s, color .15s;
+     -webkit-tap-highlight-color: transparent;
+   }
+   .bl-messages .bl-wa-chip:hover { background: var(--c-surface-hover); }
+   .bl-messages .bl-wa-chip small { font-size: 12px; font-weight: 700; opacity: .8; }
+   .bl-messages .bl-wa-chip.on { background: var(--c-accent); color: #fff; }
+   
+   /* archivio */
+   .bl-messages .bl-wa-archive-head { display: flex; align-items: center; gap: var(--s3); min-width: 0; }
+   .bl-messages .bl-wa-back {
+     all: unset; box-sizing: border-box; cursor: pointer; flex: 0 0 auto; height: 32px; padding: 0 var(--s3) 0 var(--s2);
+     display: inline-flex; align-items: center; gap: 2px; border-radius: var(--r-pill);
+     background: var(--c-surface); color: var(--c-text); font-size: 14px; font-weight: 600;
+   }
+   .bl-messages .bl-wa-archive-title { font-size: 13px; color: var(--c-text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+   .bl-messages .bl-wa-nomatch { text-align: center; padding: var(--s6) 0; color: var(--c-text-3); font-size: 14px; }
+   
+   /* ---------- Righe chat ---------- */
+   .bl-messages .bl-thread-list { display: flex; flex-direction: column; gap: 0; }
+   .bl-messages .bl-thread-item { margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+   .bl-messages .bl-thread-row {
+     all: unset; box-sizing: border-box; cursor: pointer; width: 100%;
+     display: flex; align-items: center; gap: var(--s3); padding: 0 var(--s1);
+     color: var(--c-text); -webkit-tap-highlight-color: transparent; transition: background .12s;
+   }
+   .bl-messages .bl-thread-row:active { background: var(--c-surface); }
+   .bl-messages .bl-thread-avatar {
+     flex: 0 0 52px; width: 52px; height: 52px; border-radius: 50%; overflow: hidden;
+     display: grid; place-items: center;
+   }
+   .bl-messages .bl-thread-group-avatar { background: linear-gradient(135deg, #8d6bff, #5a3fd1); color: #fff; }
+   .bl-messages .bl-thread-copy {
+     flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--s1);
+     padding: var(--s3) 0; border-bottom: 1px solid var(--c-line); /* separatore che parte dopo l'avatar */
+   }
+   .bl-messages .bl-thread-item:last-child .bl-thread-copy { border-bottom: 0; }
+   .bl-messages .bl-thread-top,
+   .bl-messages .bl-thread-bottom { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); min-width: 0; }
+   .bl-messages .bl-thread-top strong {
+     min-width: 0; font-size: 16px; font-weight: 600; line-height: 1.25; letter-spacing: -0.005em;
+     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+   }
+   .bl-messages .bl-thread-time { flex: 0 0 auto; font-size: 12px; font-weight: 500; line-height: 1.25; color: var(--c-text-3); }
+   .bl-messages .bl-thread-preview {
+     flex: 1; min-width: 0; font-size: 14px; line-height: 1.3; color: var(--c-text-2);
+     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+   }
+   .bl-messages .bl-thread-tick { color: var(--c-text-3); }
+   .bl-messages .bl-thread-row.has-unread .bl-thread-time { color: var(--c-accent); font-weight: 600; }
+   .bl-messages .bl-thread-row.has-unread .bl-thread-preview { color: var(--c-text); }
+   .bl-messages .bl-thread-bottom > i {
+     flex: 0 0 auto; min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box;
+     display: grid; place-items: center; border-radius: var(--r-pill);
+     background: var(--c-accent); color: #fff; font: 700 12px/1 inherit; font-style: normal;
+   }
+   
+   /* azioni dello swipe: rettangoli a tutta altezza, uguali tra loro */
+   .bl-messages .bl-swipe-btn {
+     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+     border: 0; border-radius: 0; font-size: 12px; font-weight: 600; color: #fff; background: #3a3550;
+   }
+   .bl-messages .bl-swipe-btn.is-delete { background: var(--c-danger); }
+   
+   /* ---------- Conversazione ---------- */
+   .bl-day-sep { display: flex; justify-content: center; margin: var(--s4) 0 var(--s2); }
+   .bl-day-sep span {
+     padding: 4px var(--s3); border-radius: var(--r-pill); background: var(--c-surface);
+     color: var(--c-text-2); font-size: 12px; font-weight: 600; letter-spacing: .01em;
+   }
+   .bl-messages .bl-message-bubble {
+     display: flex; flex-direction: column; max-width: 80%; box-sizing: border-box;
+     padding: var(--s2) var(--s3) 6px; border-radius: var(--r-md) var(--r-md) var(--r-md) 4px;
+     background: var(--c-bubble-in) !important; color: var(--c-text); box-shadow: none; border: 0;
+   }
+   .bl-messages .bl-message-bubble.mine { border-radius: var(--r-md) var(--r-md) 4px var(--r-md); background: var(--c-bubble-out) !important; }
+   .bl-messages .bl-message-bubble p { margin: 0; font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
+   .bl-messages .bl-msg-sender-name { margin-bottom: 2px; font-size: 13px; font-weight: 600; color: hsl(var(--bl-msg-h, 260) 80% 72%); }
+   .bl-messages .bl-msg-time {
+     align-self: flex-end; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px;
+     font-size: 11px; font-weight: 500; line-height: 1.2; color: rgba(255, 255, 255, .58);
+   }
+   .bl-messages .bl-msg-tick { font-size: 11px; color: rgba(255, 255, 255, .7); }
+   .bl-messages .bl-msg-avatar { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; overflow: hidden; align-self: flex-end; }
+   .bl-messages .bl-chat-ref {
+     all: unset; box-sizing: border-box; cursor: pointer; display: flex; gap: var(--s2); width: 100%;
+     margin-bottom: 6px; padding: 6px var(--s2); border-left: 3px solid var(--c-accent);
+     border-radius: var(--r-sm); background: rgba(0, 0, 0, .22);
+   }
+   .bl-messages .bl-chat-ref[disabled] { cursor: default; }
+   .bl-messages .bl-chat-ref-copy { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+   .bl-messages .bl-chat-ref b { font-size: 12.5px; font-weight: 600; color: #b7a3ff; }
+   .bl-messages .bl-chat-ref small { font-size: 13px; color: var(--c-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+   .bl-messages .bl-chat-ref em { align-self: center; font-style: normal; font-size: 12px; font-weight: 600; color: #b7a3ff; }
+   .bl-messages .bl-chat-tag { display: inline-block; margin-bottom: 4px; font-size: 12px; font-weight: 600; color: var(--c-text-2); }
+   .bl-messages .bl-msg-row.hl .bl-message-bubble { box-shadow: 0 0 0 2px var(--c-accent); }
+   
+   /* ---------- Risposta in corso + barra di scrittura ---------- */
+   .bl-messages .bl-reply-bar {
+     display: flex; align-items: center; gap: var(--s3); margin-top: var(--s2); padding: var(--s2) var(--s3);
+     border-radius: var(--r-md); background: var(--c-surface);
+   }
+   .bl-messages .bl-reply-bar-line { align-self: stretch; width: 3px; border-radius: 2px; background: var(--c-accent); }
+   .bl-messages .bl-reply-bar-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+   .bl-messages .bl-reply-bar-copy b { font-size: 13px; font-weight: 600; color: #b7a3ff; }
+   .bl-messages .bl-reply-bar-copy small { font-size: 13px; color: var(--c-text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+   .bl-messages .bl-reply-bar > button {
+     all: unset; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+     color: var(--c-text-2); background: var(--c-surface-hover); font-size: 12px;
+   }
+   
+   .bl-messages .bl-wa-compose {
+     display: flex; align-items: flex-end; gap: var(--s2); width: 100%; box-sizing: border-box;
+     margin: 0; padding: var(--s2) 0 var(--s1); border: 0; border-radius: 0; background: transparent;
+   }
+   .bl-messages .bl-wa-input {
+     flex: 1; min-width: 0; display: flex; align-items: center; box-sizing: border-box;
+     min-height: 44px; padding: 0 var(--s4); border-radius: 22px; background: var(--c-surface);
+     transition: background .15s, box-shadow .15s;
+   }
+   .bl-messages .bl-wa-input:focus-within { background: var(--c-surface-hover); box-shadow: 0 0 0 2px var(--c-accent-soft); }
+   .bl-messages .bl-wa-textarea {
+     all: unset; flex: 1; min-width: 0; box-sizing: border-box; white-space: pre-wrap; overflow-wrap: anywhere;
+     font-size: 16px; line-height: 1.4; padding: 10px 0; max-height: 120px; overflow-y: auto; color: var(--c-text);
+   }
+   .bl-messages .bl-wa-textarea::placeholder { color: var(--c-text-3); }
+   .bl-messages .bl-wa-send {
+     all: unset; box-sizing: border-box; cursor: pointer; flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%;
+     display: grid; place-items: center; background: var(--c-accent); color: #fff; transition: background .15s, transform .1s;
+   }
+   .bl-messages .bl-wa-send:active:not(:disabled) { transform: scale(.94); background: var(--c-accent-press); }
+   .bl-messages .bl-wa-send:disabled { cursor: default; background: var(--c-surface-hover); color: var(--c-text-3); }
+   
+   /* ---------- Finestre gruppo ---------- */
+   .bl-group-modal { font-size: 15px; color: var(--c-text); }
+   .bl-group-modal h3 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+   .bl-group-modal-head p, .bl-group-modal .bl-field-label > span { font-size: 13px; color: var(--c-text-2); }
+   .bl-group-modal input[type="text"] {
+     box-sizing: border-box; width: 100%; height: 44px; padding: 0 var(--s4); border: 0; outline: 0;
+     border-radius: var(--r-pill); background: var(--c-surface); color: var(--c-text); font-size: 16px;
+   }
+   .bl-group-modal input[type="text"]:focus { background: var(--c-surface-hover); box-shadow: 0 0 0 2px var(--c-accent-soft); }
+   .bl-group-modal :is(.bl-cta, .bl-cta-small, .bl-ghost, .bl-ghost-small, .bl-group-add-btn, .bl-group-remove-btn) {
+     all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+     border-radius: var(--r-pill); font-size: 14px; font-weight: 600; line-height: 1; white-space: nowrap;
+   }
+   .bl-group-modal :is(.bl-cta, .bl-ghost) { height: 44px; padding: 0 var(--s5); }
+   .bl-group-modal :is(.bl-cta-small, .bl-ghost-small, .bl-group-add-btn, .bl-group-remove-btn) { height: 34px; padding: 0 var(--s3); }
+   .bl-group-modal :is(.bl-cta, .bl-cta-small) { background: var(--c-accent); color: #fff; }
+   .bl-group-modal :is(.bl-ghost, .bl-ghost-small, .bl-group-add-btn) { background: var(--c-surface); color: var(--c-text); }
+   .bl-group-modal .bl-group-add-btn.locked { opacity: .55; }
+   .bl-group-modal .bl-group-remove-btn, .bl-group-modal .bl-group-leave-btn { background: rgba(229, 72, 77, .14); color: #ff8085; }
+   .bl-group-modal :is(.bl-cta, .bl-cta-small):disabled { background: var(--c-surface-hover); color: var(--c-text-3); cursor: default; }
+   .bl-group-modal-foot { display: flex; justify-content: flex-end; gap: var(--s2); margin-top: var(--s4); }
+   .bl-group-member-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); min-height: 52px; border-bottom: 1px solid var(--c-line); }
+   .bl-group-member-avatar, .bl-member-chip-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; display: inline-grid; place-items: center; }
+   .bl-group-me-tag, .bl-group-admin-tag, .bl-group-admin-badge {
+     padding: 2px var(--s2); border-radius: var(--r-pill); background: var(--c-accent-soft); color: #c9baff; font-size: 11.5px; font-weight: 600;
+   }
+   .bl-member-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border-radius: var(--r-pill); background: var(--c-surface); font-size: 14px; }
+   .bl-member-chip-avatar { width: 24px; height: 24px; }
+   .bl-group-admin-box { padding: var(--s3) var(--s4); border-radius: var(--r-md); background: var(--c-surface); font-size: 13px; line-height: 1.45; color: var(--c-text-2); }
+
+
+/* ==========================================================================
+   BOLLE · SMOOTH FINISH
+   Rifinitura visuale: controlli più morbidi, feedback fluidi e superfici glass.
+   Questo blocco è intenzionalmente in coda per prevalere sulle regole precedenti.
+   ========================================================================== */
+
+.bl-messages,
+.bl-group-modal-wrap {
+  --r-sm: 11px;
+  --r-md: 19px;
+  --ctl: 42px;
+  --c-surface: rgba(255, 255, 255, .075);
+  --c-surface-hover: rgba(255, 255, 255, .13);
+  --c-bubble-in: rgba(255, 255, 255, .095);
+  --c-bubble-out: linear-gradient(135deg, #7558ed 0%, #5738c9 100%);
+}
+
+/* Transizioni coerenti e tap feedback */
+.bl-messages :is(button, a),
+.bl-group-modal :is(button, a) {
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color .2s ease,
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    box-shadow .22s ease,
+    transform .18s cubic-bezier(.2,.8,.2,1),
+    opacity .18s ease;
+}
+
+.bl-messages :is(button, a):active:not(:disabled),
+.bl-group-modal :is(button, a):active:not(:disabled) {
+  transform: scale(.965);
+}
+
+.bl-messages :is(button, a):disabled,
+.bl-group-modal :is(button, a):disabled {
+  cursor: default;
+}
+
+/* Pulsanti icona: cerchio pieno, bordo sottile e lieve profondità */
+.bl-messages .bl-wa-iconbtn {
+  width: var(--ctl);
+  height: var(--ctl);
+  flex-basis: var(--ctl);
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.045));
+  box-shadow: 0 3px 12px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.07);
+}
+
+.bl-messages .bl-wa-iconbtn:hover {
+  border-color: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.15);
+  box-shadow: 0 5px 16px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.bl-messages .bl-wa-iconbtn.is-primary,
+.bl-messages .bl-wa-iconbtn.on {
+  border-color: transparent;
+  box-shadow: 0 5px 16px rgba(92,65,210,.25), inset 0 1px 0 rgba(255,255,255,.2);
+}
+
+/* Filtri: chip più alti e morbidi */
+.bl-messages .bl-wa-chips { gap: 9px; padding: 3px 1px 5px; }
+
+.bl-messages .bl-wa-chip {
+  min-height: 35px;
+  height: 35px;
+  padding: 0 15px;
+  border: 1px solid rgba(255,255,255,.065);
+  border-radius: 999px;
+  background: rgba(255,255,255,.065);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.bl-messages .bl-wa-chip.on {
+  border-color: transparent;
+  background: linear-gradient(135deg, #8064f4, #5a3dce);
+  box-shadow: 0 4px 13px rgba(92,65,210,.22), inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+/* Torna indietro e azioni archivio */
+.bl-messages .bl-wa-back {
+  min-height: 36px;
+  border: 1px solid rgba(255,255,255,.075);
+  background: rgba(255,255,255,.075);
+  padding-inline: 14px;
+}
+
+/* Righe conversazione: feedback meno rigido */
+.bl-messages .bl-thread-row {
+  border-radius: 17px;
+  transition: background .2s ease, transform .18s ease;
+}
+
+.bl-messages .bl-thread-row:active {
+  border-radius: 17px;
+  background: rgba(255,255,255,.075);
+}
+
+/* Azioni swipe con angoli arrotondati */
+.bl-messages .bl-swipe-btn {
+  margin-block: 4px;
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.bl-messages .bl-swipe-btn.is-delete {
+  background: linear-gradient(145deg, #ed626b, #d83d50);
+}
+
+/* Bolle messaggi: più rotonde, con un glass leggero */
+.bl-messages .bl-message-bubble {
+  padding: 10px 14px 7px;
+  border: 1px solid rgba(255,255,255,.055);
+  border-radius: 20px 20px 20px 7px;
+  background: linear-gradient(145deg, rgba(255,255,255,.115), rgba(255,255,255,.065)) !important;
+  box-shadow: 0 3px 12px rgba(0,0,0,.075), inset 0 1px 0 rgba(255,255,255,.035);
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+
+.bl-messages .bl-message-bubble.mine {
+  border-color: rgba(255,255,255,.1);
+  border-radius: 20px 20px 7px 20px;
+  background: linear-gradient(135deg, #7558ed 0%, #5738c9 100%) !important;
+  box-shadow: 0 4px 15px rgba(78,53,180,.2), inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+.bl-messages .bl-msg-row.hl .bl-message-bubble {
+  box-shadow: 0 0 0 2px var(--c-accent), 0 5px 18px rgba(0,0,0,.15);
+}
+
+/* Citazioni e riferimenti */
+.bl-messages .bl-chat-ref {
+  padding: 8px 10px;
+  border-left-width: 3px;
+  border-radius: 12px;
+  background: rgba(0,0,0,.19);
+}
+
+.bl-messages .bl-message-bubble.mine .bl-chat-ref {
+  background: rgba(255,255,255,.16);
+}
+
+/* Barra reply */
+.bl-messages .bl-reply-bar {
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 17px;
+  background: linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.045));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.bl-messages .bl-reply-bar > button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 50%;
+  background: rgba(255,255,255,.09);
+}
+
+/* Composer: contenitore input e invio */
+.bl-messages .bl-wa-compose {
+  gap: 9px;
+  padding-top: 9px;
+}
+
+.bl-messages .bl-wa-input {
+  min-height: 46px;
+  padding-inline: 17px;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(255,255,255,.095), rgba(255,255,255,.055));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045);
+}
+
+.bl-messages .bl-wa-input:focus-within {
+  border-color: rgba(124,92,255,.45);
+  box-shadow: 0 0 0 3px rgba(124,92,255,.13), inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.bl-messages .bl-wa-send {
+  flex-basis: 46px;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: linear-gradient(145deg, #896df8, #6245d7);
+  box-shadow: 0 5px 16px rgba(92,65,210,.28), inset 0 1px 0 rgba(255,255,255,.2);
+}
+
+.bl-messages .bl-wa-send:hover:not(:disabled) {
+  box-shadow: 0 7px 20px rgba(92,65,210,.36), inset 0 1px 0 rgba(255,255,255,.22);
+  filter: brightness(1.06);
+}
+
+/* Campi e pulsanti delle modali gruppo */
+.bl-group-modal input[type="text"] {
+  min-height: 46px;
+  border: 1px solid rgba(255,255,255,.075);
+  background: rgba(255,255,255,.075);
+  transition: background .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.bl-group-modal input[type="text"]:focus {
+  border-color: rgba(124,92,255,.45);
+  box-shadow: 0 0 0 3px rgba(124,92,255,.13);
+}
+
+.bl-group-modal :is(.bl-cta, .bl-cta-small, .bl-ghost, .bl-ghost-small, .bl-group-add-btn, .bl-group-remove-btn) {
+  min-height: 38px;
+  border: 1px solid transparent;
+  letter-spacing: -.01em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.bl-group-modal :is(.bl-cta, .bl-ghost) {
+  min-height: 46px;
+  padding-inline: 19px;
+}
+
+.bl-group-modal :is(.bl-cta-small, .bl-ghost-small, .bl-group-add-btn, .bl-group-remove-btn) {
+  padding-inline: 15px;
+}
+
+.bl-group-modal :is(.bl-cta, .bl-cta-small) {
+  background: linear-gradient(135deg, #8064f4, #5a3dce);
+  box-shadow: 0 4px 13px rgba(92,65,210,.2), inset 0 1px 0 rgba(255,255,255,.17);
+}
+
+.bl-group-modal :is(.bl-ghost, .bl-ghost-small, .bl-group-add-btn) {
+  border-color: rgba(255,255,255,.075);
+  background: rgba(255,255,255,.075);
+}
+
+.bl-group-modal .bl-group-remove-btn,
+.bl-group-modal .bl-group-leave-btn {
+  border-color: rgba(229,72,77,.12);
+  background: rgba(229,72,77,.15);
+}
+
+/* Separatore giorno più soffice */
+.bl-messages .bl-day-sep span {
+  padding: 5px 13px;
+  border: 1px solid rgba(255,255,255,.045);
+  background: rgba(255,255,255,.075);
+  border-radius: 999px;
+}
+
+/* Accessibilità: rispetta la preferenza di movimento ridotto */
+@media (prefers-reduced-motion: reduce) {
+  .bl-messages *,
+  .bl-group-modal * {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ---------- chat-fullscreen (dopo chat-whatsapp) ---------- */
+/* ==========================================================================
+   Messaggi · schermata intera + layout anti-sovrapposizione
+   Importare per ULTIMO, dopo chat-whatsapp.css e bolle-polish.css.
+   ========================================================================== */
+
+/* ---------- Schermata intera ---------- */
+/* Lo sheet «Messaggi» dell'app (già sopra feed e footbar) diventa a tutto schermo quando contiene la chat.
+   Niente portal: restiamo nel suo livello, così nulla può coprirci. */
+   .bl-root .bl-sheet-wrap:has(.bl-msgs-screen) {
+    position: fixed !important; inset: 0 !important; z-index: 120 !important;
+    display: block !important; padding: 0 !important; margin: 0 !important;
+    background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  }
+  .bl-root .bl-sheet-wrap > .bl-sheet:has(.bl-msgs-screen) {
+    position: absolute !important; inset: 0 !important; width: 100% !important; max-width: none !important;
+    height: 100% !important; max-height: none !important; margin: 0 !important; padding: 0 !important; gap: 0 !important;
+    border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
+    animation: none !important; transform: none !important; translate: none !important; scale: none !important;
+    overflow: hidden !important;
+  }
+  /* l'intestazione dello sheet è sostituita da quella della schermata */
+  .bl-root .bl-sheet:has(.bl-msgs-screen) .bl-sheet-heading { display: none !important; }
+  
+  /* ---------- Schermata intera ---------- */
+  .bl-messages.bl-msgs-screen {
+    --msgs-bg: #100b26;                      /* sempre scuro: il testo della chat è bianco, indipendente dal tema */
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    box-sizing: border-box; margin: 0; padding: 0;
+    overflow: hidden;                        /* serve ad arrotondare gli angoli durante la molla */
+    background: var(--msgs-bg);
+    color: var(--c-text);
+    overscroll-behavior: contain;
+    will-change: transform, border-radius;
+  }
+  .bl-messages.bl-msgs-screen.is-suspended { visibility: hidden; pointer-events: none; } /* mentre è aperta una bolla */
+  
+  /* ---------- Barra in alto ---------- */
+  .bl-msgs-top {
+    flex: 0 0 auto; display: flex; align-items: center; gap: var(--s3);
+    padding: calc(10px + env(safe-area-inset-top)) var(--s3) var(--s3);
+    border-bottom: 1px solid var(--c-line);
+    background: var(--msgs-bg);
+  }
+  .bl-msgs-top.is-list { padding-left: 64px; } /* nell'elenco l'uscita è la freccia dello sheet: le lascio lo spazio */
+  .bl-msgs-title { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 10px; }
+  .bl-msgs-title h2 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; }
+  .bl-msgs-peer-avatar {
+    flex: 0 0 38px; width: 38px; height: 38px; box-sizing: border-box; border-radius: 50%;
+    overflow: hidden; display: grid; place-items: center; contain: layout paint;
+  }
+  .bl-msgs-peer-avatar > :not(svg) { width: 100%; height: 100%; max-width: none; max-height: none; border-radius: 50%; object-fit: cover; display: flex; align-items: center; justify-content: center; }
+  .bl-msgs-peer-copy { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .bl-msgs-peer-copy strong { font-size: 16px; font-weight: 650; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bl-msgs-peer-copy small { font-size: 12px; line-height: 1.2; color: var(--c-text-3); }
+  
+  /* ---------- Corpo ---------- */
+  .bl-msgs-pane { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .bl-msgs-pane.is-chat { animation: bl-msgs-pane-in .6s var(--bl-spring-soft, cubic-bezier(.3, 1.25, .6, 1)) backwards; }
+  @keyframes bl-msgs-pane-in { from { translate: 26px 0; opacity: 0; } 35% { opacity: 1; } to { translate: 0 0; opacity: 1; } }
+  
+  /* elenco chat: scorre da solo, l'intestazione con ricerca e filtri resta in alto */
+  .bl-msgs-scroll {
+    flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    padding: 0 var(--s3) calc(var(--s4) + env(safe-area-inset-bottom));
+  }
+  .bl-msgs-scroll > .bl-wa-head {
+    position: sticky; top: 0; z-index: 3; margin: 0; padding: var(--s3) 0 var(--s2);
+    background: var(--msgs-bg);
+  }
+  
+  /* ==========================================================================
+     Anti-sovrapposizione
+     Causa: lo sheet aveva un'altezza massima (100dvh − 110px) e le righe, essendo
+     flex item comprimibili, venivano schiacciate le une sulle altre.
+     Ora ogni riga ha la sua altezza naturale e a scorrere è solo il contenitore.
+     ========================================================================== */
+  
+  /* elenco chat */
+  .bl-messages.bl-msgs-screen .bl-thread-list { display: flex; flex-direction: column; gap: 0; height: auto; max-height: none; overflow: visible; }
+  .bl-messages.bl-msgs-screen .bl-thread-item { flex: 0 0 auto; min-height: 68px; margin: 0; }
+  .bl-messages.bl-msgs-screen .bl-thread-row { min-height: 68px; }
+  
+  /* conversazione */
+  .bl-messages.bl-msgs-screen .bl-message-history {
+    flex: 1 1 auto; min-height: 0; height: auto; max-height: none;
+    display: flex; flex-direction: column; gap: 6px;
+    overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    padding: var(--s2) var(--s3) var(--s3); box-sizing: border-box;
+  }
+  .bl-messages.bl-msgs-screen .bl-message-history > * { flex: 0 0 auto; min-height: 0; }
+  .bl-messages.bl-msgs-screen .bl-msg-row { position: relative; margin: 0; }
+  .bl-messages.bl-msgs-screen .bl-message-bubble { min-width: 0; overflow-wrap: anywhere; }
+  .bl-messages.bl-msgs-screen .bl-day-sep { margin: var(--s3) 0 var(--s1); }
+  
+  /* risposta in corso, errori e barra di scrittura: fissi in basso, mai sopra i messaggi */
+  .bl-messages.bl-msgs-screen .bl-msgs-error { flex: 0 0 auto; margin: var(--s2) var(--s3) 0; }
+  .bl-messages.bl-msgs-screen .bl-reply-bar { flex: 0 0 auto; margin: var(--s2) var(--s3) 0; }
+  .bl-messages.bl-msgs-screen .bl-wa-compose {
+    flex: 0 0 auto; width: auto; padding: 9px var(--s3) calc(10px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--c-line);
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .bl-msgs-pane.is-chat { animation: none; }
+  }
+
+
+/* ---------- Testata della conversazione (indietro · nome/gruppo · membri · esci) ---------- */
+.bl-msgs-top.is-chat {
+  gap: var(--s2);
+  padding: calc(8px + env(safe-area-inset-top)) var(--s3) var(--s2) var(--s2);
+  position: relative; z-index: 4;
+}
+.bl-messages .bl-msgs-hbtn {
+  all: unset; box-sizing: border-box; cursor: pointer; flex: 0 0 var(--ctl);
+  width: var(--ctl); height: var(--ctl); border-radius: 50%;
+  display: grid; place-items: center; color: var(--c-text);
+  -webkit-tap-highlight-color: transparent;
+}
+.bl-messages .bl-msgs-hbtn:hover { background: var(--c-surface-hover); }
+.bl-messages .bl-msgs-actions .bl-msgs-hbtn { background: var(--c-surface); color: var(--c-text-2); }
+.bl-messages .bl-msgs-actions .bl-msgs-hbtn:hover { color: var(--c-text); }
+.bl-messages .bl-msgs-hbtn.is-danger { color: #ff8085; }
+.bl-messages .bl-msgs-hbtn.is-danger.on { background: rgba(229, 72, 77, .2); }
+.bl-messages .bl-msgs-actions { flex: 0 0 auto; display: flex; align-items: center; gap: var(--s2); }
+.bl-messages .bl-msgs-peer {
+  all: unset; box-sizing: border-box; cursor: pointer; flex: 1 1 auto; min-width: 0;
+  display: flex; align-items: center; gap: 10px; padding: 2px var(--s1); border-radius: var(--r-md);
+  -webkit-tap-highlight-color: transparent;
+}
+.bl-messages .bl-msgs-peer:active { background: var(--c-surface); }
+.bl-messages .bl-msgs-peer-avatar.is-group { background: linear-gradient(135deg, #8d6bff, #5a3fd1); color: #fff; }
+.bl-messages .bl-msgs-peer-copy { flex: 1 1 auto; }
+.bl-messages .bl-msgs-peer-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* conferma «abbandona gruppo» sotto la testata */
+.bl-messages .bl-msgs-leave {
+  flex: 0 0 auto; display: flex; align-items: center; gap: var(--s2);
+  padding: var(--s2) var(--s3); background: rgba(229, 72, 77, .1); border-bottom: 1px solid var(--c-line);
+  font-size: 14px; color: var(--c-text);
+}
+.bl-messages .bl-msgs-leave > span { flex: 1; min-width: 0; }
+.bl-messages .bl-msgs-leave button {
+  all: unset; box-sizing: border-box; cursor: pointer; height: 34px; padding: 0 var(--s4);
+  display: inline-flex; align-items: center; border-radius: var(--r-pill);
+  background: var(--c-surface-hover); font-size: 14px; font-weight: 600;
+}
+.bl-messages .bl-msgs-leave button.is-yes { background: var(--c-danger); color: #fff; }
+
+/* Elenco chat: freccia di uscita a sinistra, X di chiusura a destra */
+.bl-msgs-top.is-list { padding-left: var(--s2); padding-right: var(--s2); }
+.bl-messages .bl-msgs-top.is-list .bl-msgs-title { padding-left: 2px; }
+.bl-messages .bl-msgs-close { background: var(--c-surface); color: var(--c-text-2); }
+.bl-messages .bl-msgs-close:hover { color: var(--c-text); }
+
+/* ---------- Correzioni: tastiera, profilo, zoom ---------- */
+/* con la tastiera aperta non serve lo spazio della home-bar sotto la barra di scrittura */
+.bl-messages.bl-msgs-screen.is-kb .bl-wa-compose { padding-bottom: 9px; }
+/* il profilo si apre sotto questa schermata: mentre è aperto, lo strato dei messaggi non intercetta i tocchi e non si vede */
+.bl-root .bl-sheet-wrap:has(.bl-msgs-screen.is-peek) { visibility: hidden !important; pointer-events: none !important; }
+/* iOS ingrandisce la pagina quando un campo con testo < 16px prende il focus */
+.bl-messages :is(input, textarea, select),
+.bl-group-modal-wrap :is(input, textarea, select) { font-size: 16px !important; -webkit-text-size-adjust: 100%; }
+.bl-messages, .bl-group-modal-wrap { touch-action: manipulation; }
+/* la cella di scrittura cresce con il testo */
+.bl-messages .bl-wa-textarea { min-height: 22px; }
+
+/* ==========================================================================
+   Messaggi · tema chiaro
+   La schermata era fissa scura (--msgs-bg #100b26, testo bianco) mentre il blocco «CHAT — revisione»
+   di bolle-polish.css usa --cosmos-* (vetro bianco, testo scuro) in tema chiaro: risultato = pannelli
+   chiari e testi scuri su sfondo scuro. Qui la schermata segue davvero il tema.
+   Va in coda a chat.css (dopo bolle-polish.css).
+   ========================================================================== */
+
+.bl-root.bl-appearance-light .bl-messages,
+.bl-root.bl-appearance-light .bl-group-modal-wrap {
+  --c-accent-soft: rgba(124, 92, 255, .14);
+  --c-bubble-in: rgba(255, 255, 255, .86);
+  --c-surface: rgba(80, 55, 140, .08);
+  --c-surface-hover: rgba(80, 55, 140, .14);
+  --c-line: rgba(80, 55, 140, .16);
+  --c-text: #282144;
+  --c-text-2: #5b4f78;
+  --c-text-3: #6f6489;
+}
+.bl-root.bl-appearance-light .bl-messages.bl-msgs-screen { --msgs-bg: #efe9fc; }
+
+/* elenco: avatar, riga premuta, pulsante primario */
+.bl-root.bl-appearance-light .bl-thread-avatar { border-color: rgba(80, 55, 140, .22) !important; box-shadow: 0 3px 10px rgba(60, 40, 110, .14); }
+.bl-root.bl-appearance-light .bl-thread-row:active { background: rgba(80, 55, 140, .08) !important; }
+.bl-root.bl-appearance-light .bl-wa-iconbtn.is-primary { background: var(--c-accent) !important; color: #fff !important; border-color: transparent !important; }
+.bl-root.bl-appearance-light .bl-wa-iconbtn.is-primary * { color: #fff; }
+.bl-root.bl-appearance-light .bl-thread-time, .bl-root.bl-appearance-light .bl-thread-preview { opacity: 1; color: var(--c-text-2); }
+
+/* messaggi ricevuti: tinta chiara per mittente, testo scuro */
+.bl-root.bl-appearance-light .bl-msg-row.bl-msg-colored .bl-message-bubble:not(.mine) {
+  background: hsl(var(--bl-msg-h, 260) 70% 95%) !important;
+  border-color: hsl(var(--bl-msg-h, 260) 40% 80%) !important;
+  box-shadow: 0 3px 10px rgba(60, 40, 110, .08) !important;
+}
+.bl-root.bl-appearance-light .bl-msg-row.bl-msg-colored .bl-msg-sender-name { color: hsl(var(--bl-msg-h, 260) 62% 34%); }
+.bl-root.bl-appearance-light .bl-message-bubble:not(.mine) a { text-decoration: underline; }
+.bl-root.bl-appearance-light .bl-message-bubble:not(.mine) .bl-msg-time,
+.bl-root.bl-appearance-light .bl-message-bubble:not(.mine) .bl-msg-tick { color: var(--c-text-3) !important; opacity: 1; }
+.bl-root.bl-appearance-light .bl-message-bubble:not(.mine) .bl-chat-ref { background: rgba(90, 63, 209, .09) !important; }
+.bl-root.bl-appearance-light .bl-message-bubble:not(.mine) .bl-chat-ref :is(b, em) { color: #5a3fd1 !important; }
+.bl-root.bl-appearance-light .bl-message-bubble:not(.mine) .bl-chat-ref small { color: var(--c-text-2) !important; }
+
+/* risposta in corso, tasto rispondi, messaggi di sistema */
+.bl-root.bl-appearance-light .bl-reply-bar-copy b { color: #5a3fd1; }
+.bl-root.bl-appearance-light .bl-msg-reply-btn { color: var(--c-text-2); }
+.bl-root.bl-appearance-light .bl-msg-system { background: rgba(80, 55, 140, .10); color: #4a3f6b; opacity: 1; }
+.bl-root.bl-appearance-light .bl-msg-row.hl .bl-message-bubble { box-shadow: 0 0 0 2px var(--c-accent) !important; }
+
+@media (prefers-color-scheme: light) {
+  .bl-root.bl-appearance-auto .bl-messages,
+  .bl-root.bl-appearance-auto .bl-group-modal-wrap {
+    --c-accent-soft: rgba(124, 92, 255, .14);
+    --c-bubble-in: rgba(255, 255, 255, .86);
+    --c-surface: rgba(80, 55, 140, .08);
+    --c-surface-hover: rgba(80, 55, 140, .14);
+    --c-line: rgba(80, 55, 140, .16);
+    --c-text: #282144;
+    --c-text-2: #5b4f78;
+    --c-text-3: #6f6489;
+  }
+  .bl-root.bl-appearance-auto .bl-messages.bl-msgs-screen { --msgs-bg: #efe9fc; }
+
+  /* elenco: avatar, riga premuta, pulsante primario */
+  .bl-root.bl-appearance-auto .bl-thread-avatar { border-color: rgba(80, 55, 140, .22) !important; box-shadow: 0 3px 10px rgba(60, 40, 110, .14); }
+  .bl-root.bl-appearance-auto .bl-thread-row:active { background: rgba(80, 55, 140, .08) !important; }
+  .bl-root.bl-appearance-auto .bl-wa-iconbtn.is-primary { background: var(--c-accent) !important; color: #fff !important; border-color: transparent !important; }
+  .bl-root.bl-appearance-auto .bl-wa-iconbtn.is-primary * { color: #fff; }
+  .bl-root.bl-appearance-auto .bl-thread-time, .bl-root.bl-appearance-auto .bl-thread-preview { opacity: 1; color: var(--c-text-2); }
+
+  /* messaggi ricevuti: tinta chiara per mittente, testo scuro */
+  .bl-root.bl-appearance-auto .bl-msg-row.bl-msg-colored .bl-message-bubble:not(.mine) {
+    background: hsl(var(--bl-msg-h, 260) 70% 95%) !important;
+    border-color: hsl(var(--bl-msg-h, 260) 40% 80%) !important;
+    box-shadow: 0 3px 10px rgba(60, 40, 110, .08) !important;
+  }
+  .bl-root.bl-appearance-auto .bl-msg-row.bl-msg-colored .bl-msg-sender-name { color: hsl(var(--bl-msg-h, 260) 62% 34%); }
+  .bl-root.bl-appearance-auto .bl-message-bubble:not(.mine) a { text-decoration: underline; }
+  .bl-root.bl-appearance-auto .bl-message-bubble:not(.mine) .bl-msg-time,
+  .bl-root.bl-appearance-auto .bl-message-bubble:not(.mine) .bl-msg-tick { color: var(--c-text-3) !important; opacity: 1; }
+  .bl-root.bl-appearance-auto .bl-message-bubble:not(.mine) .bl-chat-ref { background: rgba(90, 63, 209, .09) !important; }
+  .bl-root.bl-appearance-auto .bl-message-bubble:not(.mine) .bl-chat-ref :is(b, em) { color: #5a3fd1 !important; }
+  .bl-root.bl-appearance-auto .bl-message-bubble:not(.mine) .bl-chat-ref small { color: var(--c-text-2) !important; }
+
+  /* risposta in corso, tasto rispondi, messaggi di sistema */
+  .bl-root.bl-appearance-auto .bl-reply-bar-copy b { color: #5a3fd1; }
+  .bl-root.bl-appearance-auto .bl-msg-reply-btn { color: var(--c-text-2); }
+  .bl-root.bl-appearance-auto .bl-msg-system { background: rgba(80, 55, 140, .10); color: #4a3f6b; opacity: 1; }
+  .bl-root.bl-appearance-auto .bl-msg-row.hl .bl-message-bubble { box-shadow: 0 0 0 2px var(--c-accent) !important; }
+
+}

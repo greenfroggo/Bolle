@@ -9,6 +9,15 @@ import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 
    Props compatibili con il vecchio TagPicker: tags, onChange, disabled, suggestions, onSearch. */
 
 export const MAX_TAGS = 3;
+
+/* Focus: il campo di testo interno non ha bordo né riquadro (era il rettangolo viola a spigoli vivi);
+   si illumina tutto il contenitore, con gli angoli arrotondati.
+   Zoom su iPhone: Safari ingrandisce la pagina se il testo del campo è sotto i 16px, quindi qui è 16px. */
+const FOCUS_CSS = `
+.bl-tagac .bl-tagac-field{border-radius:16px;transition:border-color .15s ease,box-shadow .15s ease}
+.bl-tagac .bl-tagac-field input,.bl-tagac .bl-tagac-field input:focus,.bl-tagac .bl-tagac-field input:focus-visible{border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;font-size:16px!important;-webkit-appearance:none;appearance:none}
+.bl-tagac .bl-tagac-field:focus-within,.bl-tagac .bl-tagac-field.is-focus{border-color:#8f7dff;box-shadow:0 0 0 3px rgba(143,125,255,.35),0 0 16px rgba(143,125,255,.45)}
+`;
 const DEBOUNCE_MS = 140;
 const clean = (v) => String(v || "").trim().replace(/^@+/, "").toLowerCase();
 
@@ -117,11 +126,12 @@ export default function TagAutocomplete({ tags = [], onChange, disabled = false,
 
   return (
     <div className={`bl-tagac ${disabled ? "is-disabled" : ""}`} ref={wrapRef}>
+      <style>{FOCUS_CSS}</style>
       <div className="bl-tagac-head">
         <b>Tagga qualcuno</b>
         <small>{tags.length}/{max}</small>
       </div>
-      <div className={`bl-tagac-field ${focused ? "is-focus" : ""}`} onClick={() => inputRef.current?.focus()}>
+      <div className={`bl-tagac-field ${focused ? "is-focus" : ""}`} onClick={() => inputRef.current?.focus({ preventScroll: true })}>
         {tags.map((t) => (
           <span key={t} className="bl-tagac-chip">
             <Dot name={clean(t)} />@{clean(t)}

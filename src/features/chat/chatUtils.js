@@ -177,3 +177,37 @@
      if (/bolle_group_|does not exist|schema cache/i.test(m)) return "I gruppi non sono ancora attivi sul server (manca la migrazione bolle_groups.sql).";
      return "Operazione non riuscita. Riprova.";
    }
+
+/* ================= Date in stile WhatsApp ================= */
+const _d = (v) => { const d = new Date(v); return Number.isNaN(d.getTime()) ? null : d; };
+export const dayKey = (v) => { const d = _d(v); return d ? `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}` : ""; };
+const _startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+const _daysAgo = (d) => Math.round((_startOfDay(new Date()) - _startOfDay(d)) / 86400000);
+
+/* Orario dentro la bolla: 14:59 */
+export function formatClock(v) {
+  const d = _d(v);
+  return d ? d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) : "";
+}
+
+/* Elenco chat: oggi -> 14:59, ieri -> "Ieri", ultima settimana -> "venerdì", oltre -> 11/11/2026 */
+export function formatThreadTime(v) {
+  const d = _d(v);
+  if (!d) return "";
+  const n = _daysAgo(d);
+  if (n <= 0) return formatClock(d);
+  if (n === 1) return "Ieri";
+  if (n < 7) return d.toLocaleDateString("it-IT", { weekday: "long" });
+  return d.toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+/* Separatore di giorno dentro la conversazione */
+export function formatDayLabel(v) {
+  const d = _d(v);
+  if (!d) return "";
+  const n = _daysAgo(d);
+  if (n <= 0) return "Oggi";
+  if (n === 1) return "Ieri";
+  if (n < 7) { const w = d.toLocaleDateString("it-IT", { weekday: "long" }); return w.charAt(0).toUpperCase() + w.slice(1); }
+  return d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+}

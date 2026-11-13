@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Trophy, Medal, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { supabase, errorText } from "../../lib/bolleCore.jsx";
+import { supabase, errorText, avatarFor } from "../../lib/bolleCore.jsx";
+import AvatarImage from "../../components/AvatarImage.jsx";
 import { bubbleKind, KIND_META } from "../../lib/bubbleTypes.js";
 import { cachedSignedUrl } from "../../lib/storage.js";
 import { romeToday, isoDay } from "../../lib/geo.js";
@@ -8,6 +9,13 @@ import { romeToday, isoDay } from "../../lib/geo.js";
 function openUserProfile(username) {
   window.dispatchEvent(new CustomEvent("bolle:open-profile", { detail: { username } }));
 }
+
+/* Avatar dell'utente. I primi tre del podio hanno un anello fluorescente (oro, argento, bronzo). */
+function LbAvatar({ username, avatarMap, rank = 0 }) {
+  const avatar = avatarFor(username, avatarMap) || "🫧";
+  return <span className={`bl-lb-avatar${rank ? ` bl-lb-podium-${rank}` : ""}`} aria-hidden="true"><AvatarImage avatar={avatar} /></span>;
+}
+const podiumRank = (pos) => { const n = Number(pos); return n >= 1 && n <= 3 ? n : 0; };
 
 /* Albo d'oro: i primi classificati di settimane e mesi conclusi, fino a un anno indietro. */
 const HALL_TOP = 3;
@@ -37,7 +45,7 @@ function hallPeriods(kind) {
   return out;
 }
 
-export function HallOfFameView({ medalColors, onNotify }) {
+export function HallOfFameView({ medalColors, onNotify, avatarMap = {} }) {
   const [kind, setKind] = useState("week");
   const periods = useMemo(() => hallPeriods(kind), [kind]);
   const [start, setStart] = useState(() => hallPeriods("week")[0].value);
@@ -77,19 +85,20 @@ export function HallOfFameView({ medalColors, onNotify }) {
       {current && <p className="bl-hall-period">{current.label}</p>}
       {rows === null && <p className="bl-muted">Carico l’albo d’oro…</p>}
       {rows && rows.length === 0 && <div className="bl-insights-empty"><span><Trophy size={54} strokeWidth={1.7} aria-hidden="true" /></span><h3>Nessun vincitore</h3><p>In questo periodo nessuna bolla è stata scoppiata.</p></div>}
-      {rows && rows.length > 0 && <ol className="bl-lb">{rows.map(r => (
-        <li key={r.pos} className={r.is_me ? "me" : ""}>
-          <span className="bl-lb-pos"><Medal size={25} strokeWidth={2} color={medalColors[Math.min(Number(r.pos), 3) - 1] || medalColors[2]} aria-label={`Posizione ${r.pos}`} /></span>
+      {rows && rows.length > 0 && <ol className="bl-lb">{rows.map(r => { const rank = podiumRank(Math.min(Number(r.pos) || 3, 3)) || 3; return (
+        <li key={r.pos} className={`bl-lb-podium-${rank} ${r.is_me ? "me" : ""}`}>
+          <span className="bl-lb-pos"><Medal size={25} strokeWidth={2} color={medalColors[rank - 1]} aria-label={`Posizione ${r.pos}`} /></span>
+          <LbAvatar username={r.username} avatarMap={avatarMap} rank={rank} />
           <span className="bl-lb-name"><button type="button" className="bl-user-link" onClick={(e) => { e.stopPropagation(); openUserProfile(r.username); }} onKeyDown={(e) => e.stopPropagation()}>{r.username}</button>{r.is_me && <em> (tu)</em>}</span>
           <strong>{r.opens} {Number(r.opens) === 1 ? "apertura" : "aperture"}</strong>
         </li>
-      ))}</ol>}
+      ); })}</ol>}
       <small className="bl-muted">Si possono rivedere i podi delle settimane (da lunedì a domenica) e dei mesi conclusi, fino a un anno indietro. Ora italiana. A parità di aperture, ordine alfabetico.</small>
     </div>
   );
 }
 
-export function LeaderboardUserDetail({ row, period, onBack }) {
+export function LeaderboardUserDetail({ row, period, onBack, avatarMap = {} }) {
   const [state, setState] = useState({ loading: true, bubbles: [], error: "" });
 
   useEffect(() => {
@@ -116,6 +125,7 @@ export function LeaderboardUserDetail({ row, period, onBack }) {
       <button type="button" className="bl-ghost bl-lb-back" onClick={onBack}>‹ Torna alla classifica</button>
       <div className="bl-lb-detail-head">
         <span className="bl-lb-detail-pos">{row.pos}°</span>
+        <LbAvatar username={row.username} avatarMap={avatarMap} rank={podiumRank(row.pos)} />
         <div>
           <strong><button type="button" className="bl-user-link" onClick={() => openUserProfile(row.username)}>@{row.username}</button>{row.is_me && <em> (tu)</em>}</strong>
           <small>{row.opens} {Number(row.opens) === 1 ? "apertura" : "aperture"} {period === "week" ? "questa settimana" : "questo mese"}</small>
@@ -146,7 +156,7 @@ export function LeaderboardUserDetail({ row, period, onBack }) {
   );
 }
 
-export default function LeaderboardView({ onNotify }) {
+export default function LeaderboardView({ onNotify, avatarMap = {} }) {
   const [period, setPeriod] = useState("week");
   const [rows, setRows] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
@@ -163,8 +173,8 @@ export default function LeaderboardView({ onNotify }) {
     return () => { alive = false; };
   }, [period, onNotify]);
 
-  const medalColors = ["#c79a2b", "#8b94a6", "#b67b58"];
-  if (selectedRow) return <LeaderboardUserDetail row={selectedRow} period={period} onBack={() => setSelectedRow(null)} />;
+  const medalColors = ["#ffc61a", "#bccaff", "#ff8a3d"]; // oro, argento, bronzo fluorescenti
+  if (selectedRow) return <LeaderboardUserDetail row={selectedRow} period={period} onBack={() => setSelectedRow(null)} avatarMap={avatarMap} />;
 
   return (
     <div className="bl-insights">
@@ -173,7 +183,7 @@ export default function LeaderboardView({ onNotify }) {
         <button className={period === "month" ? "on" : ""} aria-pressed={period === "month"} onClick={() => setPeriod("month")}>Mensile</button>
         <button className={period === "hall" ? "on" : ""} aria-pressed={period === "hall"} onClick={() => setPeriod("hall")}>Albo d’oro</button>
       </div>
-      {period === "hall" ? <HallOfFameView medalColors={medalColors} onNotify={onNotify} /> : (
+      {period === "hall" ? <HallOfFameView medalColors={medalColors} onNotify={onNotify} avatarMap={avatarMap} /> : (
         <>
           <h3 className="bl-lb-title"><Trophy size={22} strokeWidth={2} aria-hidden="true" /> CLASSIFICA {period === "week" ? "SETTIMANALE" : "MENSILE"}</h3>
           <p className="bl-lb-metric">Conta le <strong>aperture ricevute</strong> dalle bolle che ogni utente ha pubblicato. Non sono gli scoppi che effettui tu.</p>
@@ -184,8 +194,9 @@ export default function LeaderboardView({ onNotify }) {
           {rows && rows.length > 0 && (
             <ol className="bl-lb">
               {rows.map((r) => (
-                <li key={r.pos} className={`bl-lb-clickable ${r.is_me ? "me" : ""}`} role="button" tabIndex={0} aria-label={`Vedi bolle e aperture di ${r.username}`} onClick={() => setSelectedRow(r)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedRow(r); } }}>
+                <li key={r.pos} className={`bl-lb-clickable ${podiumRank(r.pos) ? `bl-lb-podium-${podiumRank(r.pos)} ` : ""}${r.is_me ? "me" : ""}`} role="button" tabIndex={0} aria-label={`Vedi bolle e aperture di ${r.username}`} onClick={() => setSelectedRow(r)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelectedRow(r); } }}>
                   <span className="bl-lb-pos">{r.pos >= 1 && r.pos <= 3 ? <Medal size={25} strokeWidth={2} color={medalColors[r.pos - 1]} aria-label={`Posizione ${r.pos}`} /> : `${r.pos}.`}</span>
+                  <LbAvatar username={r.username} avatarMap={avatarMap} rank={podiumRank(r.pos)} />
                   <span className="bl-lb-name"><button type="button" className="bl-user-link" onClick={(e) => { e.stopPropagation(); openUserProfile(r.username); }} onKeyDown={(e) => e.stopPropagation()}>{r.username}</button>{r.is_me && <em> (tu)</em>}
                     <span className="bl-lb-badges">
                       {r.trend === "up" ? <span className="bl-lb-trend up" title="Posizione in salita"><TrendingUp size={13} /> In salita</span> : r.trend === "down" ? <span className="bl-lb-trend down" title="Posizione in discesa"><TrendingDown size={13} /> In discesa</span> : r.trend === "stable" ? <span className="bl-lb-trend stable" title="Posizione stabile"><Minus size={13} /> Stabile</span> : null}

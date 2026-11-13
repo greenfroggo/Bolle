@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { VenetianMask, Bell, Volume2 } from "lucide-react";
-import { soundOn, setSoundOn, playPop, BOLLE_THEMES } from "../../lib/bolleCore.jsx";
+import { soundOn, setSoundOn, playPop } from "../../lib/bolleCore.jsx";
 import { useGoogleAccount, GoogleAccountBadge } from "../../hooks/useGoogleAccount.jsx";
 import { ecoForced, applyEco } from "../../lib/ecoMode.js";
 import { NOTIFICATION_CATEGORIES } from "../notifications/notificationTypes.js";
 import DeleteAccountSection from "./DeleteAccountSection.jsx";
-import { useUnlocks, LockedNote } from "../../unlocks.jsx";
-import IdentityCard from "../auth/IdentityCard.jsx"; // adatta il percorso se IdentityCard sta altrove
+import IdentityCard from "../auth/IdentityCard.jsx";
+
+const notifyToast = (message) => { try { window.dispatchEvent(new CustomEvent("bolle:toast", { detail: message })); } catch { /* ignora */ } };
 
 export default function SettingsView({
   me,
@@ -14,11 +15,6 @@ export default function SettingsView({
   onDeleteAccount,
   onOpenLogin,
   onGoogleLink,
-  appearance,
-  onAppearanceChange,
-  activeTheme,
-  themeChoice,
-  onThemeChoiceChange,
   notificationPrefs,
   onNotificationPrefChange,
   privacyPrefs,
@@ -29,49 +25,18 @@ export default function SettingsView({
   const [snd, setSnd] = useState(soundOn);
   const [eco, setEco] = useState(ecoForced);
   const googleAccount = useGoogleAccount();
-  const themesOk = useUnlocks().isUnlocked("themes");
 
   return (
     <div className="bl-insights">
-      <section className="bl-insights-section bl-theme-controls">
-        <div className="bl-insights-heading"><h3>🌌 Aspetto della galassia</h3></div>
-        <p className="bl-muted">Scegli la luminosità e l’atmosfera delle tue bolle.</p>
-        <div className="bl-segment bl-theme-options" role="group" aria-label="Modalità colore">
-          {[["light", "☀️ Chiaro"], ["dark", "🌙 Dark"], ["auto", "📱 Automatico"]].map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              className={appearance === value ? "on" : ""}
-              aria-pressed={appearance === value}
-              onClick={() => onAppearanceChange(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="bl-segment bl-theme-options" role="group" aria-label="Tema speciale attivo">
-          <button
-            type="button"
-            className={`${themeChoice === "special" ? "on" : ""} ${themesOk ? "" : "is-locked"}`}
-            aria-pressed={themeChoice === "special"}
-            aria-disabled={themesOk ? undefined : "true"}
-            onClick={() => onThemeChoiceChange("special")}
-          >
-            {themesOk ? "" : "🔒 "}{BOLLE_THEMES.find(t => t.id === activeTheme)?.label || "🫧 Bolle"}
-          </button>
-        </div>
-        <LockedNote feature="themes" />
-      </section>
-
-      <section className="bl-insights-section">
+      <section className="bl-insights-section bl-identity-section">
         <div className="bl-insights-heading"><h3><VenetianMask size={21} aria-hidden="true" /> Identità e anonimato</h3></div>
         <div className="bl-account-ready">
           <strong>@{me?.username || "…"}</strong>
-          <p>Il tuo username è generato automaticamente e non si può modificare.</p>
+          <p>Il tuo username è generato automaticamente e non si può modificare. Resta sempre visibile.</p>
         </div>
         {me?.registered
-          ? <IdentityCard username={me?.username} />
-          : <p className="bl-muted">Crea un account per scegliere se mostrare il tuo nome.</p>}
+          ? <IdentityCard username={me?.username} onNotify={notifyToast} />
+          : <p className="bl-muted">Crea un account per scegliere se restare anonimo o mostrare il tuo nome.</p>}
       </section>
 
       <section className="bl-insights-section">

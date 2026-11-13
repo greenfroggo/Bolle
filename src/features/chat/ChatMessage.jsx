@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import AvatarImage from "../../components/AvatarImage.jsx";
-import { parseChatBody, stickerUrl, chatUserHue } from "./chatUtils.js";
+import { parseChatBody, stickerUrl, chatUserHue, formatClock } from "./chatUtils.js";
 
 export function ChatBody({ body, mine, meName, peerName, onOpenBubble, onJumpTo }) {
   const { kind, text, quote, bubble, sticker } = parseChatBody(body);
@@ -121,7 +121,7 @@ export default function ChatMessage({ m, highlighted, meName, peerName, onReply,
       >
         ↩
       </span>
-      {!m.mine && (
+      {isGroup && !m.mine && (
         <span className="bl-msg-avatar" title={`@${authorName}`} aria-hidden="true">
           <AvatarImage avatar={avatar} />
         </span>
@@ -132,13 +132,8 @@ export default function ChatMessage({ m, highlighted, meName, peerName, onReply,
       >
         {isGroup && !m.mine && senderDisplay && <span className="bl-msg-sender-name">@{senderDisplay}</span>}
         <ChatBody body={m.body} mine={m.mine} meName={meName} peerName={senderDisplay} onOpenBubble={onOpenBubble} onJumpTo={onJumpTo} />
-        <small>{new Date(m.created_at).toLocaleString("it-IT", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</small>
+        <small className="bl-msg-time">{formatClock(m.created_at)}{m.mine && <span className="bl-msg-tick" aria-label="Inviato">✓</span>}</small>
       </div>
-      {m.mine && (
-        <span className="bl-msg-avatar bl-msg-avatar--mine" title="Tu" aria-hidden="true">
-          <AvatarImage avatar={avatar} />
-        </span>
-      )}
       <button type="button" className="bl-msg-reply-btn" onClick={() => onReply(m)} aria-label="Rispondi a questo messaggio" title="Rispondi">
         ↩
       </button>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
+  Eye as AdIcEye,
   LayoutDashboard as AdIcDash,
   Map as AdIcMap,
   Layers as AdIcLayers,
@@ -20,7 +21,10 @@ import {
   Users,
   Trophy,
   Gauge,
-  Settings
+  Settings,
+  Gift as AdIcGift,
+  ImagePlus,
+  Trash2
 } from "lucide-react";
 import { supabase, BOLLE_THEMES } from "../../lib/bolleCore.jsx";
 import { trackPerf } from "../../lib/tracking.js";
@@ -76,7 +80,8 @@ const AD_VIEWS = [
   { id: "audience", label: "Pubblico", Icon: Users, hint: "Chi sono gli utenti" },
   { id: "people", label: "Attività utenti", Icon: Trophy, hint: "Chi usa di più l'app e chi meno, utente per utente" },
   { id: "content", label: "Contenuti", Icon: AdIcLayers, hint: "Bolle, scoppi, reazioni e regali" },
-  { id: "system", label: "Sistema", Icon: Gauge, hint: "Errori, prestazioni e segnalazioni" },
+  { id: "gifts", label: "Bolle regalo", Icon: AdIcGift, hint: "Crea regali, scegli quando compaiono e verifica chi li ritira" },
+  { id: "system", label: "Sistema", Icon: Gauge, hint: "Errori, prestazioni e segnalazioni (bolle e bug)" },
   { id: "settings", label: "Impostazioni", Icon: Settings, hint: "Tema dell'app, limiti e sessione" },
 ];
 const METRIC_INFO = {
@@ -365,6 +370,18 @@ function MapsView({ dark, refreshKey }) {
 function Pager({ page, size, total, busy, onPage }) {
   return <div className="bl-ad-pager"><button type="button" className="bl-ad-icon" disabled={busy || page === 0} onClick={() => onPage(page - 1)} aria-label="Pagina precedente"><AdIcPrev size={16} /></button><span>{total ? `${page * size + 1}–${Math.min((page + 1) * size, total)} di ${fmtInt(total)}` : "Nessun risultato"}</span><button type="button" className="bl-ad-icon" disabled={busy || (page + 1) * size >= total} onClick={() => onPage(page + 1)} aria-label="Pagina successiva"><AdIcNext size={16} /></button></div>;
 }
+/* KPI di performance per utente: il server restituisce solo conteggi (bubbles, bubbles_opened, bubbles_reacted, bubbles_shared), le percentuali si calcolano qui. */
+const kpiRate = (a, b) => (num(b) > 0 ? Math.round((num(a) / num(b)) * 1000) / 10 : null);
+const kpiText = (v) => (v == null ? "–" : `${v.toLocaleString("it-IT", { maximumFractionDigits: 1 })}%`);
+function UserKpis({ u }) {
+  const has = (k) => u[k] != null;
+  const items = [
+    ["Open", has("bubbles_opened") ? kpiRate(u.bubbles_opened, u.bubbles) : null, "Open rate: bolle aperte ÷ bolle pubblicate"],
+    ["Reaction", has("bubbles_reacted") && has("bubbles_opened") ? kpiRate(u.bubbles_reacted, u.bubbles_opened) : null, "Reaction rate: bolle con reazioni ÷ bolle aperte"],
+    ["Viral", has("bubbles_shared") && has("bubbles_opened") ? kpiRate(u.bubbles_shared, u.bubbles_opened) : null, "Viral rate: bolle condivise ÷ bolle aperte"],
+  ];
+  return <span className="bl-ad-ukpis" role="group" aria-label="Indicatori di performance">{items.map(([label, v, tip]) => <span key={label} className="bl-ad-ukpi" title={tip}>{label} <b>{kpiText(v)}</b></span>)}</span>;
+}
 function UsersTable({ autoOpen = false }) {
   const SIZE = 25;
   const box = useRef(null);
@@ -386,10 +403,11 @@ function UsersTable({ autoOpen = false }) {
       <form className="bl-ad-search" onSubmit={(e) => { e.preventDefault(); setPage(0); setTerm(q.trim()); }}><AdIcSearch size={16} aria-hidden="true" /><input className="bl-ad-input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cerca username, nome, email o telefono" aria-label="Cerca utenti" /><button className="bl-ad-btn" type="submit">Cerca</button></form>
       {error && <p className="bl-ad-error" role="alert">{error}</p>}
       <div className="bl-ad-scroll"><table className="bl-ad-table"><thead><tr><th>Username</th><th>Nome</th><th>Email</th><th>Telefono</th><th>Sesso</th><th className="r">Età</th><th>Iscritto</th><th>Ultimo accesso</th><th className="r">Bolle</th><th className="r">Scoppi</th></tr></thead>
-        <tbody>{rows.map((u) => <tr key={u.username}><td><b>@{u.username}</b></td><td>{[u.first_name, u.last_name].filter(Boolean).join(" ") || "–"}</td><td>{u.email || "–"}</td><td>{u.phone || "–"}</td><td>{SEX_LABELS[u.sex] || "–"}</td><td className="r">{u.age ?? "–"}</td><td>{fmt(u.registered_at)}</td><td>{fmt(u.last_seen)}</td><td className="r">{fmtInt(u.bubbles)}</td><td className="r">{fmtInt(u.pops)}</td></tr>)}
+        <tbody>{rows.map((u) => <tr key={u.username}><td><b>@{u.username}</b><UserKpis u={u} /></td><td>{[u.first_name, u.last_name].filter(Boolean).join(" ") || "–"}</td><td>{u.email || "–"}</td><td>{u.phone || "–"}</td><td>{SEX_LABELS[u.sex] || "–"}</td><td className="r">{u.age ?? "–"}</td><td>{fmt(u.registered_at)}</td><td>{fmt(u.last_seen)}</td><td className="r">{fmtInt(u.bubbles)}</td><td className="r">{fmtInt(u.pops)}</td></tr>)}
           {!rows.length && <tr><td colSpan="10" className="bl-ad-empty">{busy ? "Carico…" : "Nessun utente trovato."}</td></tr>}</tbody></table></div>
       <Pager page={page} size={SIZE} total={total} busy={busy} onPage={setPage} />
       <p className="bl-ad-note">Gli utenti registrati prima della v3 non hanno ancora dati personali (“–”).</p>
+      <p className="bl-ad-note">Sotto ogni username: Open = bolle aperte ÷ pubblicate · Reaction = bolle con reazioni ÷ aperte · Viral = bolle condivise ÷ aperte. “–” indica un dato non disponibile o nessuna bolla aperta.{rows.length > 0 && rows.every((u) => u.bubbles_opened == null) ? " Per mostrare i valori bolle_admin_users deve restituire anche bubbles_opened, bubbles_reacted e bubbles_shared." : ""}</p>
     </>}
   </Panel></div>;
 }
@@ -445,6 +463,62 @@ function LimitSetting({ onNotify }) {
   return <Panel title="Limite di scoppi" note="Valore configurato dall'admin, da 5 a 60. Il numero di scoppi consentiti dipende comunque dal saldo verificato dal server: la funzione SQL pop_bubble deve leggere questo limite.">
     <form className="bl-ad-form" onSubmit={save}><label>Scoppi consentiti<input className="bl-ad-input" type="number" min="5" max="60" value={value} onChange={(e) => setValue(e.target.value)} /></label><button className="bl-ad-btn primary" disabled={busy}>{busy ? "Salvo…" : "Salva limite"}</button></form>
     {error && <p className="bl-ad-error" role="alert">{error}</p>}
+  </Panel>;
+}
+const REPORT_REASONS = { spam: "Spam", inappropriate: "Contenuto inappropriato", harassment: "Molestie o bullismo", violence: "Violenza", minor: "Minori / età", privacy: "Privacy", other: "Altro" };
+function BubbleReports({ onNotify }) {
+  const [status, setStatus] = useState("pending"), [res, setRes] = useState(null), [busy, setBusy] = useState(false), [error, setError] = useState(""), [acting, setActing] = useState(""), [preview, setPreview] = useState(null);
+  const load = useCallback(async () => {
+    setBusy(true); setError("");
+    const { data, error: err } = await supabase.rpc("bolle_admin_bubble_reports", { p_status: status, p_limit: 50, p_offset: 0 });
+    setBusy(false);
+    if (err) { setError("Segnalazioni delle bolle non disponibili: " + err.message); return; }
+    setRes(data);
+  }, [status]);
+  useEffect(() => { load(); }, [load]);
+  async function act(r, action, confirmText) {
+    if (confirmText && !window.confirm(confirmText)) return;
+    setActing(r.id + action);
+    const { error: err } = await supabase.rpc("bolle_admin_resolve_report", { p_report_id: r.id, p_action: action, p_note: null });
+    setActing("");
+    if (err) { setError(err.message); return; }
+    onNotify?.({ dismiss: "Segnalazione archiviata.", hide: "Bolla nascosta.", restore: "Bolla di nuovo visibile." }[action]);
+    load();
+  }
+  const rows = res?.rows || [], total = num(res?.total);
+  async function openPreview(r) {
+    const base = { r, url: "", error: "", loading: Boolean(r.media_path && !r.media_deleted_at) };
+    setPreview(base);
+    if (!base.loading) return;
+    const { data, error: err } = await supabase.storage.from("bubbles").createSignedUrl(r.media_path, 600);
+    setPreview((cur) => (cur && cur.r.id === r.id ? { ...base, loading: false, url: data?.signedUrl || "", error: err ? "Anteprima non disponibile: " + err.message : "" } : cur));
+  }
+  const FILTERS = [["pending", "Da gestire"], ["hidden", "Nascoste"], ["dismissed", "Archiviate"], ["all", "Tutte"]];
+  return <Panel title="Segnalazioni delle bolle" note={total ? `${fmtInt(total)} ${status === "pending" ? "da gestire" : "nel filtro"}` : "Bolle segnalate dagli utenti dentro l'app."} actions={<button type="button" className="bl-ad-btn" onClick={load} disabled={busy}>Aggiorna</button>}>
+    <div className="bl-ad-themes">{FILTERS.map(([id, label]) => <button type="button" key={id} aria-pressed={status === id} onClick={() => setStatus(id)}>{label}</button>)}</div>
+    {error && <p className="bl-ad-error" role="alert">{error}</p>}
+    {!error && !rows.length && <p className="bl-ad-empty">{busy ? "Caricamento…" : "Nessuna segnalazione."}</p>}
+    <ul className="bl-ad-reports">{rows.map((r) => <li key={r.id}>
+      <div><button type="button" className="bl-ad-btn" onClick={() => openPreview(r)} aria-label="Guarda la bolla segnalata" title="Guarda la bolla segnalata" style={{ padding: "4px 8px", display: "inline-flex", alignItems: "center" }}><AdIcEye size={15} aria-hidden="true" /></button><span className="bl-ad-chip">{REPORT_REASONS[r.reason] || r.reason}</span><span className={`bl-ad-chip ${r.hidden ? "off" : "on"}`}>{r.hidden ? "Nascosta" : "Visibile"}</span>{num(r.report_count) > 1 && <span className="bl-ad-chip">{num(r.report_count)} segnalazioni</span>}<time>{new Date(r.created_at).toLocaleString("it-IT")}</time></div>
+      <p><b>@{r.author || "sconosciuto"}</b>: {r.caption || `(${r.media_type || "bolla"} senza descrizione)`}</p>
+      <small>Segnalata da @{r.reporter || "utente"}{r.details ? ` · «${r.details}»` : ""}</small>
+      {(r.status === "pending" || r.status === "hidden") && <div className="bl-ad-panel-a" style={{ marginTop: 8, flexWrap: "wrap" }}>
+        {r.status === "pending" && <button type="button" className="bl-ad-btn" disabled={Boolean(acting)} onClick={() => act(r, "dismiss")}>Ignora</button>}
+        <button type="button" className="bl-ad-btn" disabled={Boolean(acting)} onClick={() => act(r, r.hidden ? "restore" : "hide")}>{r.hidden ? "Ripristina" : "Nascondi bolla"}</button>
+      </div>}
+    </li>)}</ul>
+    {preview && <div role="dialog" aria-modal="true" aria-label="Anteprima della bolla segnalata" onClick={() => setPreview(null)} style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(0,0,0,.72)", display: "grid", placeItems: "center", padding: 16 }}>
+      <section className="bl-ad-panel" onClick={(e) => e.stopPropagation()} style={{ width: "min(520px, 100%)", maxHeight: "90vh", overflow: "auto" }}>
+        <header className="bl-ad-panel-h"><div><h3>Bolla di @{preview.r.author || "sconosciuto"}</h3><p>Anteprima riservata alla moderazione: la bolla non viene scoppiata.</p></div><div className="bl-ad-panel-a"><button type="button" className="bl-ad-btn" onClick={() => setPreview(null)}>Chiudi</button></div></header>
+        {preview.loading && <p className="bl-ad-empty">Caricamento…</p>}
+        {preview.error && <p className="bl-ad-error" role="alert">{preview.error}</p>}
+        {preview.url && (String(preview.r.media_type || "").startsWith("video")
+          ? <video src={preview.url} controls playsInline style={{ width: "100%", borderRadius: 12 }} />
+          : <img src={preview.url} alt="Bolla segnalata" style={{ width: "100%", borderRadius: 12 }} />)}
+        {!preview.loading && !preview.url && !preview.error && <p className="bl-ad-empty">{preview.r.media_deleted_at ? "Il file di questa bolla è stato eliminato." : "Questa bolla non ha un file multimediale."}</p>}
+        {preview.r.caption && <p>{preview.r.caption}</p>}
+      </section>
+    </div>}
   </Panel>;
 }
 function BugReports() {
@@ -769,9 +843,176 @@ function SystemView({ c }) {
         <tbody>{perf.map((p) => { const v = num(p.p95_ms), st = v > 2000 ? "bad" : v > 1000 ? "mid" : "good"; return <tr key={p.metric}><td><b>{PERF_LABELS[p.metric] || p.metric}</b></td><td className="r">{fmtInt(p.avg_ms)}</td><td className="r">{fmtInt(p.p50_ms)}</td><td><span className="bl-ad-p95"><span className="bl-ad-track"><i className={st} style={{ width: `${Math.min(100, (v / worst) * 100)}%` }} /></span><b className={st}>{fmtInt(v)}</b></span></td><td className="r">{fmtInt(p.samples)}</td></tr>; })}
           {!perf.length && <tr><td colSpan="5" className="bl-ad-empty">Ancora nessun dato.</td></tr>}</tbody></table></div>
     </Panel>
+    <BubbleReports onNotify={c.onNotify} />
     <BugReports />
   </div>;
 }
+/* ---------------------------- Bolle regalo ---------------------------- */
+const GIFT_BUCKET = "bolle-gifts";
+const GIFT_STATUS = { live: ["Visibile agli utenti", "on"], scheduled: ["Programmata", "warn"], exhausted: ["Esaurita", "off"], expired: ["Scaduta", "off"], disabled: ["Disattivata", "off"] };
+const pad2 = (n) => String(n).padStart(2, "0");
+const toLocalInput = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+const fmtDateTime = (iso) => (iso ? new Date(iso).toLocaleString("it-IT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "–");
+const fmtCode = (v) => String(v || "").replace(/^(.{4})(.{4})$/, "$1-$2");
+function giftError(err) {
+  const m = String(err?.message || err || "");
+  if (m.includes("forbidden")) return "Portale bloccato: sbloccalo di nuovo.";
+  if (m.includes("invalid_title")) return "Dai un nome al regalo.";
+  if (m.includes("gift_has_claims")) return "Qualcuno l'ha già ritirato: disattivalo invece di eliminarlo.";
+  if (/bucket|storage|row-level|mime|size/i.test(m)) return "Immagine non caricata. Hai eseguito lo script bolle-regali.sql (crea il bucket «bolle-gifts»)? " + m.slice(0, 70);
+  return "Operazione non riuscita: " + m.slice(0, 90);
+}
+// Ridimensiona e comprime la foto del regalo: resta leggera (meno traffico sul backend).
+function shrinkImage(file, max = 1280, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height)), cv = document.createElement("canvas");
+      cv.width = Math.max(1, Math.round(img.width * k)); cv.height = Math.max(1, Math.round(img.height * k));
+      const ctx = cv.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height); ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      cv.toBlob((b) => (b ? resolve(b) : reject(new Error("immagine non valida"))), "image/jpeg", quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("immagine non valida")); };
+    img.src = url;
+  });
+}
+function GiftsView({ c }) {
+  const onNotify = c.onNotify;
+  const blank = () => ({ title: "", caption: "", appearsAt: toLocalInput(new Date()), expiresAt: "", quantity: 1 });
+  const [form, setForm] = useState(blank), [file, setFile] = useState(null), [preview, setPreview] = useState(""), [saving, setSaving] = useState(false), [error, setError] = useState("");
+  const [gifts, setGifts] = useState(null), [thumbs, setThumbs] = useState({}), [claims, setClaims] = useState(null), [claimsError, setClaimsError] = useState(""), [pick, setPick] = useState(""), [search, setSearch] = useState(""), [busyId, setBusyId] = useState("");
+  const fileRef = useRef(null), claimsRef = useRef(null);
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    if (!file) { setPreview(""); return undefined; }
+    const u = URL.createObjectURL(file); setPreview(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+
+  const loadGifts = useCallback(async () => {
+    const { data, error: e } = await supabase.rpc("bolle_admin_gb_list");
+    if (e) { setGifts([]); setError(String(e.message).includes("forbidden") ? "Portale bloccato: sbloccalo di nuovo." : "Bolle regalo non disponibili. Hai eseguito lo script bolle-regali.sql? (" + String(e.message).slice(0, 80) + ")"); return; }
+    setError(""); setGifts(data || []);
+    const paths = (data || []).map((g) => g.media_path).filter(Boolean);
+    if (paths.length) {
+      const { data: signed } = await supabase.storage.from(GIFT_BUCKET).createSignedUrls(paths, 3600);
+      const m = {}; (signed || []).forEach((r) => { if (r?.signedUrl) m[r.path] = r.signedUrl; }); setThumbs(m);
+    }
+  }, []);
+  const loadClaims = useCallback(async () => {
+    const { data, error: e } = await supabase.rpc("bolle_admin_gb_claims", { p_gift_id: pick || null, p_search: search.trim() || null, p_limit: 100 });
+    if (e) { setClaims([]); setClaimsError(String(e.message).includes("forbidden") ? "Portale bloccato: sbloccalo di nuovo." : "Ritiri non caricati: " + String(e.message).slice(0, 120)); return; }
+    setClaimsError(""); setClaims(data || []);
+  }, [pick, search]);
+  useEffect(() => { loadGifts(); }, [loadGifts]);
+  useEffect(() => { const t = setTimeout(loadClaims, search ? 300 : 0); return () => clearTimeout(t); }, [loadClaims]);
+  // I nuovi ritiri compaiono da soli (ogni 20 secondi, solo con la scheda in primo piano).
+  useEffect(() => {
+    const id = setInterval(() => { if (document.visibilityState === "visible") { loadClaims(); loadGifts(); } }, 20000);
+    return () => clearInterval(id);
+  }, [loadClaims, loadGifts]);
+  const refreshAll = () => { loadGifts(); loadClaims(); };
+  const showClaims = (id) => { setPick(id); setSearch(""); setTimeout(() => claimsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50); };
+
+  async function create(e) {
+    e.preventDefault(); setError("");
+    const appears = new Date(form.appearsAt), expires = form.expiresAt ? new Date(form.expiresAt) : null;
+    if (!form.title.trim()) return setError("Dai un nome al regalo (es. «Colazione offerta»).");
+    if (Number.isNaN(appears.getTime())) return setError("Scegli quando far comparire la bolla.");
+    if (expires && (Number.isNaN(expires.getTime()) || expires <= appears)) return setError("La scadenza deve essere dopo la comparsa.");
+    setSaving(true);
+    let path = null;
+    try {
+      if (file) {
+        const blob = await shrinkImage(file);
+        path = `${crypto.randomUUID()}.jpg`;
+        const { error: upErr } = await supabase.storage.from(GIFT_BUCKET).upload(path, blob, { contentType: "image/jpeg", upsert: false });
+        if (upErr) { path = null; throw upErr; }
+      }
+      const { error: e2 } = await supabase.rpc("bolle_admin_gb_create", {
+        p_title: form.title.trim(), p_caption: form.caption.trim(), p_media_path: path, p_media_type: path ? "image" : null,
+        p_appears_at: appears.toISOString(), p_expires_at: expires ? expires.toISOString() : null,
+        p_quantity: Math.max(1, Math.min(1000, Math.round(Number(form.quantity) || 1))),
+      });
+      if (e2) { if (path) supabase.storage.from(GIFT_BUCKET).remove([path]); throw e2; }
+      setForm(blank()); setFile(null); if (fileRef.current) fileRef.current.value = "";
+      onNotify(appears > new Date() ? "Bolla regalo programmata." : "Bolla regalo creata: gli utenti la vedranno a breve.");
+      loadGifts();
+    } catch (err) { setError(giftError(err)); } finally { setSaving(false); }
+  }
+  async function toggle(g) {
+    setBusyId(g.id);
+    const { error: e } = await supabase.rpc("bolle_admin_gb_set_active", { p_id: g.id, p_active: !g.active });
+    setBusyId(""); if (e) return setError(giftError(e));
+    loadGifts();
+  }
+  async function remove(g) {
+    if (!window.confirm(`Eliminare il regalo «${g.title}»?`)) return;
+    setBusyId(g.id);
+    const { data: path, error: e } = await supabase.rpc("bolle_admin_gb_delete", { p_id: g.id });
+    setBusyId(""); if (e) return setError(giftError(e));
+    if (path) supabase.storage.from(GIFT_BUCKET).remove([path]);
+    onNotify("Regalo eliminato."); loadGifts(); loadClaims();
+  }
+  async function deliver(cl) {
+    setBusyId(cl.id);
+    const { error: e } = await supabase.rpc("bolle_admin_gb_mark_delivered", { p_claim_id: cl.id, p_delivered: !cl.delivered_at });
+    setBusyId(""); if (e) return setError(giftError(e));
+    onNotify(cl.delivered_at ? "Consegna annullata." : "Regalo segnato come consegnato.");
+    loadClaims(); loadGifts();
+  }
+
+  return <div className="bl-ad-stack">
+    <Panel title="Nuova bolla regalo" note="Compare tra le bolle degli utenti all'ora scelta. Titolo, immagine e didascalia si vedono solo dopo lo scoppio. Chi la scoppia la ritrova in Profilo › I miei regali con un codice da mostrare.">
+      <form className="bl-ad-giftform" onSubmit={create}>
+        <label className="wide">Nome del regalo<input className="bl-ad-input" maxLength={80} value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="Es. Colazione offerta, sconto 20%, libro in regalo" required /></label>
+        <label className="wide">Didascalia con le indicazioni per il ritiro<textarea className="bl-ad-input" rows={4} maxLength={600} value={form.caption} onChange={(e) => set("caption", e.target.value)} placeholder="Es. Mostra questo codice al bar Rossi, via Roma 1, entro il 31 dicembre." /><small>{form.caption.length}/600</small></label>
+        <div className="wide bl-ad-giftimg">
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={(e) => setFile(e.target.files?.[0] || null)} />
+          {preview ? <img className="bl-ad-thumb big" src={preview} alt="Anteprima dell'immagine del regalo" /> : <span className="bl-ad-thumb big empty" aria-hidden="true"><ImagePlus size={22} /></span>}
+          <div><button type="button" className="bl-ad-btn" onClick={() => fileRef.current?.click()}><ImagePlus size={15} aria-hidden="true" />{file ? "Cambia immagine" : "Allega un'immagine"}</button>
+            {file && <button type="button" className="bl-ad-btn" onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = ""; }}>Rimuovi</button>}
+            <small>Facoltativa · JPG, PNG o WebP · viene ridimensionata automaticamente.</small></div>
+        </div>
+        <label>Compare il<input className="bl-ad-input" type="datetime-local" value={form.appearsAt} onChange={(e) => set("appearsAt", e.target.value)} required /></label>
+        <label>Scade il (facoltativo)<input className="bl-ad-input" type="datetime-local" value={form.expiresAt} min={form.appearsAt} onChange={(e) => set("expiresAt", e.target.value)} /></label>
+        <label>Quante persone possono ritirarlo<input className="bl-ad-input" type="number" min="1" max="1000" value={form.quantity} onChange={(e) => set("quantity", e.target.value)} /></label>
+        <div className="wide"><button className="bl-ad-btn primary" disabled={saving}>{saving ? "Creo…" : "Crea bolla regalo"}</button></div>
+      </form>
+      {error && <p className="bl-ad-error" role="alert">{error}</p>}
+    </Panel>
+
+    <Panel title="Bolle regalo create" note="Ogni persona può ritirare lo stesso regalo una sola volta. Un regalo già ritirato non si elimina: disattivalo.">
+      <div className="bl-ad-scroll"><table className="bl-ad-table"><thead><tr><th></th><th>Regalo</th><th>Compare</th><th>Scade</th><th>Ritirati</th><th>Stato</th><th></th></tr></thead>
+        <tbody>{(gifts || []).map((g) => { const [label, tone] = GIFT_STATUS[g.status] || [g.status, "off"]; return <tr key={g.id}>
+          <td>{thumbs[g.media_path] ? <img className="bl-ad-thumb" src={thumbs[g.media_path]} alt="" loading="lazy" /> : <span className="bl-ad-thumb empty" aria-hidden="true">🎁</span>}</td>
+          <td className="clip" title={g.caption || ""}><b>{g.title}</b></td><td>{fmtDateTime(g.appears_at)}</td><td>{g.expires_at ? fmtDateTime(g.expires_at) : "–"}</td>
+          <td>{fmtInt(g.claimed_count)} / {fmtInt(g.quantity)}<small className="bl-ad-sub"> · {fmtInt(g.delivered_count)} consegnati</small></td>
+          <td><span className={`bl-ad-chip ${tone}`}>{label}</span></td>
+          <td className="bl-ad-rowact">{num(g.claimed_count) > 0 && <button type="button" className="bl-ad-btn" onClick={() => showClaims(g.id)}>Vedi ritiri</button>}<button type="button" className="bl-ad-btn" disabled={busyId === g.id} onClick={() => toggle(g)}>{g.active ? "Disattiva" : "Riattiva"}</button>
+            {num(g.claimed_count) === 0 && <button type="button" className="bl-ad-icon" disabled={busyId === g.id} onClick={() => remove(g)} aria-label={`Elimina ${g.title}`} title="Elimina"><Trash2 size={15} /></button>}</td></tr>; })}
+          {!(gifts || []).length && <tr><td colSpan="7" className="bl-ad-empty">{gifts ? "Nessuna bolla regalo ancora." : "Carico…"}</td></tr>}</tbody></table></div>
+    </Panel>
+
+    <div ref={claimsRef} />
+    <Panel title="Ritiri e verifica" actions={<button type="button" className="bl-ad-icon" onClick={refreshAll} aria-label="Aggiorna i ritiri" title="Aggiorna"><RefreshCw size={15} /></button>} note="Quando una persona si presenta, chiedi il codice sul suo telefono (Profilo › I miei regali), cercalo qui e segna il regalo come consegnato.">
+      <div className="bl-ad-form wrap">
+        <label>Regalo<select className="bl-ad-input" value={pick} onChange={(e) => setPick(e.target.value)}><option value="">Tutti</option>{(gifts || []).map((g) => <option key={g.id} value={g.id}>{g.title}</option>)}</select></label>
+        <label>Cerca<input className="bl-ad-input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Codice o @utente" autoComplete="off" /></label>
+      </div>
+      {claimsError && <p className="bl-ad-error" role="alert">{claimsError}</p>}
+      <div className="bl-ad-scroll"><table className="bl-ad-table"><thead><tr><th>Codice</th><th>Regalo</th><th>Utente</th><th>Scoppiata il</th><th>Consegna</th><th></th></tr></thead>
+        <tbody>{(claims || []).map((cl) => <tr key={cl.id}>
+          <td><b className="bl-ad-mono">{fmtCode(cl.claim_code)}</b></td><td className="clip">{cl.gift_title}</td><td>{cl.username ? `@${cl.username}` : "–"}</td><td>{fmtDateTime(cl.claimed_at)}</td>
+          <td><span className={`bl-ad-chip ${cl.delivered_at ? "on" : "warn"}`}>{cl.delivered_at ? `Consegnato ${fmtDateTime(cl.delivered_at)}` : "Da consegnare"}</span></td>
+          <td className="bl-ad-rowact"><button type="button" className={`bl-ad-btn ${cl.delivered_at ? "" : "primary"}`} disabled={busyId === cl.id} onClick={() => deliver(cl)}>{cl.delivered_at ? "Annulla" : "Segna consegnato"}</button></td></tr>)}
+          {!(claims || []).length && <tr><td colSpan="6" className="bl-ad-empty">{claims ? "Nessun ritiro trovato." : "Carico…"}</td></tr>}</tbody></table></div>
+    </Panel>
+  </div>;
+}
+
 function AdSettingsView({ c, auto, setAuto, onLock }) {
   return <div className="bl-ad-stack">
     <ThemeSetting onNotify={c.onNotify} />
@@ -904,6 +1145,7 @@ function AdminPortal({ onNotify, onClose }) {
           {view === "audience" && <AudienceView c={c} />}
           {view === "people" && <UserActivityView c={c} />}
           {view === "content" && <ContentView c={c} />}
+          {view === "gifts" && <GiftsView c={c} />}
           {view === "system" && <SystemView c={c} />}
           {view === "settings" && <AdSettingsView c={c} auto={auto} setAuto={setAuto} onLock={lock} />}
         </>}

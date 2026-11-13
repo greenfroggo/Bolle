@@ -30,11 +30,11 @@ const CSS = `
 .bl-w6-stars i+i{box-shadow:${STARS};transform:translate(23px,31px) scale(.8);animation-duration:7s;animation-delay:-2s;opacity:.6}
 .bl-w6-spark{position:absolute;width:var(--s);height:var(--s);left:var(--x);top:var(--y);background:#fff;clip-path:polygon(50% 0,59% 41%,100% 50%,59% 59%,50% 100%,41% 59%,0 50%,41% 41%);filter:drop-shadow(0 0 7px rgba(255,200,255,.95));animation:bl-w6-spark 3.6s ease-in-out var(--d) infinite;will-change:transform,opacity}
 
-.bl-w6-hero{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;width:min(100%,390px)}
+.bl-w6-hero{flex:1 0 auto;min-height:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;width:min(100%,390px)}
 .bl-w6-bubblebtn{all:unset;box-sizing:border-box;display:block;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border-radius:50%;animation:bl-w6-float 7s ease-in-out infinite alternate;will-change:transform}
 .bl-w6-bubblebtn:focus-visible{outline:3px solid #fff;outline-offset:6px}
 .bl-w6-bubblebtn.is-squish{animation:bl-w6-spring .9s cubic-bezier(.2,1,.3,1) both,bl-w6-float 7s ease-in-out .9s infinite alternate}
-.bl-w6-bubble{--bs:min(62vw,min(34vh,270px));position:relative;display:grid;place-items:center;width:var(--bs);height:var(--bs);border-radius:50%;
+.bl-w6-bubble{--bs:min(58vw,min(30vh,260px));position:relative;display:grid;place-items:center;width:var(--bs);height:var(--bs);border-radius:50%;
   background:
     radial-gradient(circle at 50% 58%,rgba(20,90,255,.85) 0,rgba(60,60,230,.7) 36%,rgba(140,70,235,.42) 64%,rgba(255,130,220,.34) 84%,rgba(255,255,255,.08) 100%);
   box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.6),inset 0 0 44px rgba(255,255,255,.16),inset -18px -24px 54px rgba(255,120,220,.38),inset 16px 18px 44px rgba(120,225,255,.3),0 22px 70px rgba(150,80,255,.55),0 0 90px rgba(90,120,255,.35)}
@@ -79,7 +79,8 @@ const CSS = `
 @keyframes bl-w6-spring{0%{transform:scale(1)}18%{transform:scale(1.13,.87)}38%{transform:scale(.93,1.08)}58%{transform:scale(1.04,.98)}78%{transform:scale(.99,1.01)}100%{transform:scale(1)}}
 @keyframes bl-w6-tw{from{opacity:.45}to{opacity:1}}
 @keyframes bl-w6-spark{0%,100%{opacity:.25;transform:scale(.55) rotate(0)}50%{opacity:1;transform:scale(1) rotate(18deg)}}
-@media(max-height:740px){.bl-w6{gap:10px;padding-top:calc(16px + env(safe-area-inset-top))}.bl-w6-sub{display:none}.bl-w6 .bl-w6-btn.bl-w6-btn{min-height:50px}.bl-w6 .bl-w6-btn.bl-w6-btn--create{min-height:56px}.bl-w6-panel{padding:11px;gap:8px}}
+@media(max-height:740px){.bl-w6{gap:10px;padding-top:calc(16px + env(safe-area-inset-top))}.bl-w6-hero{gap:10px}.bl-w6-bubble{--bs:min(44vw,22vh)}.bl-w6-title{margin-top:2px}.bl-w6 .bl-w6-btn.bl-w6-btn{min-height:50px}.bl-w6 .bl-w6-btn.bl-w6-btn--create{min-height:56px}.bl-w6-panel{padding:11px;gap:8px}}
+@media(max-height:620px){.bl-w6-bubble{--bs:min(38vw,18vh)}.bl-w6-title{font-size:20px}.bl-w6-sub{font-size:12.5px;line-height:1.4}.bl-w6 .bl-w6-btn.bl-w6-btn{min-height:46px}.bl-w6 .bl-w6-btn.bl-w6-btn--create{min-height:50px}}
 @media(prefers-reduced-motion:reduce){.bl-w6-stars i,.bl-w6-spark,.bl-w6-bubblebtn,.bl-w6-bubblebtn.is-squish,.bl-w6-panel{animation:none}.bl-w6 .bl-w6-btn.bl-w6-btn{transition:none}}
 `;
 

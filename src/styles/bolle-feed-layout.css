@@ -1,0 +1,146 @@
+/* =====================================================================
+   BOLLE · layout della home (feed sequenziale)
+   Da importare PER ULTIMO (dopo multipoll.css).
+
+   Regola: ogni cosa ha un posto solo, e in basso compare un messaggio alla volta.
+
+   dall'alto:   header (ricerca, notifiche, profilo)  →  filtri  →  BOLLA
+                →  "Tocca per scoppiare · Scorri per passare"
+                →  avviso del feed (suggerimento «Vicino a me» / conferma bolla per te)
+                →  DOCK  (un solo elemento: ospite | scoppi finiti | scoppi rimasti)
+                →  bolla "+" e barra di navigazione
+   ===================================================================== */
+
+.bl-root {
+  /* sopra il "+" (che arriva a 108px dal fondo) e sotto il bordo del feed (224px) */
+  --bl-dock-bottom: calc(124px + env(safe-area-inset-bottom));
+  --bl-card-bg: color-mix(in srgb, var(--bl-bg, #0b0d12) 78%, transparent);
+  --bl-card-border: rgba(255, 255, 255, .16);
+  --bl-card-radius: 18px;
+  --bl-card-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+}
+
+/* ---------- DOCK: contenitore unico, centrato, sopra la barra in basso ---------- */
+.bl-root .bl-dock {
+  position: fixed;
+  z-index: 12;
+  left: 50%;
+  bottom: var(--bl-dock-bottom);
+  translate: -50% 0;
+  width: min(calc(100vw - 32px), 380px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.bl-root .bl-dock > * { pointer-events: auto; }
+
+/* ---------- card (ospite / scoppi finiti): stesso aspetto, una riga ---------- */
+.bl-root .bl-dock-card {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 16px;
+  border-radius: var(--bl-card-radius);
+  background: var(--bl-card-bg);
+  border: 1px solid var(--bl-card-border);
+  box-shadow: var(--bl-card-shadow);
+  color: #fff;
+  font: 500 13px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif;
+  animation: bl-dock-in .35s cubic-bezier(.3, 1.2, .6, 1) both;
+}
+.bl-root .bl-dock-card p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.bl-root .bl-dock-card strong { font-size: 14px; font-weight: 700; }
+.bl-root .bl-dock-card span { font-size: 12px; opacity: .72; }
+
+.bl-root .bl-dock-btn {
+  flex: none;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .28);
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+  font: 700 14px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+.bl-root .bl-dock-btn.is-primary {
+  background: linear-gradient(135deg, #6f63ff, #a15cf0);
+  border-color: rgba(255, 255, 255, .4);
+}
+.bl-root .bl-dock-x {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255, 255, 255, .6);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.bl-root .bl-dock-btn:focus-visible,
+.bl-root .bl-dock-x:focus-visible { outline: 3px solid #c9bbff; outline-offset: 2px; }
+
+/* ---------- contatore scoppi: piccola capsula discreta ---------- */
+.bl-root .bl-dock-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  max-width: 100%;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--bl-card-bg);
+  border: 1px solid var(--bl-card-border);
+  color: #fff;
+  font: 600 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.bl-root .bl-dock-count strong {
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.bl-root .bl-dock-count span { opacity: .78; }
+.bl-root .bl-dock-count.is-orange { border-color: #ffc27a; }
+.bl-root .bl-dock-count.is-orange strong { color: #ffd9a3; }
+.bl-root .bl-dock-count.is-red { border-color: #ff8a8a; }
+.bl-root .bl-dock-count.is-red strong { color: #ff8a8a; }
+
+/* ---------- dentro il feed: stesso linguaggio visivo, un avviso alla volta ---------- */
+.bl-root .bl-seq-toast,
+.bl-root .bl-seq-confirm {
+  background: var(--bl-card-bg);
+  border: 1px solid var(--bl-card-border);
+  border-radius: var(--bl-card-radius);
+  box-shadow: var(--bl-card-shadow);
+}
+.bl-root .bl-seq-toast { bottom: calc(28px + env(safe-area-inset-bottom)); }
+.bl-root .bl-seq-confirm { bottom: calc(14px + env(safe-area-inset-bottom)); }
+
+/* se c'è la conferma "bolla per te", il suggerimento «Vicino a me» aspetta */
+.bl-root .bl-seq:has(.bl-seq-confirm) .bl-seq-toast { display: none; }
+/* la frase d'aiuto cede il posto all'avviso */
+.bl-root .bl-seq:has(.bl-seq-toast) .bl-seq-hint { opacity: 0; transition: opacity .2s; }
+
+@keyframes bl-dock-in {
+  from { opacity: 0; transform: translateY(8px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bl-root .bl-dock-card { animation: none; }
+}

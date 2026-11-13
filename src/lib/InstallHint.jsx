@@ -4,11 +4,9 @@ import { Lightbulb, Share, ChevronLeft, ChevronRight, BookOpen, LayoutGrid } fro
 /* Suggerimento provvisorio (finché Bolle non è sull'App Store):
    su iPhone, una lampadina luminosa nello sfondo del feed apre uno splash con i passaggi
    per aggiungere Bolle alla schermata Home.
-   - Compare solo su iPhone/iPod, in Safari, e solo se l'app non è già aperta dalla Home.
-   - «Ho aggiunto Bolle» nasconde la lampadina per sempre; «Più tardi» chiude soltanto lo splash.
+   - Compare su iPhone/iPod, sempre: anche se l'app è già aperta dalla Home.
+   - La lampadina resta sempre disponibile (discreta); «Ho aggiunto Bolle» e «Più tardi» chiudono soltanto lo splash.
    - Per provarlo da computer: aggiungi ?install=1 all'indirizzo. */
-
-const DONE_KEY = "bolle-install-done-v1";
 
 function isIPhone() {
   try {
@@ -16,22 +14,13 @@ function isIPhone() {
     return /iPhone|iPod/.test(ua);
   } catch { return false; }
 }
-function isStandalone() {
-  try {
-    if (window.navigator.standalone === true) return true;
-    return !!window.matchMedia?.("(display-mode: standalone)").matches;
-  } catch { return false; }
-}
-function wasDone() {
-  try { return localStorage.getItem(DONE_KEY) === "1"; } catch { return false; }
-}
 function forced() {
   try { return /[?&]install=1\b/.test(window.location.search); } catch { return false; }
 }
 
 export function shouldOfferInstall() {
   if (forced()) return true;
-  return isIPhone() && !isStandalone() && !wasDone();
+  return isIPhone();
 }
 
 const STEPS = [
@@ -52,11 +41,7 @@ export default function InstallHint({ hidden = false }) {
     setOpen(false);
     requestAnimationFrame(() => bulbRef.current?.focus?.());
   }, []);
-  const confirm = useCallback(() => {
-    try { localStorage.setItem(DONE_KEY, "1"); } catch { /* storage non disponibile */ }
-    setOpen(false);
-    setOffer(forced());
-  }, []);
+  const confirm = useCallback(() => { close(); }, [close]);
 
   useEffect(() => {
     if (!open) return undefined;

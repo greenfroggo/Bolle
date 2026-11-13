@@ -10,7 +10,7 @@ import { MessageCircle, Star } from "lucide-react";
      · Svanite       → segnaposto grigio, non si aprono
    ===================================================================== */
 const KIND_META = {
-  photo: ["📷", "Foto", 200], video: ["▶️", "Video", 265], question: ["❓", "Domanda", 190], poll: ["⚖️", "Questo o quello", 330],
+  photo: ["📷", "Foto", 200], video: ["▶️", "Video", 265], question: ["❓", "Domanda", 190], poll: ["⚖️", "Questo o quello", 330], multipoll: ["📊", "Sondaggio", 168],
   meme: ["😂", "Meme", 45], gif: ["🎞️", "GIF", 20], truth: ["🕵️", "2 verità 1 bugia", 150], rating: ["⭐", "Voto", 52],
   thought: ["💭", "Pensiero", 285], confession: ["🤫", "Confessione", 350],
 };
@@ -137,7 +137,7 @@ export default function PublicProfile({ supabase, bucket, username, avatarNode, 
     expired: tiles.filter((t) => t.state === "expired"),
   } : null;
 
-  const fullName = profile && [profile.first_name, profile.last_name].filter(Boolean).join(" ");
+  const fullName = profile && (String(profile.business_name || "").trim() || [profile.first_name, profile.last_name].filter(Boolean).join(" "));
   const ageLine = profile && (profile.birth_date ? `${fmtBirth(profile.birth_date)}${profile.age != null ? ` (${profile.age} anni)` : ""}` : profile.age != null ? `${profile.age} anni` : "");
   // Funzione (non componente): così l'elenco non viene rimontato a ogni render.
   const renderSection = ({ title, hint, items, cls }) => items?.length ? (
@@ -186,7 +186,6 @@ export default function PublicProfile({ supabase, bucket, username, avatarNode, 
           {profile.is_me && priv && (
             <details className="bl-pp-priv">
               <summary>Cosa vedono gli altri di me</summary>
-              <label><input type="checkbox" checked={priv.show_name} onChange={(e) => savePriv({ ...priv, show_name: e.target.checked })} /> Mostra il mio nome e cognome</label>
               <label>Età e data di nascita
                 <select value={priv.birth_mode} onChange={(e) => savePriv({ ...priv, birth_mode: e.target.value })}>
                   <option value="nobody">Non mostrare</option>
@@ -195,7 +194,7 @@ export default function PublicProfile({ supabase, bucket, username, avatarNode, 
                 </select>
               </label>
               <label><input type="checkbox" checked={priv.show_bubbles} onChange={(e) => savePriv({ ...priv, show_bubbles: e.target.checked })} /> Mostra le mie bolle nel profilo</label>
-              <small>Di default è tutto nascosto. Se hai meno di 18 anni cognome e data di nascita non vengono mai mostrati.</small>
+              <small>Nome e anonimato si scelgono in Impostazioni › Identità e anonimato. Se hai meno di 18 anni cognome e data di nascita non vengono mai mostrati.</small>
             </details>
           )}
 
